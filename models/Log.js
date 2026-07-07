@@ -1,19 +1,16 @@
 const mongoose = require("mongoose");
-const { LOG_TYPES } = require("../constants");
+const { LOG_TYPES, LOG_ACTIONS } = require("../constants");
 
-/**
- * Audit trail. Every important operation writes a log entry.
- */
 const logSchema = new mongoose.Schema(
   {
     type: { type: String, enum: Object.values(LOG_TYPES), default: LOG_TYPES.INFO, index: true },
-    action: { type: String, required: true }, // e.g. "activity.create"
+    action: { type: String, enum: Object.values(LOG_ACTIONS), default: LOG_ACTIONS.CREATE, index: true },
     title: { type: String, required: true },
     detail: { type: String, default: "" },
-    actor: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
-    actorEmail: { type: String },
-    ip: { type: String },
-    meta: { type: mongoose.Schema.Types.Mixed },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+    userEmail: { type: String, default: null },
+    ip: { type: String, default: null },
+    meta: { type: mongoose.Schema.Types.Mixed, default: {} },
   },
   { timestamps: true }
 );

@@ -1,19 +1,17 @@
 const mongoose = require("mongoose");
 
-/**
- * One document per (visitor hash + day) to power visitor analytics without
- * storing PII. IP+UA are hashed before storage.
- */
+// One doc per visit; analytics computed via aggregation/count.
 const visitorSchema = new mongoose.Schema(
   {
-    day: { type: String, required: true, index: true }, // YYYY-MM-DD
-    visitorHash: { type: String, required: true, index: true },
-    path: { type: String },
-    hits: { type: Number, default: 1 },
+    ipHash: { type: String, index: true },
+    sessionId: { type: String, index: true },
+    path: { type: String, default: "/" },
+    activity: { type: mongoose.Schema.Types.ObjectId, ref: "Activity", default: null },
+    userAgent: { type: String, default: "" },
   },
   { timestamps: true }
 );
 
-visitorSchema.index({ day: 1, visitorHash: 1 }, { unique: true });
+visitorSchema.index({ createdAt: 1 });
 
 module.exports = mongoose.model("Visitor", visitorSchema);

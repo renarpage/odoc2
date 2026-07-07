@@ -1,19 +1,17 @@
 const mongoose = require("mongoose");
-const { DOCUMENT_TYPES } = require("../constants");
 
 const documentSchema = new mongoose.Schema(
   {
-    activity: { type: mongoose.Schema.Types.ObjectId, ref: "Activity", index: true },
+    activity: { type: mongoose.Schema.Types.ObjectId, ref: "Activity", index: true, default: null },
+    name: { type: String, required: true },
     driveId: { type: String, required: true },
     url: { type: String, required: true },
-    name: { type: String, required: true },
-    type: { type: String, enum: DOCUMENT_TYPES, default: "pdf" },
-    mimeType: { type: String },
-    sizeBytes: { type: Number, default: 0 },
-    size: { type: String }, // human-readable, for view parity ("2.4 MB")
-    downloadable: { type: Boolean, default: true },
+    mime: { type: String, default: "application/pdf" },
+    type: { type: String, default: "pdf" },
+    bytes: { type: Number, default: 0 },
+    size: { type: String, default: "" },
     downloads: { type: Number, default: 0 },
-    uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
   },
   { timestamps: true }
 );

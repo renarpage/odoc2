@@ -1,106 +1,66 @@
 const mongoose = require("mongoose");
-const { ACTIVITY_STATUS_VALUES, ACTIVITY_STATUS, ACTIVITY_VISIBILITY } = require("../constants");
-
-const committeeSchema = new mongoose.Schema(
-  { name: { type: String, required: true }, role: { type: String, default: "Member" } },
-  { _id: false }
-);
+const { ACTIVITY_STATUS, VISIBILITY } = require("../constants");
 
 const milestoneSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
-    date: { type: String },
+    date: { type: String, required: true },
     done: { type: Boolean, default: false },
     current: { type: Boolean, default: false },
   },
   { _id: false }
 );
 
+const committeeSchema = new mongoose.Schema(
+  { name: { type: String, required: true }, role: { type: String, default: "Member" } },
+  { _id: false }
+);
+
+const embeddedDocSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    size: { type: String, default: "" },
+    type: { type: String, default: "pdf" },
+    driveId: { type: String, default: null },
+    url: { type: String, default: null },
+  },
+  { _id: false }
+);
+
 const activitySchema = new mongoose.Schema(
   {
-    slug: { type: String, required: true, unique: true, index: true },
     title: { type: String, required: true, trim: true },
-    category: { type: String, required: true, index: true },
-    status: {
-      type: String,
-      enum: ACTIVITY_STATUS_VALUES,
-      default: ACTIVITY_STATUS.UPCOMING,
-      index: true,
-    },
-    date: { type: String }, // display/start date (kept as string for view parity)
-    startDate: { type: Date },
-    endDate: { type: Date },
-    location: { type: String, default: "TBA" },
-    organizer: { type: String, default: "OSIS SMAVO" },
-    division: { type: String },
-    cover: { type: String },
+    slug: { type: String, required: true, unique: true, index: true },
     summary: { type: String, default: "" },
     description: { type: [String], default: [] },
-    // Denormalized quick-access media arrays (source of truth is Gallery/Document collections).
+    category: { type: String, default: "Archive Gallery", index: true },
+    status: { type: String, enum: Object.values(ACTIVITY_STATUS), default: ACTIVITY_STATUS.UPCOMING, index: true },
+    date: { type: Date, required: true },
+    endDate: { type: Date, default: null },
+    location: { type: String, default: "TBA" },
+    organizer: { type: String, default: "OSIS SMAVO" },
+    division: { type: String, default: "" },
+    cover: { type: String, default: "" },
+    coverDriveId: { type: String, default: null },
     gallery: { type: [String], default: [] },
-    documents: {
-      type: [
-        new mongoose.Schema(
-          { name: String, size: String, type: String, url: String, driveId: String },
-          { _id: false }
-        ),
-      ],
-      default: [],
-    },
+    documents: { type: [embeddedDocSchema], default: [] },
     committee: { type: [committeeSchema], default: [] },
     milestones: { type: [milestoneSchema], default: [] },
     tags: { type: [String], default: [], index: true },
-    visibility: {
-      type: String,
-      enum: Object.values(ACTIVITY_VISIBILITY),
-      default: ACTIVITY_VISIBILITY.PUBLISHED,
-    },
-    publishDate: { type: Date },
+    visibility: { type: String, enum: Object.values(VISIBILITY), default: VISIBILITY.PUBLIC, index: true },
     featured: { type: Boolean, default: false },
     pinned: { type: Boolean, default: false },
-    archived: { type: Boolean, default: false },
-    views: { type: Number, default: 0 },
+    publishDate: { type: Date, default: null },
     attendeeAvatarCount: { type: Number, default: 0 },
-    driveFolderId: { type: String },
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    views: { type: Number, default: 0 },
+    driveFolderId: { type: String, default: null },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+    updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
   },
   { timestamps: true }
 );
 
-activitySchema.index({ title: "text", summary: "text", tags: "text" });
-
-/**
- * Map a document to the exact shape the existing EJS views expect.
- * `id` mirrors the slug so guest links (/activity/:id) keep working.
- */
-activitySchema.methods.toView = function toView() {
-  return {
-    id: this.slug,
-    _id: this._id.toString(),
-    slug: this.slug,
-    title: this.title,
-    category: this.category,
-    status: this.status,
-    date: this.date,
-    location: this.location,
-    organizer: this.organizer,
-    division: this.division,
-    cover: this.cover,
-    summary: this.summary,
-    description: this.description,
-    gallery: this.gallery,
-    documents: this.documents,
-    committee: this.committee,
-    milestones: this.milestones,
-    tags: this.tags,
-    visibility: this.visibility,
-    featured: this.featured,
-    pinned: this.pinned,
-    attendeeAvatarCount: this.attendeeAvatarCount,
-    views: this.views,
-    createdAt: this.createdAt ? this.createdAt.toISOString().slice(0, 10) : "",
-  };
-};
+// Full-text search across the fields the guest search targets.
+activitySchema.index({ title: "text", summary: "text", description: "text", tags: "text" });
 
 module.exports = mongoose.model("Activity", activitySchema);

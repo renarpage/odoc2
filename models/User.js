@@ -1,52 +1,30 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
-const { ROLE_VALUES, ROLES } = require("../constants");
-const { env } = require("../config/env");
+const { ROLES } = require("../constants");
 
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-      index: true,
-    },
-    password: { type: String, required: true, select: false },
-    role: { type: String, enum: ROLE_VALUES, default: ROLES.STANDARD_ADMIN },
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
+    passwordHash: { type: String, required: true, select: false },
+    role: { type: String, enum: Object.values(ROLES), default: ROLES.STANDARD_ADMIN, index: true },
     active: { type: Boolean, default: true },
-    // Force password change on first login for seeded/default accounts.
-    mustChangePassword: { type: Boolean, default: false },
-    lastLoginAt: { type: Date },
-    // Hashed refresh tokens currently valid for this user (supports multi-device + rotation).
-    refreshTokens: { type: [String], default: [], select: false },
+    mustChangePassword: { type: Boolean, default: true },
+    lastLoginAt: { type: Date, default: null },
+    lastLoginIp: { type: String, default: null },
+    avatarColor: { type: String, default: "#3155E7" },
   },
   { timestamps: true }
 );
 
-userSchema.pre("save", async function hashPassword(next) {
-  if (!this.isModified("password")) return next();
-  this.password = await bcrypt.hash(this.password, env.bcryptRounds);
-  return next();
+userSchema.set("toJSON", {
+  virtuals: true,
+  transform: (_doc, ret) => {
+    ret.id = ret._id;
+    delete ret._id;
+    delete ret.__v;
+    delete ret.passwordHash;
+    return ret;
+  },
 });
-
-userSchema.methods.comparePassword = function comparePassword(candidate) {
-  return bcrypt.compare(candidate, this.password);
-};
-
-userSchema.methods.toSafeJSON = function toSafeJSON() {
-  return {
-    id: this._id.toString(),
-    name: this.name,
-    email: this.email,
-    role: this.role,
-    active: this.active,
-    mustChangePassword: this.mustChangePassword,
-    lastLoginAt: this.lastLoginAt,
-    createdAt: this.createdAt,
-  };
-};
 
 module.exports = mongoose.model("User", userSchema);
