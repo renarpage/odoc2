@@ -1,9 +1,0 @@
-<%# Injects SuperAdmin branding as CSS custom properties consumed by theme.css %>
-<style>
-  :root{
-    --odoc-primary: <%= (typeof branding!=='undefined' && branding.primaryColor) || '#3155E7' %>;
-    --odoc-secondary: <%= (typeof branding!=='undefined' && branding.secondaryColor) || '#6C8BFF' %>;
-    --odoc-bg-light: <%= (typeof branding!=='undefined' && branding.lightBg) || '#f5f5f5' %>;
-    --odoc-bg-dark: <%= (typeof branding!=='undefined' && branding.darkBg) || '#1a1a24' %>;
-  }
-</style>
