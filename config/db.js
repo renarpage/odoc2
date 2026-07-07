@@ -1,10 +1,9 @@
 /**
- * MongoDB connection manager (Mongoose).
- * Single shared connection with sane pool settings and graceful shutdown.
+ * MongoDB connection via Mongoose.
  */
 const mongoose = require("mongoose");
-const { env } = require("./env");
-const logger = require("../utils/logger");
+const env = require("./env");
+const logger = require("./logger");
 
 mongoose.set("strictQuery", true);
 
@@ -12,37 +11,27 @@ let connected = false;
 
 async function connectDB() {
   if (connected) return mongoose.connection;
-  try {
-    await mongoose.connect(env.mongoUri, {
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 10000,
-      socketTimeoutMS: 45000,
-    });
-    connected = true;
-    logger.info(`MongoDB connected: ${mongoose.connection.host}/${mongoose.connection.name}`);
-  } catch (err) {
-    logger.error(`MongoDB connection failed: ${err.message}`);
-    throw err;
-  }
+  mongoose.connection.on("connected", () => logger.info("MongoDB connected"));
+  mongoose.connection.on("error", (err) => logger.error("MongoDB error", { error: err.message }));
+  mongoose.connection.on("disconnected", () => logger.warn("MongoDB disconnected"));
 
-  mongoose.connection.on("error", (err) => logger.error(`MongoDB error: ${err.message}`));
-  mongoose.connection.on("disconnected", () => {
-    connected = false;
-    logger.warn("MongoDB disconnected");
+  await mongoose.connect(env.MONGO_URI, {
+    serverSelectionTimeoutMS: 10000,
+    maxPoolSize: 20,
   });
-
+  connected = true;
   return mongoose.connection;
 }
 
 async function disconnectDB() {
   if (!connected) return;
-  await mongoose.connection.close();
+  await mongoose.disconnect();
   connected = false;
-  logger.info("MongoDB connection closed");
 }
 
-function isConnected() {
+async function healthCheck() {
+  // 1 === connected
   return mongoose.connection.readyState === 1;
 }
 
-module.exports = { connectDB, disconnectDB, isConnected, mongoose };
+module.exports = { connectDB, disconnectDB, healthCheck, mongoose };
