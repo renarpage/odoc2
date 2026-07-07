@@ -1,0 +1,123 @@
+/* ============ GUEST NAVBAR ============ */
+.guest-navbar {
+  background: rgba(244, 246, 251, 0.85);
+  backdrop-filter: blur(5px);
+  padding: 18px 0;
+}
+.guest-navbar .nav-link {
+  color: var(--odoc-muted);
+  font-weight: 500;
+  padding: 8px 14px !important;
+  border-radius: 999px;
+  transition: all 0.3s ease;
+}
+.guest-navbar .nav-link.active {
+  color: var(--odoc-bg);
+  background: var(--odoc-primary);
+  box-shadow:
+    inset 1px 1px 1px rgba(255, 255, 255, 0.7),
+    inset -1px -1px 1px rgba(159, 168, 182, 0.35),
+    4px 4px 10px rgba(159, 168, 182, 0.42),
+    -4px -4px 10px rgba(247, 248, 250, 0.68);
+}
+
+.guest-navbar .nav-link:not(.active):hover {
+  box-shadow: var(--secondary-shadow-hover);
+  color: var(--odoc-primary);
+  scale: 1.05;
+}
+
+.search-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  padding: 3px 16px;
+  min-width: 220px;
+  box-shadow:
+    inset 1px 1px 1px rgba(255, 255, 255, 0.7),
+    inset -1px -1px 1px rgba(159, 168, 182, 0.35),
+    2px 2px 6px rgba(159, 168, 182, 0.42),
+    -2px -2px 6px rgba(247, 248, 250, 0.68);
+}
+.search-pill,
+.search-pill i,
+.search-pill input,
+.search-pill input::placeholder {
+  color: var(--odoc-muted);
+  transition: all 0.3s ease;
+}
+
+.search-pill:hover,
+.search-pill:hover i,
+.search-pill:hover input::placeholder,
+.search-pill:focus-within,
+.search-pill:focus-within i,
+.search-pill:focus-within input::placeholder {
+  scale: 1.03;
+  color: var(--odoc-primary);
+  cursor: text;
+}
+
+.theme-toggle-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: var(--odoc-bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--odoc-text);
+  box-shadow:
+    inset 1px 1px 1px rgba(255, 255, 255, 0.7),
+    inset -1px -1px 1px rgba(159, 168, 182, 0.35),
+    4px 4px 10px rgba(159, 168, 182, 0.42),
+    -4px -4px 10px rgba(247, 248, 250, 0.68);
+  transition: all 0.3s ease;
+}
+
+.theme-toggle-btn:hover i {
+  color: var(--odoc-primary);
+}
+.theme-toggle-btn:hover {
+  box-shadow: var(--secondary-shadow-hover);
+  scale: 1.13;
+  transform: translateY(-1px);
+}
+
+.login-btn {
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.login-btn:hover {
+  scale: 1.02;
+}
+
+@media screen and (max-width: 992px) {
+  .nav-item {
+    justify-content: center;
+    align-items: center;
+    display: flex;
+  }
+  .nav-link {
+    margin-top: 10px;
+    padding: 8px 22px !important;
+    width: 100px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .login-btn {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .navbar-toggler,
+  .navbar-toggler:focus {
+    border: none;
+    box-shadow: none;
+    outline: none;
+  }
+}

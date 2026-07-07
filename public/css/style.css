@@ -1,0 +1,287 @@
+:root {
+  --odoc-primary: #3155e7;
+  --odoc-primary-dark: #2544c4;
+  --odoc-secondary: #4e5a98;
+  --odoc-bg: #f4f6fb;
+  --odoc-card: #ffffff;
+  --odoc-border: #e7eaf3;
+  --odoc-text: #1b2030;
+  --odoc-muted: #7c86a3;
+  --odoc-success: #1fa971;
+  --odoc-danger: #e14b4b;
+  --odoc-warning: #f0a93c;
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --shadow-soft: 0 10px 30px rgba(30, 42, 90, 0.06);
+  --shadow-card: 0 6px 20px rgba(30, 42, 90, 0.05);
+  --secondary-shadow-hover:
+    inset 1px 1px 1px rgba(255, 255, 255, 0.7),
+    inset -1px -1px 1px rgba(159, 168, 182, 0.35),
+    2px 2px 6px rgba(159, 168, 182, 0.42),
+    -2px -2px 6px rgba(247, 248, 250, 0.68);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  position: relative;
+  font-family:
+    "Plus Jakarta Sans",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  background: var(--odoc-bg);
+  color: var(--odoc-text);
+  transition: all 0.3s ease;
+}
+
+section {
+  scroll-margin-top: 85px;
+  min-height: 80vh;
+  justify-content: center;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+
+a {
+  text-decoration: none;
+}
+
+.hover-none {
+  transform: none !important;
+  scale: none !important;
+  cursor: auto !important;
+}
+
+.card-deboss {
+  background: var(--odoc-bg);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+  transition: all 0.3s ease;
+  box-shadow:
+    inset 2px 2px 7px rgba(178, 184, 192, 0.52),
+    inset -2px -2px 7px rgba(255, 255, 255, 0.68);
+}
+
+.card {
+  background: var(--odoc-bg);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    inset 1px 1px 1px rgba(255, 255, 255, 0.7),
+    inset -1px -1px 1px rgba(152, 161, 174, 0.35),
+    2px 2px 28px rgba(152, 161, 174, 0.75),
+    -2px -2px 28px rgba(255, 255, 255, 0.95);
+  overflow: hidden;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  scale: 1.02;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--odoc-primary);
+  color: var(--odoc-bg);
+  font-weight: 600;
+  box-shadow:
+    inset 1px 1px 1px rgba(89, 125, 255, 0.18),
+    inset -1px -1px 1px rgba(46, 82, 228, 0.55),
+    4px 4px 11px rgba(46, 82, 228, 0.49),
+    -4px -4px 11px rgba(54, 90, 236, 0.33);
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.btn-primary:hover {
+  scale: 1.05;
+  background-color: var(--odoc-primary);
+  color: var(--odoc-bg);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background-color: var(--odoc-bg);
+  height: 30px;
+  width: 30px;
+  padding: 3px 0;
+  border-radius: 100%;
+  color: var(--odoc-text);
+  font-weight: 600;
+  box-shadow:
+    inset 1px 1px 1px rgba(255, 255, 255, 0.7),
+    inset -1px -1px 1px rgba(159, 168, 182, 0.35),
+    2px 2px 6px rgba(159, 168, 182, 0.42),
+    -2px -2px 6px rgba(247, 248, 250, 0.68);
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.btn-secondary:hover {
+  scale: 1.05;
+  color: var(--odoc-primary);
+  transform: translateY(-2px);
+  cursor: pointer;
+}
+
+.odoc-brand {
+  font-weight: 800;
+  font-size: 1.35rem;
+  color: var(--odoc-text);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.odoc-brand.small-brand {
+  font-size: 1.1rem;
+}
+
+.brand-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--odoc-primary);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+/* ============ ACTIVITY CARDS (Guest) ============ */
+.activity-card .card-img-wrap {
+  height: 190px;
+  overflow: hidden;
+}
+.activity-card .card-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+.activity-card .card-body-odoc {
+  padding: 20px;
+}
+.status-chip {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.status-chip.completed {
+  background: #e7f7ef;
+  color: var(--odoc-success);
+}
+.status-chip.ongoing {
+  background: #e7eeff;
+  color: var(--odoc-primary);
+}
+.status-chip.upcoming {
+  background: #f0eafb;
+  color: #7c4fd8;
+}
+.card-title-odoc {
+  font-weight: 700;
+  font-size: 1.15rem;
+  margin: 12px 0 8px;
+  color: var(--odoc-text);
+}
+.card-desc-odoc {
+  color: var(--odoc-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  min-height: 62px;
+}
+.avatar-stack {
+  display: flex;
+  align-items: center;
+}
+.avatar-stack .dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  margin-left: -10px;
+  background: var(--odoc-primary);
+}
+.avatar-stack .dot:first-child {
+  margin-left: 0;
+}
+.avatar-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--odoc-primary);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.view-details-link {
+  font-weight: 700;
+  color: var(--odoc-text);
+  font-size: 0.9rem;
+  transition: 0.3s ease-in-out;
+}
+.view-details-link i {
+  transition: 0.3s ease-in-out;
+}
+.view-details-link:hover,
+.view-details-link:hover i {
+  color: var(--odoc-primary);
+}
+
+/* pagination */
+.odoc-pagination {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.odoc-pagination .page-pill {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--odoc-bg);
+  color: var(--odoc-muted);
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+.odoc-pagination .page-pill.active {
+  background: var(--odoc-primary);
+  box-shadow:
+    inset 1px 1px 1px rgba(89, 125, 255, 0.18),
+    inset -1px -1px 1px rgba(46, 82, 228, 0.55),
+    1px 1px 8px rgba(46, 82, 228, 0.49),
+    -1px -1px 8px rgba(54, 90, 236, 0.33);
+  color: var(--odoc-bg);
+}
+.odoc-pagination .page-pill:not(.active):hover {
+  box-shadow: var(--secondary-shadow-hover);
+  color: var(--odoc-primary);
+  scale: 1.05;
+  transform: translateY(-2px);
+}
+
+.odoc-pagination .page-pill:hover {
+  transform: translateY(-2px);
+}

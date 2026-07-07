@@ -1,0 +1,97 @@
+<section class="hero-section" id="home">
+  <div class="container">
+    <h1 class="hero-title">
+      <span class="accent">O</span>ne <span class="accent">D</span>oor. <span class="accent">O</span>ne <span
+        class="accent">C</span>lick.<br>
+      Public Access to OSIS SMAVO.
+    </h1>
+    <p class="hero-sub">
+      The centralized archive for all OSIS SMAVO activities. Explore past events, track
+      current progress, and participate in the future of our school organization.
+    </p>
+    <a href="#archive" class="btn-primary btn-odoc-pill ">
+      Learn More <i class="bi bi-arrow-right"></i>
+    </a>
+  </div>
+</section>
+
+<section class="container" id="archive">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+
+    <div class="sortSection align-items-center gap-2">
+      <span class="text-muted small">Sort by:</span>
+      <div class="filter-pill-group">
+        <a href="/#archive" class="<%= activeFilter === 'all' ? 'active' : '' %>">All</a>
+        <a href="/?filter=completed#archive" class="<%= activeFilter === 'completed' ? 'active' : '' %>">Completed</a>
+        <a href="/?filter=ongoing#archive" class="<%= activeFilter === 'ongoing' ? 'active' : '' %>">Ongoing</a>
+        <a href="/?filter=upcoming#archive" class="<%= activeFilter === 'upcoming' ? 'active' : '' %>">Upcoming</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-5">
+    <% activities.forEach(function(a) { %>
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="activity-card card">
+          <div class="card-img-wrap">
+            <img src="<%= a.cover %>" alt="<%= a.title %>">
+          </div>
+          <div class="card-body-odoc">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="status-chip <%= a.status.toLowerCase() %>">
+                <%= a.status %>
+              </span>
+              <span class="text-muted small"><i class="bi bi-clock me-1"></i>
+                <%= new Date(a.date).toLocaleDateString('en-GB', { day: '2-digit' , month: 'short' , year: 'numeric' })
+                  %>
+              </span>
+            </div>
+            <div class="card-title-odoc">
+              <%= a.title %>
+            </div>
+            <p class="card-desc-odoc">
+              <%= a.summary %>
+            </p>
+            <div class="d-flex justify-content-end align-items-center pt-2">
+              <a href="/activity/<%= a.id %>" class="view-details-link">View Details <i
+                  class="bi bi-arrow-right"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <% }); %>
+  </div>
+
+  <div class="odoc-pagination mb-5">
+    <a href="#" class="page-pill"><i class="bi bi-chevron-left"></i></a>
+    <a href="#" class="page-pill active">1</a>
+    <a href="#" class="page-pill">2</a>
+    <a href="#" class="page-pill">3</a>
+    <span class="text-muted">...</span>
+    <a href="#" class="page-pill">10</a>
+    <a href="#" class="page-pill"><i class="bi bi-chevron-right"></i></a>
+  </div>
+</section>
+
+<section class="container" id="about">
+  <h1 class="about-title">About Us</h1>
+  <p>
+    ODOC (One Door One Click) merupakan sebuah platform digital yang dikembangkan sebagai pusat dokumentasi dan
+    publikasi seluruh kegiatan Organisasi Siswa Intra Sekolah (OSIS) SMAVO. Website ini dirancang dengan tujuan
+    menghadirkan satu pintu akses bagi seluruh warga sekolah untuk melihat, menelusuri, dan mempelajari berbagai
+    aktivitas organisasi secara mudah, cepat, dan transparan.
+    <br>
+    Berbeda dengan arsip konvensional yang hanya menyimpan dokumen, ODOC mengintegrasikan dokumentasi kegiatan, galeri
+    foto dan video, laporan kegiatan, status pelaksanaan, hingga berbagai informasi pendukung ke dalam satu sistem yang
+    terstruktur. Dengan demikian, setiap kegiatan yang pernah dilaksanakan akan memiliki rekam jejak digital yang dapat
+    diakses kembali kapan saja.
+    <br>
+    Melalui pendekatan One Door One Click, seluruh informasi organisasi dapat ditemukan hanya melalui satu platform
+    tanpa harus mencari dari berbagai media yang berbeda. Hal ini diharapkan mampu meningkatkan transparansi organisasi,
+    memperkuat budaya dokumentasi, serta mempermudah proses regenerasi kepengurusan OSIS setiap tahunnya.
+    <br>
+    ODOC tidak hanya menjadi tempat penyimpanan arsip, tetapi juga menjadi representasi perjalanan organisasi, media
+    publikasi kegiatan, sekaligus sumber informasi resmi bagi siswa, guru, maupun masyarakat yang ingin mengetahui
+    aktivitas OSIS SMAVO.
+  </p>
+</section>
