@@ -1,85 +1,42 @@
 const express = require("express");
 const router = express.Router();
-const store = require("../data/store");
 
-// Every admin view uses the admin layout (with sidebar) by default
+const { requireAuth, requireSuperAdmin } = require("../middlewares/auth");
+const dashboardController = require("../controllers/dashboardController");
+const activityController = require("../controllers/activityController");
+const storageController = require("../controllers/storageController");
+const brandingController = require("../controllers/brandingController");
+const settingsController = require("../controllers/settingsController");
+const userController = require("../controllers/userController");
+const authController = require("../controllers/authController");
+
+// All admin pages require authentication and use the admin layout.
+router.use(requireAuth);
 router.use((req, res, next) => {
   res.locals.layout = "layouts/admin";
   next();
 });
 
-// Dashboard
-router.get("/", (req, res) => {
-  res.render("admin/dashboard", {
-    title: "Dashboard",
-    stats: store.stats(),
-    recentActivities: store.activities,
-    systemLogs: store.systemLogs
-  });
-});
+router.get("/", dashboardController.index);
 
-// Activities (manager / list)
-router.get("/activities", (req, res) => {
-  res.render("admin/activities", {
-    title: "Activities",
-    stats: store.stats(),
-    activities: store.activities
-  });
-});
+router.get("/activities", activityController.adminList);
+router.get("/activities/new", activityController.newForm);
+router.post("/activities/new", activityController.createFromForm);
 
-// Create Activity - multi step form (rendered as a single page w/ JS steps)
-router.get("/activities/new", (req, res) => {
-  res.render("admin/activity-form", {
-    title: "Create New Activity"
-  });
-});
+router.get("/storage", storageController.page);
 
-router.post("/activities/new", (req, res) => {
-  const created = store.addActivity(req.body);
-  req.flash("success", `Activity "${created.title}" was created.`);
-  res.redirect("/admin/activities");
-});
+router.get("/branding", brandingController.page);
+router.post("/branding", brandingController.updateFromForm);
 
-// Storage
-router.get("/storage", (req, res) => {
-  res.render("admin/storage", {
-    title: "Storage",
-    stats: store.stats(),
-    recentUploads: store.recentUploads
-  });
-});
+router.get("/settings", settingsController.page);
+router.post("/settings", settingsController.updateFromForm);
 
-// Branding
-router.get("/branding", (req, res) => {
-  res.render("admin/branding", {
-    title: "Branding & Customization",
-    branding: store.branding
-  });
-});
+// Account self-service (forced password change on first login).
+router.get("/account/password", authController.getChangePassword);
+router.post("/account/password", authController.postChangePassword);
 
-router.post("/branding", (req, res) => {
-  Object.assign(store.branding, req.body);
-  req.flash("success", "Brand identity saved.");
-  res.redirect("/admin/branding");
-});
-
-// Settings
-router.get("/settings", (req, res) => {
-  res.render("admin/settings", {
-    title: "System Settings",
-    settings: store.settings
-  });
-});
-
-router.post("/settings", (req, res) => {
-  Object.assign(store.settings, req.body);
-  req.flash("success", "Settings saved.");
-  res.redirect("/admin/settings");
-});
-
-// Users (stub, referenced from sidebar)
-router.get("/users", (req, res) => {
-  res.render("admin/users", { title: "Users" });
-});
+// User management is Super Admin only.
+router.get("/users", requireSuperAdmin, userController.page);
+router.post("/users", requireSuperAdmin, userController.createFromForm);
 
 module.exports = router;
