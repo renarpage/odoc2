@@ -1,67 +1,82 @@
+/**
+ * Admin account management (Super Admin only).
+ */
 const userRepository = require("../repositories/userRepository");
-const auditService = require("./auditService");
-const ApiError = require("../utils/ApiError");
-const { ROLE_VALUES, LOG_TYPES } = require("../constants");
+const refreshTokenRepository = require("../repositories/refreshTokenRepository");
+const authService = require("./authService");
+const logService = require("./logService");
+const ApiError = require("../core/ApiError");
+const { userToView } = require("../helpers/serializers");
+const { ROLES, LOG_TYPES, LOG_ACTIONS } = require("../constants");
 
 async function list() {
-  const users = await userRepository.list();
-  return users.map((u) => u.toSafeJSON());
+  const users = await userRepository.listAdmins();
+  return users.map(userToView);
 }
 
-async function create({ name, email, password, role }, actor) {
-  if (!ROLE_VALUES.includes(role)) throw ApiError.badRequest("Invalid role");
-  const existing = await userRepository.findByEmail(email);
+async function create(payload, ctx = {}) {
+  if (!payload.email || !payload.name || !payload.password) {
+    throw ApiError.badRequest("Name, email and password are required");
+  }
+  const existing = await userRepository.findByEmail(payload.email);
   if (existing) throw ApiError.conflict("A user with that email already exists");
+
+  const passwordHash = await authService.hashPassword(payload.password);
+  const role = Object.values(ROLES).includes(payload.role) ? payload.role : ROLES.STANDARD_ADMIN;
   const user = await userRepository.create({
-    name,
-    email,
-    password,
+    name: payload.name,
+    email: payload.email,
+    passwordHash,
     role,
     mustChangePassword: true,
   });
-  await auditService.record({
+  await logService.record({
     type: LOG_TYPES.USER,
-    action: "user.create",
+    action: LOG_ACTIONS.CREATE,
     title: "Admin account created",
-    detail: `${email} (${role})`,
-    actor: actor && actor._id,
-    actorEmail: actor && actor.email,
+    detail: `${user.email} (${role})`,
+    user: ctx.userId,
+    userEmail: ctx.userEmail,
+    ip: ctx.ip,
   });
-  return user.toSafeJSON();
+  return userToView(user);
 }
 
-async function update(id, update, actor) {
-  if (update.role && !ROLE_VALUES.includes(update.role)) throw ApiError.badRequest("Invalid role");
-  // Never allow password updates through this path.
-  delete update.password;
-  const user = await userRepository.updateById(id, update);
+async function update(id, payload, ctx = {}) {
+  const user = await userRepository.findById(id);
   if (!user) throw ApiError.notFound("User not found");
-  await auditService.record({
-    type: LOG_TYPES.USER,
-    action: "user.update",
+  if (payload.name !== undefined) user.name = payload.name;
+  if (payload.role && Object.values(ROLES).includes(payload.role)) user.role = payload.role;
+  if (payload.active !== undefined) user.active = payload.active === "on" || payload.active === true;
+  await user.save();
+  await logService.record({
+    type: LOG_TYPES.INFO,
+    action: LOG_ACTIONS.UPDATE,
     title: "Admin account updated",
-    detail: `${user.email}`,
-    actor: actor && actor._id,
-    actorEmail: actor && actor.email,
+    detail: user.email,
+    user: ctx.userId,
+    userEmail: ctx.userEmail,
+    ip: ctx.ip,
   });
-  return user.toSafeJSON();
+  return userToView(user);
 }
 
-async function remove(id, actor) {
-  if (actor && actor._id.toString() === String(id)) {
-    throw ApiError.badRequest("You cannot delete your own account");
-  }
-  const user = await userRepository.deleteById(id);
+async function remove(id, ctx = {}) {
+  if (String(id) === String(ctx.userId)) throw ApiError.badRequest("You cannot delete your own account");
+  const user = await userRepository.findById(id);
   if (!user) throw ApiError.notFound("User not found");
-  await auditService.record({
+  await refreshTokenRepository.revokeAllForUser(user._id);
+  await userRepository.deleteById(id);
+  await logService.record({
     type: LOG_TYPES.WARNING,
-    action: "user.delete",
-    title: "Admin account deleted",
-    detail: `${user.email}`,
-    actor: actor && actor._id,
-    actorEmail: actor && actor.email,
+    action: LOG_ACTIONS.DELETE,
+    title: "Admin account removed",
+    detail: user.email,
+    user: ctx.userId,
+    userEmail: ctx.userEmail,
+    ip: ctx.ip,
   });
-  return user.toSafeJSON();
+  return { id: String(id) };
 }
 
 module.exports = { list, create, update, remove };

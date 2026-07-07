@@ -1,63 +1,42 @@
+/**
+ * System settings (singleton, key="system"). Coerces HTML form values.
+ */
 const settingRepository = require("../repositories/settingRepository");
-const auditService = require("./auditService");
-const { LOG_TYPES } = require("../constants");
+const logService = require("./logService");
+const { settingsToView, DEFAULT_SETTINGS } = require("../helpers/serializers");
+const { LOG_TYPES, LOG_ACTIONS } = require("../constants");
 
-const BOOL_FIELDS = [
-  "maintenanceMode",
-  "emailAlerts",
-  "systemLogsNotif",
-  "errorReporting",
-  "twoFactorAuth",
-  "gdriveConnected",
-];
+const BOOL_FIELDS = ["maintenanceMode", "emailAlerts", "systemLogsNotif", "errorReporting", "twoFactorAuth", "gdriveConnected"];
+const NUM_FIELDS = ["sessionTimeout", "smtpPort", "storageCapacityGB"];
 
-function coerce(body = {}) {
-  const out = { ...body };
+function coerce(patch) {
+  const out = { ...patch };
   BOOL_FIELDS.forEach((f) => {
-    if (f in out) out[f] = out[f] === true || out[f] === "true" || out[f] === "on";
+    if (f in out) out[f] = out[f] === true || out[f] === "on" || out[f] === "true";
   });
-  if ("sessionTimeout" in out) out.sessionTimeout = parseInt(out.sessionTimeout, 10) || 30;
-  if ("smtpPort" in out) out.smtpPort = parseInt(out.smtpPort, 10) || 587;
+  NUM_FIELDS.forEach((f) => {
+    if (f in out && out[f] !== "") out[f] = Number(out[f]);
+  });
   return out;
 }
 
 async function get() {
-  return settingRepository.getGlobal();
+  const data = await settingRepository.getData("system", DEFAULT_SETTINGS);
+  return settingsToView(data);
 }
 
-async function updateSettings(body, actor) {
-  const update = coerce(body);
-  delete update.branding; // branding handled separately
-  const doc = await settingRepository.update(update);
-  await auditService.record({
+async function update(patch, ctx = {}) {
+  const saved = await settingRepository.merge("system", coerce(patch));
+  await logService.record({
     type: LOG_TYPES.INFO,
-    action: "settings.update",
-    title: "System settings updated",
-    actor: actor && actor._id,
-    actorEmail: actor && actor.email,
+    action: LOG_ACTIONS.UPDATE,
+    title: "Settings updated",
+    detail: "System settings saved",
+    user: ctx.userId,
+    userEmail: ctx.userEmail,
+    ip: ctx.ip,
   });
-  return doc;
+  return settingsToView(saved.data);
 }
 
-async function updateBranding(body, actor) {
-  const current = await settingRepository.getGlobal();
-  const branding = {
-    primaryColor: body.primaryColor || current.branding.primaryColor,
-    secondaryColor: body.secondaryColor || current.branding.secondaryColor,
-    tagline: body.tagline || current.branding.tagline,
-    heroTitle: body.heroTitle || current.branding.heroTitle,
-    logoUrl: body.logoUrl || current.branding.logoUrl,
-    heroImageUrl: body.heroImageUrl || current.branding.heroImageUrl,
-  };
-  const doc = await settingRepository.update({ branding });
-  await auditService.record({
-    type: LOG_TYPES.INFO,
-    action: "branding.update",
-    title: "Brand identity updated",
-    actor: actor && actor._id,
-    actorEmail: actor && actor.email,
-  });
-  return doc;
-}
-
-module.exports = { get, updateSettings, updateBranding };
+module.exports = { get, update };
