@@ -1,18 +1,26 @@
-const Document = require("../models/Document");
+const BaseRepository = require("./baseRepository");
+const DocumentModel = require("../models/Document");
 
-module.exports = {
-  create: (data) => Document.create(data),
-  insertMany: (docs) => Document.insertMany(docs),
-  listByActivity: (activityId) => Document.find({ activity: activityId }).sort({ createdAt: -1 }),
-  count: () => Document.countDocuments({}),
-  totalBytes: async () => {
-    const [row] = await Document.aggregate([
-      { $group: { _id: null, bytes: { $sum: "$sizeBytes" } } },
-    ]);
-    return row ? row.bytes : 0;
-  },
-  findById: (id) => Document.findById(id),
-  incrementDownloads: (id) => Document.findByIdAndUpdate(id, { $inc: { downloads: 1 } }, { new: true }),
-  mostDownloaded: (limit = 5) => Document.find({}).sort({ downloads: -1 }).limit(limit),
-  deleteById: (id) => Document.findByIdAndDelete(id),
-};
+class DocumentRepository extends BaseRepository {
+  constructor() {
+    super(DocumentModel);
+  }
+
+  byActivity(activityId) {
+    return this.model.find({ activity: activityId }).sort({ createdAt: 1 });
+  }
+
+  incrementDownloads(id) {
+    return this.model.findByIdAndUpdate(id, { $inc: { downloads: 1 } }, { new: true });
+  }
+
+  totalBytes() {
+    return this.model.aggregate([{ $group: { _id: null, bytes: { $sum: "$bytes" } } }]);
+  }
+
+  mostDownloaded(limit = 5) {
+    return this.model.find().sort({ downloads: -1 }).limit(limit);
+  }
+}
+
+module.exports = new DocumentRepository();

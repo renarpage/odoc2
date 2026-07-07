@@ -1,13 +1,28 @@
 const Setting = require("../models/Setting");
 
-async function getGlobal() {
-  let doc = await Setting.findOne({ key: "global" });
-  if (!doc) doc = await Setting.create({ key: "global" });
-  return doc;
+class SettingRepository {
+  get(key) {
+    return Setting.findOne({ key });
+  }
+
+  async getData(key, fallback = {}) {
+    const doc = await Setting.findOne({ key });
+    return doc ? doc.data : fallback;
+  }
+
+  upsert(key, data) {
+    return Setting.findOneAndUpdate(
+      { key },
+      { $set: { data } },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+  }
+
+  async merge(key, patch) {
+    const current = await this.getData(key, {});
+    const next = { ...current, ...patch };
+    return this.upsert(key, next);
+  }
 }
 
-module.exports = {
-  getGlobal,
-  update: (update) =>
-    Setting.findOneAndUpdate({ key: "global" }, update, { new: true, upsert: true }),
-};
+module.exports = new SettingRepository();

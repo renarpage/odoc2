@@ -1,14 +1,27 @@
+const BaseRepository = require("./baseRepository");
 const User = require("../models/User");
 
-module.exports = {
-  create: (data) => User.create(data),
-  findById: (id) => User.findById(id),
-  findByEmail: (email) => User.findOne({ email: String(email).toLowerCase() }),
-  findByEmailWithSecret: (email) =>
-    User.findOne({ email: String(email).toLowerCase() }).select("+password +refreshTokens"),
-  findByIdWithSecret: (id) => User.findById(id).select("+password +refreshTokens"),
-  list: (filter = {}) => User.find(filter).sort({ createdAt: -1 }),
-  count: (filter = {}) => User.countDocuments(filter),
-  updateById: (id, update) => User.findByIdAndUpdate(id, update, { new: true }),
-  deleteById: (id) => User.findByIdAndDelete(id),
-};
+class UserRepository extends BaseRepository {
+  constructor() {
+    super(User);
+  }
+
+  // Password hash is select:false; opt in explicitly for auth checks.
+  findByEmailWithHash(email) {
+    return this.model.findOne({ email: String(email).toLowerCase().trim() }).select("+passwordHash");
+  }
+
+  findByEmail(email) {
+    return this.model.findOne({ email: String(email).toLowerCase().trim() });
+  }
+
+  listAdmins() {
+    return this.model.find().sort({ createdAt: 1 });
+  }
+
+  recentLogins(limit = 5) {
+    return this.model.find({ lastLoginAt: { $ne: null } }).sort({ lastLoginAt: -1 }).limit(limit);
+  }
+}
+
+module.exports = new UserRepository();
