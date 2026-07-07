@@ -1,0 +1,103 @@
+<div class="mb-4">
+  <h2 class="fw-bold mb-1">Branding & Customization</h2>
+  <p class="text-muted mb-0">Configure the visual identity and hero messaging for the ODOC platform.</p>
+</div>
+
+<form action="/admin/branding" method="POST">
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="odoc-panel mb-4 card">
+      <div class="panel-title mb-3"><i class="bi bi-palette"></i> Color Palette</div>
+      <div class="row g-4">
+        <div class="col-md-6">
+          <label class="form-label-odoc">Primary Brand Color</label>
+          <div class="d-flex gap-2 align-items-center" data-color-pair>
+            <input type="color" class="color-swatch color-swatch-input border-0 p-0" value="<%= branding.primaryColor %>" style="height:44px;">
+            <input type="text" name="primaryColor" class="form-control form-control-odoc color-text-input" value="<%= branding.primaryColor %>">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label-odoc">Secondary Accent</label>
+          <div class="d-flex gap-2 align-items-center" data-color-pair>
+            <input type="color" class="color-swatch color-swatch-input border-0 p-0" value="<%= branding.secondaryColor %>" style="height:44px;">
+            <input type="text" name="secondaryColor" class="form-control form-control-odoc color-text-input" value="<%= branding.secondaryColor %>">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="odoc-panel mb-4 card">
+      <div class="panel-title mb-3"><i class="bi bi-fonts"></i> Platform Messaging</div>
+      <div class="mb-3">
+        <label class="form-label-odoc">Platform Tagline</label>
+        <input type="text" name="tagline" class="form-control form-control-odoc" value="<%= branding.tagline %>">
+      </div>
+      <div>
+        <label class="form-label-odoc">Hero Title Message</label>
+        <textarea name="heroTitle" rows="3" class="form-control form-control-odoc"><%= branding.heroTitle %></textarea>
+      </div>
+    </div>
+
+    <div class="odoc-panel card">
+      <div class="panel-title mb-3"><i class="bi bi-images"></i> Assets & Media</div>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label-odoc">Brand Logo (PNG/SVG)</label>
+          <div class="upload-drop py-4">
+            <input type="file" hidden>
+            <i class="bi bi-upload d-block mb-2"></i>
+            <div class="small">Click or Drop to upload Brand Logo</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label-odoc">Hero Image URL</label>
+        <div class="upload-drop py-4">
+            <input type="file" hidden>
+            <i class="bi bi-upload d-block mb-2"></i>
+            <div class="small">Click or Drop to upload Hero Image</div>
+          </div>  
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="odoc-panel card">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="text-muted small fw-bold text-uppercase">Live Preview</span>
+        <div class="d-flex gap-1">
+          <span class="rounded-circle d-inline-block" style="width:10px;height:10px;background:#F0A93C;"></span>
+          <span class="rounded-circle d-inline-block" style="width:10px;height:10px;background:#3155E7;"></span>
+          <span class="rounded-circle d-inline-block" style="width:10px;height:10px;background:#4E5A98;"></span>
+        </div>
+      </div>
+      <div class="preview-frame mb-3 card-deboss hover-none">
+        <div class="p-topbar">
+          <span class="brand-mark" style="width:22px;height:22px;font-size:.7rem;">O</span>
+          <span class="fw-bold small">ODOC</span>
+        </div>
+        <div class="p-body">
+          <span class="status-chip ongoing mb-2 d-inline-block"><%= branding.tagline.toUpperCase() %></span>
+          <div class="fw-bold mb-3" id="previewHeroTitle"><%= branding.heroTitle %></div>
+          <div class="d-flex justify-content-center gap-2 mb-3">
+            <span class="btn btn-primary btn-sm rounded-pill px-3">Get Started</span>
+            <span class="w-auto h-auto btn-secondary btn-sm rounded-pill px-3">Learn More</span>
+          </div>
+          <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=400" class="rounded-3 w-100" style="height:90px;object-fit:cover;">
+        </div>
+      </div>
+      <div class="d-flex gap-2 mb-3">
+        <button type="button" class="btn-secondary w-auto h-auto text-muted rounded-pill px-3 flex-fill"><i class="me-2 bi bi-display me-1"></i>Desktop</button>
+        <button type="button" class="btn-secondary w-auto h-auto text-muted rounded-pill px-3 flex-fill"><i class="me-2 bi bi-phone me-1"></i>Mobile</button>
+      </div>
+      <div class="text-muted small fst-italic p-3" style="background:var(--odoc-bg);border-radius:var(--radius-md);">
+        "This preview reflects how external users will perceive your brand. Updates propagate instantly across all public-facing routes."
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="d-flex justify-content-end gap-2 mt-4">
+  <button type="reset" class="w-auto btn-secondary h-auto rounded-pill px-4">Discard Changes</button>
+  <button type="submit" class="btn btn-primary rounded-pill px-4">Save Identity</button>
+</div>
+</form>

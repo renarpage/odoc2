@@ -1,0 +1,126 @@
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+  <div>
+    <h2 class="fw-bold mb-1">System Settings</h2>
+    <p class="text-muted mb-0">Configure core platform behavior and security protocols.</p>
+  </div>
+  <button type="submit" form="settingsForm" class="btn btn-primary rounded-pill px-4">
+    <i class="bi bi-save me-2"></i>Save All Changes
+  </button>
+</div>
+
+<form action="/admin/settings" method="POST" id="settingsForm">
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="odoc-panel mb-4 card">
+      <div class="panel-title mb-3"><i class="bi bi-sliders"></i> General Configuration</div>
+
+      <div class="mb-3">
+        <label class="form-label-odoc">Platform Name</label>
+        <input type="text" name="platformName" class="form-control form-control-odoc" value="<%= settings.platformName %>">
+      </div>
+
+      <div class="radio-checkbox d-flex justify-content-between align-items-center mb-3 p-3">
+        <div>
+          <div class="fw-semibold small">Maintenance Mode</div>
+          <div class="text-muted tiny">Disable public access for scheduled updates</div>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" name="maintenanceMode" <%= settings.maintenanceMode ? 'checked' : '' %>>
+        </div>
+      </div>
+
+      <div>
+        <label class="form-label-odoc">Default Timezone</label>
+        <select name="timezone" class="form-select form-select-odoc">
+          <option selected><%= settings.timezone %></option>
+          <option>(GMT+07:00) Western Indonesia Time</option>
+          <option>(GMT+00:00) UTC</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="odoc-panel card">
+      <div class="panel-title mb-3"><i class="bi bi-shield-check"></i> Security Protocols</div>
+
+      <div class="radio-checkbox d-flex justify-content-between align-items-center mb-3 p-3">
+        <div>
+          <div class="fw-semibold small">Two-Factor Auth</div>
+          <div class="text-muted tiny">Mandatory for all administrator roles.</div>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" name="twoFactorAuth" <%= settings.twoFactorAuth ? 'checked' : '' %>>
+        </div>
+      </div>
+
+      <label class="form-label-odoc">Password Policy</label>
+      <div class="d-flex gap-2 mb-3">
+        <label class="rounded-5 text-center w-auto h-auto px-3 py-2 btn-primary rounded-3 flex-fill <%= settings.passwordPolicy.startsWith('Strong') ? 'active' : '' %>">
+          <input type="radio" name="passwordPolicy" value="Strong (Alpha-numeric + Special)" class="d-none" <%= settings.passwordPolicy.startsWith('Strong') ? 'checked' : '' %>>
+          Strong
+        </label>
+        <label class="rounded-5 text-center w-auto h-auto px-3 py-2 btn-secondary rounded-3 flex-fill <%= settings.passwordPolicy.startsWith('Medium') ? 'active' : '' %>">
+          <input type="radio" name="passwordPolicy" value="Medium (Alpha-numeric)" class="d-none" <%= settings.passwordPolicy.startsWith('Medium') ? 'checked' : '' %>>
+          Medium
+        </label>
+      </div>
+
+      <label class="form-label-odoc">Session Timeout (minutes)</label>
+      <div class="d-flex align-items-center gap-3">
+        <input type="range" class="form-range flex-grow-1" min="5" max="120" name="sessionTimeoutRange" value="<%= settings.sessionTimeout %>" oninput="document.getElementById('sessionTimeoutVal').value = this.value">
+        <input type="text" id="sessionTimeoutVal" name="sessionTimeout" class="form-control form-control-odoc text-center" style="width:70px;" value="<%= settings.sessionTimeout %>" readonly>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="odoc-panel mb-4 card">
+      <div class="panel-title mb-3"><i class="bi bi-bell"></i> Notifications</div>
+
+      <div class="radio-checkbox d-flex justify-content-between align-items-center mb-3 p-3">
+        <div class="fw-semibold small">Email Alerts</div>
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" name="emailAlerts" <%= settings.emailAlerts ? 'checked' : '' %>>
+        </div>
+      </div>
+      <div class="radio-checkbox d-flex justify-content-between align-items-center mb-3 p-3">
+        <div class="fw-semibold small">System Logs</div>
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" name="systemLogsNotif" <%= settings.systemLogsNotif ? 'checked' : '' %>>
+        </div>
+      </div>
+      <div class="radio-checkbox d-flex justify-content-between align-items-center mb-3 p-3">
+        <div class="fw-semibold small">Error Reporting</div>
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" name="errorReporting" <%= settings.errorReporting ? 'checked' : '' %>>
+        </div>
+      </div>
+
+      <div class="alert d-flex align-items-center gap-2 mb-0" style="background:#E9EEFC;border:none;color:var(--odoc-primary);border-radius:var(--radius-sm);">
+        <i class="bi bi-info-circle"></i> Critical alerts bypass these settings.
+      </div>
+    </div>
+
+    <div class="odoc-panel card">
+      <div class="panel-title mb-3"><i class="bi bi-plug"></i> API & Integrations</div>
+
+      <div class="d-flex justify-content-between align-items-center p-3 mb-2" style="background:var(--odoc-bg);border-radius:var(--radius-sm);">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-google text-primary"></i>
+          <span class="fw-semibold small">Google Drive API</span>
+        </div>
+        <span class="badge rounded-pill text-bg-success">Connected</span>
+      </div>
+      <input type="text" class="form-control form-control-odoc mb-3 text-muted" value="••••••••••••••••••••" disabled>
+
+      <label class="form-label-odoc">SMTP Server Configuration</label>
+      <div class="row g-2 mb-2">
+        <div class="col-8"><input type="text" name="smtpHost" class="form-control form-control-odoc" value="<%= settings.smtpHost %>"></div>
+        <div class="col-4"><input type="text" name="smtpPort" class="form-control form-control-odoc" value="<%= settings.smtpPort %>"></div>
+      </div>
+      <input type="text" name="systemEmail" class="form-control form-control-odoc mb-3" value="<%= settings.systemEmail %>">
+
+      <button type="button" class="btn btn-primary w-100 h-100 rounded-5 fs-6"><i class="fs-6 bi bi-link-45deg me-1"></i>Add New Webhook</button>
+    </div>
+  </div>
+</div>
+</form>

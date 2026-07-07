@@ -1,0 +1,187 @@
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+  <div>
+    <h2 class="fw-bold mb-1">Storage Management</h2>
+    <p class="text-muted mb-0">Real-time Google Drive integration analytics and tools.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <button class="btn-secondary rounded-pill px-4 py-2 w-auto h-auto"><i class="bi bi-arrow-repeat me-2"></i>Sync
+      Now</button>
+    <button class="btn-primary rounded-pill px-4 py-2"><i class="bi bi-google me-2"></i>Manage GDrive</button>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-lg-8">
+    <div class="odoc-panel h-100 card justify-content-center d-flex flex-column">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div class="panel-title">Primary Capacity</div>
+        <span class="badge rounded-pill text-bg-light text-primary fw-semibold">
+          <i class="bi bi-check-circle-fill me-1"></i>Google Drive Connected
+        </span>
+      </div>
+      <div class="row align-items-center">
+        <div class="col-auto">
+          <div class="donut-wrap">
+            <svg width="140" height="140" viewBox="0 0 140 140">
+              <circle cx="70" cy="70" r="60" fill="none" stroke="#E7EAF3" stroke-width="14" />
+              <circle cx="70" cy="70" r="60" fill="none" stroke="#3155E7" stroke-width="14"
+                stroke-dasharray="<%= (stats.storageUsedGB/stats.storageCapacityGB*376.8).toFixed(1) %> 376.8"
+                stroke-linecap="round" />
+            </svg>
+            <div class="donut-label">
+              <span class="pct">
+                <%= (stats.storageUsedGB/stats.storageCapacityGB*100).toFixed(1) %>%
+              </span>
+              <span class="cap">USED</span>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="row">
+            <div class="col-6">
+              <div class="text-muted small">Total Usage</div>
+              <div class="fs-3 fw-bold">
+                <%= stats.storageUsedGB %> <span class="fs-6 text-muted">GB</span>
+              </div>
+            </div>
+            <div class="col-6 text-end">
+              <div class="text-muted small">Total Capacity</div>
+              <div class="fs-3 fw-bold">1 <span class="fs-6 text-muted">TB</span></div>
+            </div>
+          </div>
+          <div class="progress-odoc mt-2 mb-2">
+            <div class="bar" style="width:<%= (stats.storageUsedGB/stats.storageCapacityGB*100).toFixed(1) %>%"></div>
+          </div>
+          <div class="text-muted small fst-italic">Available: <%= (stats.storageCapacityGB -
+              stats.storageUsedGB).toFixed(1) %> GB remaining on your professional plan.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="gap-4 odoc-panel h-100 d-flex flex-column card justify-content-center d-flex flex-column">
+      <div class="text-muted small fw-bold text-uppercase">Optimization</div>
+      <div class="d-flex align-items-start gap-3">
+        <div class="stat-icon" style="background:#F4F6FB;color:var(--odoc-text)"><i class="bi bi-trash3"></i></div>
+        <div>
+          <div class="fw-bold">2.4 GB Removable</div>
+          <div class="text-muted small">Duplicate and junk files found.</div>
+        </div>
+      </div>
+      <button class="btn btn-primary rounded-pill">Cleanup Storage</button>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="stat-card card">
+      <div class="d-flex justify-content-between">
+        <div class="stat-icon" style="background:#E9EEFC;color:var(--odoc-primary)"><i class="bi bi-image"></i></div>
+      </div>
+      <div class="stat-text d-flex flex-column ms-3">
+        <div class="gap-2 stat-heading flex-row d-flex align-items-center justify-content-between">
+          <span class="fw-bold text-muted">32%</span>
+          <div class="fw-bold">Document</div>
+        </div>
+        <div class="text-muted tiny">26.9 GB &bull; 4.2k files</div>
+        <div class="progress-odoc mt-2">
+          <div class="bar" style="width:32%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card card">
+      <div class="d-flex justify-content-between">
+        <div class="stat-icon" style="background:#E9EEFC;color:var(--odoc-primary)"><i class="bi bi-image"></i></div>
+      </div>
+      <div class="stat-text d-flex flex-column ms-3 col-6 col-lg-3">
+        <div class="gap-2 stat-heading flex-row d-flex align-items-center justify-content-between">
+          <span class="fw-bold text-muted">32%</span>
+          <div class="fw-bold">Images</div>
+        </div>
+        <div class="text-muted tiny">26.9 GB &bull; 4.2k files</div>
+        <div class="progress-odoc mt-2">
+          <div class="bar" style="width:32%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card card">
+      <div class="d-flex justify-content-between">
+        <div class="stat-icon" style="background:#E9EEFC;color:var(--odoc-primary)"><i class="bi bi-image"></i></div>
+      </div>
+      <div class="stat-text d-flex flex-column ms-3">
+        <div class="gap-2 stat-heading flex-row d-flex align-items-center justify-content-between">
+          <span class="fw-bold text-muted">32%</span>
+          <div class="fw-bold">Videos</div>
+        </div>
+        <div class="text-muted tiny">26.9 GB &bull; 4.2k files</div>
+        <div class="progress-odoc mt-2">
+          <div class="bar" style="width:32%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card card">
+      <div class="d-flex justify-content-between">
+        <div class="stat-icon" style="background:#E9EEFC;color:var(--odoc-primary)"><i class="bi bi-image"></i></div>
+      </div>
+      <div class="stat-text d-flex flex-column ms-3">
+        <div class="gap-2 stat-heading flex-row d-flex align-items-center justify-content-between">
+          <span class="fw-bold text-muted">32%</span>
+          <div class="fw-bold">Backups</div>
+        </div>
+        <div class="text-muted tiny">26.9 GB &bull; 4.2k files</div>
+        <div class="progress-odoc mt-2">
+          <div class="bar" style="width:32%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="odoc-panel">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="panel-title">Recent Uploads</div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-odoc mb-0">
+      <thead>
+        <tr>
+          <th>File Name</th>
+          <th>Type</th>
+          <th>Size</th>
+          <th>Date</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% recentUploads.forEach(function(f) { %>
+          <tr>
+            <td class="fw-semibold">
+              <i
+                class="bi <%= f.type === 'Image' ? 'bi-image' : (f.type === 'Video' ? 'bi-camera-reels' : 'bi-file-earmark-text') %> text-primary me-2"></i>
+              <%= f.name %>
+            </td>
+            <td>
+              <%= f.type %>
+            </td>
+            <td>
+              <%= f.size %>
+            </td>
+            <td>
+              <%= f.date %>
+            </td>
+            <td><button class="icon-btn btn-secondary" style="width:34px;height:34px;"><i
+                  class="fs-6 bi bi-download"></i></button></td>
+          </tr>
+          <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
