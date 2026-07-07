@@ -1,119 +1,113 @@
+/**
+ * Authentication use-cases: login, refresh rotation, logout, password change.
+ */
+const bcrypt = require("bcryptjs");
+const env = require("../config/env");
+const ApiError = require("../core/ApiError");
 const userRepository = require("../repositories/userRepository");
+const refreshTokenRepository = require("../repositories/refreshTokenRepository");
 const tokenService = require("./tokenService");
-const auditService = require("./auditService");
-const ApiError = require("../utils/ApiError");
-const { LOG_TYPES } = require("../constants");
+const logService = require("./logService");
+const { LOG_TYPES, LOG_ACTIONS } = require("../constants");
 
-async function login({ email, password, ip }) {
-  const user = await userRepository.findByEmailWithSecret(email);
+async function hashPassword(plain) {
+  return bcrypt.hash(plain, env.BCRYPT_ROUNDS);
+}
+
+async function issueTokens(user, ctx = {}) {
+  const accessToken = tokenService.generateAccessToken(user);
+  const refreshValue = tokenService.generateRefreshValue();
+  const tokenHash = tokenService.hashToken(refreshValue);
+  const expiresAt = tokenService.refreshExpiryDate();
+  await refreshTokenRepository.create({
+    user: user._id,
+    tokenHash,
+    expiresAt,
+    userAgent: ctx.userAgent || "",
+    ip: ctx.ip || "",
+  });
+  return { accessToken, refreshValue, refreshExpiresAt: expiresAt };
+}
+
+async function login({ email, password }, ctx = {}) {
+  const user = await userRepository.findByEmailWithHash(email);
   if (!user || !user.active) {
     throw ApiError.unauthorized("Invalid email or password");
   }
-  const ok = await user.comparePassword(password);
-  if (!ok) {
-    await auditService.record({
+  const match = await bcrypt.compare(password, user.passwordHash);
+  if (!match) {
+    await logService.record({
       type: LOG_TYPES.WARNING,
-      action: "auth.login.failed",
+      action: LOG_ACTIONS.LOGIN,
       title: "Failed login attempt",
-      detail: `Bad credentials for ${email}`,
-      actorEmail: email,
-      ip,
+      detail: `Invalid credentials for ${email}`,
+      ip: ctx.ip,
     });
     throw ApiError.unauthorized("Invalid email or password");
   }
 
-  const accessToken = tokenService.signAccess(user);
-  const refreshToken = tokenService.signRefresh(user);
-
-  user.refreshTokens.push(tokenService.hashToken(refreshToken));
   user.lastLoginAt = new Date();
+  user.lastLoginIp = ctx.ip || null;
   await user.save();
 
-  await auditService.record({
+  const tokens = await issueTokens(user, ctx);
+  await logService.record({
     type: LOG_TYPES.USER,
-    action: "auth.login",
+    action: LOG_ACTIONS.LOGIN,
     title: "Admin login",
-    detail: `${user.email} signed in`,
-    actor: user._id,
-    actorEmail: user.email,
-    ip,
+    detail: `${user.name} (${user.email}) signed in`,
+    user: user._id,
+    userEmail: user.email,
+    ip: ctx.ip,
   });
 
-  return { user, accessToken, refreshToken };
+  return { user, ...tokens };
 }
 
-async function refresh({ refreshToken, ip }) {
-  if (!refreshToken) throw ApiError.unauthorized("No refresh token provided");
-  const payload = tokenService.verifyRefresh(refreshToken);
-  const user = await userRepository.findByIdWithSecret(payload.sub);
-  if (!user || !user.active) throw ApiError.unauthorized("Account not found or disabled");
+async function refresh(rawRefresh, ctx = {}) {
+  if (!rawRefresh) throw ApiError.unauthorized("Missing refresh token");
+  const tokenHash = tokenService.hashToken(rawRefresh);
+  const existing = await refreshTokenRepository.findActiveByHash(tokenHash);
+  if (!existing) throw ApiError.unauthorized("Session expired");
 
-  const hashed = tokenService.hashToken(refreshToken);
-  if (!user.refreshTokens.includes(hashed)) {
-    // Token reuse / theft: revoke all sessions defensively.
-    user.refreshTokens = [];
-    await user.save();
-    await auditService.record({
-      type: LOG_TYPES.WARNING,
-      action: "auth.refresh.reuse",
-      title: "Refresh token reuse detected",
-      detail: `All sessions revoked for ${user.email}`,
-      actor: user._id,
-      actorEmail: user.email,
-      ip,
-    });
-    throw ApiError.unauthorized("Session invalidated. Please log in again.");
-  }
+  const user = await userRepository.findById(existing.user);
+  if (!user || !user.active) throw ApiError.unauthorized("Account unavailable");
 
-  // Rotate: drop old, issue new.
-  user.refreshTokens = user.refreshTokens.filter((t) => t !== hashed);
-  const newRefresh = tokenService.signRefresh(user);
-  user.refreshTokens.push(tokenService.hashToken(newRefresh));
-  await user.save();
+  // Rotate: issue a fresh refresh token and revoke the used one.
+  const tokens = await issueTokens(user, ctx);
+  await refreshTokenRepository.revokeByHash(tokenHash, tokenService.hashToken(tokens.refreshValue));
 
-  const accessToken = tokenService.signAccess(user);
-  return { user, accessToken, refreshToken: newRefresh };
+  return { user, ...tokens };
 }
 
-async function logout({ userId, refreshToken }) {
-  if (!userId) return;
-  const user = await userRepository.findByIdWithSecret(userId);
-  if (!user) return;
-  if (refreshToken) {
-    const hashed = tokenService.hashToken(refreshToken);
-    user.refreshTokens = user.refreshTokens.filter((t) => t !== hashed);
-  } else {
-    user.refreshTokens = [];
-  }
-  await user.save();
-  await auditService.record({
-    type: LOG_TYPES.USER,
-    action: "auth.logout",
-    title: "Admin logout",
-    detail: `${user.email} signed out`,
-    actor: user._id,
-    actorEmail: user.email,
-  });
+async function logout(rawRefresh) {
+  if (!rawRefresh) return;
+  const tokenHash = tokenService.hashToken(rawRefresh);
+  await refreshTokenRepository.revokeByHash(tokenHash);
 }
 
-async function changePassword({ userId, currentPassword, newPassword }) {
-  const user = await userRepository.findByIdWithSecret(userId);
+async function changePassword(userId, { currentPassword, newPassword }, ctx = {}) {
+  const user = await userRepository.model.findById(userId).select("+passwordHash");
   if (!user) throw ApiError.notFound("User not found");
-  const ok = await user.comparePassword(currentPassword);
-  if (!ok) throw ApiError.badRequest("Current password is incorrect");
-  user.password = newPassword;
+  const match = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!match) throw ApiError.badRequest("Current password is incorrect");
+
+  user.passwordHash = await hashPassword(newPassword);
   user.mustChangePassword = false;
-  user.refreshTokens = []; // force re-login on other devices
   await user.save();
-  await auditService.record({
-    type: LOG_TYPES.USER,
-    action: "auth.password.change",
+
+  // Force re-login everywhere else after a credential change.
+  await refreshTokenRepository.revokeAllForUser(user._id);
+  await logService.record({
+    type: LOG_TYPES.INFO,
+    action: LOG_ACTIONS.UPDATE,
     title: "Password changed",
-    detail: `${user.email} changed their password`,
-    actor: user._id,
-    actorEmail: user.email,
+    detail: `${user.email} updated their password`,
+    user: user._id,
+    userEmail: user.email,
+    ip: ctx.ip,
   });
   return user;
 }
 
-module.exports = { login, refresh, logout, changePassword };
+module.exports = { hashPassword, login, refresh, logout, changePassword, issueTokens };
