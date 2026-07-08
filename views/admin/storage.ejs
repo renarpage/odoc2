@@ -1,122 +1,183 @@
-<% var driveUrl = storage.rootFolderId ? ('https://drive.google.com/drive/folders/' + storage.rootFolderId) : 'https://drive.google.com'; %>
-<div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
-  <div>
-    <h2 class="fw-bold mb-1">Storage Management</h2>
-    <p class="text-muted mb-0">Google Drive integration analytics.</p>
-  </div>
-  <div class="d-flex gap-2">
-    <a href="/admin/storage" class="btn-secondary rounded-pill px-4 py-2 w-auto h-auto"><i class="bi bi-arrow-repeat me-2"></i>Refresh</a>
-    <% if (storage.driveConnected && storage.driveMode === 'oauth') { %>
-      <form action="/admin/integrations/google/disconnect" method="POST" onsubmit="return confirm('Disconnect Google Drive?');">
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <button type="submit" class="btn-secondary rounded-pill px-4 py-2 w-auto h-auto text-danger"><i class="bi bi-plug me-2"></i>Disconnect</button>
-      </form>
-    <% } else if (storage.oauthConfigured) { %>
-      <a href="/admin/integrations/google/connect" class="btn-primary rounded-pill px-4 py-2"><i class="bi bi-google me-2"></i>Connect Google Drive</a>
-    <% } else { %>
-      <a href="<%= driveUrl %>" target="_blank" rel="noopener" class="btn-primary rounded-pill px-4 py-2"><i class="bi bi-google me-2"></i>Manage GDrive</a>
-    <% } %>
-  </div>
-</div>
-
-<% if (!storage.driveConnected) { %>
-  <div class="alert d-flex align-items-center gap-2 mb-4" style="background:#FDF3E7;border:none;border-radius:var(--radius-md);color:#9a6a1f;">
-    <i class="bi bi-exclamation-triangle"></i>
+<% var driveUrl=storage.rootFolderId ? ('https://drive.google.com/drive/folders/' + storage.rootFolderId)
+  : 'https://drive.google.com' ; %>
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
     <div>
-      Google Drive is not connected, so uploads are disabled and figures are estimated.
-      <% if (storage.oauthConfigured) { %>Click <strong>Connect Google Drive</strong> and sign in with your account.<% } else { %>Set <code>GOOGLE_OAUTH_CLIENT_ID</code> and <code>GOOGLE_OAUTH_CLIENT_SECRET</code> in <code>.env</code> to enable one-click connect.<% } %>
+      <h2 class="fw-bold mb-1">Storage Management</h2>
+      <p class="text-muted mb-0">Google Drive integration analytics.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="/admin/storage" class="btn-secondary rounded-pill px-4 py-2 w-auto h-auto"><i
+          class="bi bi-arrow-repeat me-2"></i>Refresh</a>
+      <% if (storage.driveConnected && storage.driveMode==='oauth' ) { %>
+        <form action="/admin/integrations/google/disconnect" method="POST"
+          onsubmit="return confirm('Disconnect Google Drive?');">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn-secondary rounded-pill px-4 py-2 w-auto h-auto text-danger"><i
+              class="bi bi-plug me-2"></i>Disconnect</button>
+        </form>
+        <% } else if (storage.oauthConfigured) { %>
+          <a href="/admin/integrations/google/connect" class="btn-primary rounded-pill px-4 py-2"><i
+              class="bi bi-google me-2"></i>Connect Google Drive</a>
+          <% } else { %>
+            <a href="<%= driveUrl %>" target="_blank" rel="noopener" class="btn-primary rounded-pill px-4 py-2"><i
+                class="bi bi-google me-2"></i>Manage GDrive</a>
+            <% } %>
     </div>
   </div>
-<% } %>
 
-<div class="row g-4 mb-4">
-  <div class="col-lg-8">
-    <div class="odoc-panel h-100 card justify-content-center d-flex flex-column">
-      <div class="d-flex justify-content-between align-items-start mb-3">
-        <div class="panel-title">Primary Capacity</div>
-        <% if (storage.driveConnected) { %>
-          <span class="badge rounded-pill text-bg-light text-primary fw-semibold"><i class="bi bi-check-circle-fill me-1"></i><%= storage.driveEmail ? storage.driveEmail : 'Google Drive Connected' %></span>
-        <% } else { %>
-          <span class="badge rounded-pill text-bg-light text-muted fw-semibold"><i class="bi bi-exclamation-circle me-1"></i>Not connected &mdash; estimated</span>
-        <% } %>
+  <% if (!storage.driveConnected) { %>
+    <div class="alert d-flex align-items-center gap-2 mb-4"
+      style="background:#FDF3E7;border:none;border-radius:var(--radius-md);color:#9a6a1f;">
+      <i class="bi bi-exclamation-triangle"></i>
+      <div>
+        Google Drive is not connected, so uploads are disabled and figures are estimated.
+        <% if (storage.oauthConfigured) { %>Click <strong>Connect Google Drive</strong> and sign in with your account.<%
+            } else { %>Set <code>GOOGLE_OAUTH_CLIENT_ID</code> and <code>GOOGLE_OAUTH_CLIENT_SECRET</code> in
+            <code>.env</code> to enable one-click connect.<% } %>
       </div>
-      <div class="row align-items-center">
-        <div class="col-auto">
-          <div class="donut-wrap">
-            <svg width="140" height="140" viewBox="0 0 140 140">
-              <circle cx="70" cy="70" r="60" fill="none" stroke="#E7EAF3" stroke-width="14" />
-              <circle cx="70" cy="70" r="60" fill="none" stroke="#3155E7" stroke-width="14" stroke-dasharray="<%= storage.dashArray %> 376.8" stroke-linecap="round" />
-            </svg>
-            <div class="donut-label"><span class="pct"><%= storage.usedPercent %>%</span><span class="cap">USED</span></div>
+    </div>
+    <% } %>
+
+      <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+          <div class="odoc-panel h-100 card justify-content-center d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div class="panel-title">Primary Capacity</div>
+              <% if (storage.driveConnected) { %>
+                <span class="badge rounded-pill text-bg-light text-primary fw-semibold"><i
+                    class="bi bi-check-circle-fill me-1"></i>
+                  <%= storage.driveEmail ? storage.driveEmail : 'Google Drive Connected' %>
+                </span>
+                <% } else { %>
+                  <span class="badge rounded-pill text-bg-light text-muted fw-semibold"><i
+                      class="bi bi-exclamation-circle me-1"></i>Not connected &mdash; estimated</span>
+                  <% } %>
+            </div>
+            <div class="row align-items-center">
+              <div class="col-auto">
+                <div class="donut-wrap">
+                  <svg width="140" height="140" viewBox="0 0 140 140">
+                    <circle cx="70" cy="70" r="60" fill="none" stroke="#E7EAF3" stroke-width="14" />
+                    <circle cx="70" cy="70" r="60" fill="none" stroke="#3155E7" stroke-width="14"
+                      stroke-dasharray="<%= storage.dashArray %> 376.8" stroke-linecap="round" />
+                  </svg>
+                  <div class="donut-label"><span class="pct">
+                      <%= storage.usedPercent %>%
+                    </span><span class="cap">USED</span></div>
+                </div>
+              </div>
+              <div class="col">
+                <div class="row">
+                  <div class="col-6">
+                    <div class="text-muted small">Total Usage</div>
+                    <div class="fs-3 fw-bold">
+                      <%= storage.usageLabel %>
+                    </div>
+                  </div>
+                  <div class="col-6 text-end">
+                    <div class="text-muted small">Total Capacity</div>
+                    <div class="fs-3 fw-bold">
+                      <%= storage.capacityLabel %>
+                    </div>
+                  </div>
+                </div>
+                <div class="progress-odoc mt-2 mb-2">
+                  <div class="bar" style="width:<%= storage.usedPercent %>%"></div>
+                </div>
+                <div class="text-muted small fst-italic">Available: <%= storage.availableLabel %> remaining.</div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="col">
-          <div class="row">
-            <div class="col-6"><div class="text-muted small">Total Usage</div><div class="fs-3 fw-bold"><%= storage.usageLabel %></div></div>
-            <div class="col-6 text-end"><div class="text-muted small">Total Capacity</div><div class="fs-3 fw-bold"><%= storage.capacityLabel %></div></div>
+
+        <div class="col-lg-4">
+          <div class="gap-4 odoc-panel h-100 d-flex flex-column card justify-content-center">
+            <div class="text-muted small fw-bold text-uppercase">Free Space</div>
+            <div class="d-flex align-items-start gap-3">
+              <div class="stat-icon" style="background:#F4F6FB;color:var(--odoc-text)"><i class="bi bi-hdd"></i></div>
+              <div>
+                <div class="fw-bold">
+                  <%= storage.availableLabel %> Available
+                </div>
+                <div class="text-muted small">
+                  <%= storage.usedPercent %>% of <%= storage.capacityLabel %> in use.
+                </div>
+              </div>
+            </div>
+            <a href="<%= driveUrl %>" target="_blank" rel="noopener" class="btn btn-primary rounded-pill">Open Google
+              Drive</a>
           </div>
-          <div class="progress-odoc mt-2 mb-2"><div class="bar" style="width:<%= storage.usedPercent %>%"></div></div>
-          <div class="text-muted small fst-italic">Available: <%= storage.availableLabel %> remaining.</div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <div class="col-lg-4">
-    <div class="gap-4 odoc-panel h-100 d-flex flex-column card justify-content-center">
-      <div class="text-muted small fw-bold text-uppercase">Free Space</div>
-      <div class="d-flex align-items-start gap-3">
-        <div class="stat-icon" style="background:#F4F6FB;color:var(--odoc-text)"><i class="bi bi-hdd"></i></div>
-        <div>
-          <div class="fw-bold"><%= storage.availableLabel %> Available</div>
-          <div class="text-muted small"><%= storage.usedPercent %>% of <%= storage.capacityLabel %> in use.</div>
-        </div>
-      </div>
-      <a href="<%= driveUrl %>" target="_blank" rel="noopener" class="btn btn-primary rounded-pill">Open Google Drive</a>
-    </div>
-  </div>
-</div>
-
-<div class="row g-3 mb-4">
-  <% storage.breakdown.forEach(function(b){ %>
-    <div class="col-6 col-lg-3">
-      <div class="stat-card card hover-none">
-        <div class="d-flex justify-content-between">
-          <div class="stat-icon" style="background:#E9EEFC;color:var(--odoc-primary)"><i class="bi <%= b.icon %>"></i></div>
-        </div>
-        <div class="stat-text d-flex flex-column ms-3">
-          <div class="gap-2 stat-heading flex-row d-flex align-items-center justify-content-between">
-            <span class="fw-bold text-muted"><%= b.percent %>%</span>
-            <div class="fw-bold"><%= b.label %></div>
+      <div class="row g-3 mb-4">
+        <% storage.breakdown.forEach(function(b){ %>
+          <div class="col-6 col-lg-3">
+            <div class="stat-card card hover-none">
+              <div class="d-flex justify-content-between">
+                <div class="stat-icon" style="background:#E9EEFC;color:var(--odoc-primary)"><i
+                    class="bi <%= b.icon %>"></i></div>
+              </div>
+              <div class="stat-text d-flex flex-column ms-3">
+                <div class="gap-2 stat-heading flex-row d-flex align-items-center justify-content-between">
+                  <span class="fw-bold text-muted">
+                    <%= b.percent %>%
+                  </span>
+                  <div class="fw-bold">
+                    <%= b.label %>
+                  </div>
+                </div>
+                <div class="text-muted tiny">
+                  <%= b.bytesLabel %> &bull; <%= b.files %> file<%= b.files===1 ? '' : 's' %>
+                </div>
+                <div class="progress-odoc mt-2">
+                  <div class="bar" style="width:<%= Math.min(100, b.percent) %>%"></div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="text-muted tiny"><%= b.bytesLabel %> &bull; <%= b.files %> file<%= b.files === 1 ? '' : 's' %></div>
-          <div class="progress-odoc mt-2"><div class="bar" style="width:<%= Math.min(100, b.percent) %>%"></div></div>
+          <% }); %>
+      </div>
+
+      <div class="odoc-panel">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="panel-title">Recent Uploads</div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-odoc mb-0">
+            <thead>
+              <tr>
+                <th>File Name</th>
+                <th>Type</th>
+                <th>Size</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (!recentUploads.length) { %>
+                <tr>
+                  <td colspan="4" class="text-center text-muted py-4">No uploads yet. Files appear here once you attach
+                    them to an activity.</td>
+                </tr>
+                <% } %>
+                  <% recentUploads.forEach(function(f){ %>
+                    <tr>
+                      <td class="fw-semibold"><i
+                          class="bi <%= f.type === 'Image' ? 'bi-image' : (f.type === 'Video' ? 'bi-camera-reels' : 'bi-file-earmark-text') %> text-primary me-2"></i>
+                        <%= f.name %>
+                      </td>
+                      <td>
+                        <%= f.type %>
+                      </td>
+                      <td>
+                        <%= f.size %>
+                      </td>
+                      <td>
+                        <%= f.date %>
+                      </td>
+                    </tr>
+                    <% }); %>
+            </tbody>
+          </table>
         </div>
       </div>
-    </div>
-  <% }); %>
-</div>
-
-<div class="odoc-panel">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <div class="panel-title">Recent Uploads</div>
-  </div>
-  <div class="table-responsive">
-    <table class="table table-odoc mb-0">
-      <thead><tr><th>File Name</th><th>Type</th><th>Size</th><th>Date</th></tr></thead>
-      <tbody>
-        <% if (!recentUploads.length) { %>
-          <tr><td colspan="4" class="text-center text-muted py-4">No uploads yet. Files appear here once you attach them to an activity.</td></tr>
-        <% } %>
-        <% recentUploads.forEach(function(f){ %>
-          <tr>
-            <td class="fw-semibold"><i class="bi <%= f.type === 'Image' ? 'bi-image' : (f.type === 'Video' ? 'bi-camera-reels' : 'bi-file-earmark-text') %> text-primary me-2"></i><%= f.name %></td>
-            <td><%= f.type %></td>
-            <td><%= f.size %></td>
-            <td><%= f.date %></td>
-          </tr>
-        <% }); %>
-      </tbody>
-    </table>
-  </div>
-</div>
