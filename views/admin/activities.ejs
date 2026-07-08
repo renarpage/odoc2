@@ -30,7 +30,7 @@
   </form>
 
   <div class="d-flex justify-content-between align-items-center mb-2">
-    <span class="text-muted small">Showing <%= meta.from %>\u2013<%= meta.to %> of <%= meta.total %></span>
+    <span class="text-muted small">Showing <%= meta.from %>&ndash;<%= meta.to %> of <%= meta.total %></span>
   </div>
 
   <div class="table-responsive">
@@ -47,7 +47,7 @@
                 <% if (a.cover) { %><img src="<%= a.cover %>" class="activity-thumb" alt="<%= a.title %>"><% } else { %><span class="activity-thumb d-inline-flex align-items-center justify-content-center" style="background:#E9EEFC;color:var(--odoc-primary);"><i class="bi bi-image"></i></span><% } %>
                 <div>
                   <div class="fw-semibold"><%= a.title %></div>
-                  <div class="text-muted tiny">ID: <%= a.id.toUpperCase() %><% if (a.visibility === 'draft') { %> \u00b7 <span class="text-warning">DRAFT</span><% } %></div>
+                  <div class="text-muted tiny">ID: <%= a.id.toUpperCase() %><% if (a.visibility === 'draft') { %> &middot; <span class="text-warning">DRAFT</span><% } %></div>
                 </div>
               </div>
             </td>
