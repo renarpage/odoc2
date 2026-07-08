@@ -81,13 +81,13 @@
       <div class="mb-3">
         <label class="form-label-odoc">Description</label>
         <textarea name="description" rows="5" class="form-control form-control-odoc" placeholder="Full overview. Separate paragraphs with a blank line."><%= isEdit ? activity.description.join('\n\n') : '' %></textarea>
-        <div class="tiny text-muted mt-1">Separate paragraphs with a blank line \u2014 each becomes a paragraph on the public page.</div>
+        <div class="tiny text-muted mt-1">Separate paragraphs with a blank line. Each becomes a paragraph on the public page.</div>
       </div>
     </div>
 
     <!-- STEP 2: DOCUMENTATION -->
     <div class="wizard-pane">
-      <h5 class="fw-bold mb-1">Cover, Gallery & Documents</h5>
+      <h5 class="fw-bold mb-1">Cover, Gallery &amp; Documents</h5>
       <p class="text-muted small mb-4">Uploads stream to Google Drive. Supported: JPG, PNG, WebP, MP4, PDF, DOCX, XLSX, PPTX, ZIP (max 50MB each).</p>
 
       <label class="form-label-odoc">Cover Image</label>
@@ -103,6 +103,7 @@
           <div class="fw-semibold text-primary small">Cover Image Preview</div>
           <div class="text-muted tiny">Shown in the gallery, timeline and detail hero.</div>
         </div>
+        <button type="button" class="icon-btn text-danger" data-clear-cover title="Remove cover" style="width:34px;height:34px;"><i class="bi bi-x-lg"></i></button>
       </div>
 
       <label class="form-label-odoc">Gallery (images / video)</label>
@@ -113,9 +114,9 @@
         <div class="tiny">Appears in the public Media Archive</div>
       </div>
       <% if (isEdit && activity.gallery.length) { %>
-        <div class="tiny text-muted mb-1">Existing (<%= activity.gallery.length %>)</div>
+        <div class="tiny text-muted mb-1">Already saved (<%= activity.gallery.length %>)</div>
         <% activity.gallery.forEach(function(g){ %>
-          <div class="file-progress-row"><i class="bi bi-image text-primary"></i><div class="flex-grow-1"><div class="small fw-semibold text-truncate"><%= g %></div></div><span class="tiny">saved</span></div>
+          <div class="file-progress-row"><i class="bi bi-image text-primary"></i><div class="flex-grow-1"><div class="small fw-semibold text-truncate"><%= g %></div></div><span class="tiny text-muted">saved</span></div>
         <% }); %>
       <% } %>
       <div data-chips="gallery" class="mb-4"></div>
@@ -128,9 +129,9 @@
         <div class="tiny">PDF, DOCX, XLSX, PPTX, ZIP</div>
       </div>
       <% if (isEdit && activity.documents.length) { %>
-        <div class="tiny text-muted mb-1">Existing (<%= activity.documents.length %>)</div>
+        <div class="tiny text-muted mb-1">Already saved (<%= activity.documents.length %>)</div>
         <% activity.documents.forEach(function(d){ %>
-          <div class="file-progress-row"><i class="bi bi-file-earmark-text text-danger"></i><div class="flex-grow-1"><div class="small fw-semibold"><%= d.name %></div></div><span class="tiny"><%= d.size %></span></div>
+          <div class="file-progress-row"><i class="bi bi-file-earmark-text text-danger"></i><div class="flex-grow-1"><div class="small fw-semibold"><%= d.name %></div></div><span class="tiny text-muted"><%= d.size %></span></div>
         <% }); %>
       <% } %>
       <div data-chips="documents"></div>
@@ -144,47 +145,51 @@
       <div class="row g-3 align-items-end mb-3">
         <div class="col-md-5"><label class="form-label-odoc">Full Name</label><input type="text" id="committeeNameInput" class="form-control form-control-odoc" placeholder="e.g. Sarah Jenkins"></div>
         <div class="col-md-5"><label class="form-label-odoc">Role</label><input type="text" id="committeeRoleInput" class="form-control form-control-odoc" placeholder="e.g. Project Director"></div>
-        <div class="col-md-2"><button type="button" id="addCommitteeBtn" class="btn btn-primary w-100 rounded-3"><i class="bi bi-plus-lg"></i></button></div>
+        <div class="col-md-2"><button type="button" id="addCommitteeBtn" class="btn btn-primary w-100 rounded-3"><i class="bi bi-plus-lg me-1"></i>Add</button></div>
       </div>
-      <div id="committeeList">
+      <div id="committeeList" class="d-flex flex-column gap-2 mb-2">
         <% if (isEdit) { activity.committee.forEach(function(c){ %>
           <div class="committee-row" data-row>
-            <div class="d-flex align-items-center gap-2">
-              <span class="committee-avatar d-inline-flex align-items-center justify-content-center" style="background:var(--odoc-primary);color:#fff;font-weight:700;"><%= (c.name || '?').charAt(0).toUpperCase() %></span>
+            <div class="d-flex align-items-center gap-3">
+              <span class="member-avatar"><%= (c.name || '?').charAt(0).toUpperCase() %></span>
               <div><div class="fw-semibold small"><%= c.name %></div><div class="text-muted tiny"><%= c.role %></div></div>
             </div>
-            <i class="bi bi-x text-muted" data-remove-row style="cursor:pointer;"></i>
+            <button type="button" class="icon-btn text-danger" data-remove-row title="Remove" style="width:32px;height:32px;"><i class="bi bi-x-lg"></i></button>
             <input type="hidden" name="committeeName" value="<%= c.name %>">
             <input type="hidden" name="committeeRole" value="<%= c.role %>">
           </div>
         <% }); } %>
       </div>
+      <div class="tiny text-muted mb-2" id="committeeEmpty" style="display:<%= isEdit && activity.committee.length ? 'none' : 'block' %>;">No committee members added yet.</div>
 
-      <h5 class="fw-bold mb-1 mt-4">Milestones</h5>
+      <hr class="my-4">
+
+      <h5 class="fw-bold mb-1">Milestones</h5>
       <p class="text-muted small mb-4">Timeline shown on the public page.</p>
       <div class="row g-3 align-items-end mb-3">
         <div class="col-md-6"><label class="form-label-odoc">Milestone Title</label><input type="text" id="milestoneTitleInput" class="form-control form-control-odoc" placeholder="e.g. Event Execution"></div>
-        <div class="col-md-4"><label class="form-label-odoc">Date</label><input type="text" id="milestoneDateInput" class="form-control form-control-odoc" placeholder="e.g. October 12, 2024"></div>
-        <div class="col-md-2"><button type="button" id="addMilestoneBtn" class="btn btn-primary w-100 rounded-3"><i class="bi bi-plus-lg"></i></button></div>
+        <div class="col-md-4"><label class="form-label-odoc">Date</label><input type="date" id="milestoneDateInput" class="form-control form-control-odoc"></div>
+        <div class="col-md-2"><button type="button" id="addMilestoneBtn" class="btn btn-primary w-100 rounded-3"><i class="bi bi-plus-lg me-1"></i>Add</button></div>
       </div>
-      <div id="milestoneList">
+      <div id="milestoneList" class="d-flex flex-column gap-2 mb-2">
         <% if (isEdit) { activity.milestones.forEach(function(m){ %>
           <div class="committee-row" data-row>
-            <div class="d-flex align-items-center gap-2">
-              <span class="committee-avatar d-inline-flex align-items-center justify-content-center" style="background:#E9EEFC;color:var(--odoc-primary);"><i class="bi bi-flag"></i></span>
+            <div class="d-flex align-items-center gap-3">
+              <span class="member-avatar" style="background:#E9EEFC;color:var(--odoc-primary);"><i class="bi bi-flag"></i></span>
               <div><div class="fw-semibold small"><%= m.title %></div><div class="text-muted tiny"><%= m.date %></div></div>
             </div>
-            <i class="bi bi-x text-muted" data-remove-row style="cursor:pointer;"></i>
+            <button type="button" class="icon-btn text-danger" data-remove-row title="Remove" style="width:32px;height:32px;"><i class="bi bi-x-lg"></i></button>
             <input type="hidden" name="milestoneTitle" value="<%= m.title %>">
             <input type="hidden" name="milestoneDate" value="<%= m.date %>">
           </div>
         <% }); } %>
       </div>
+      <div class="tiny text-muted" id="milestoneEmpty" style="display:<%= isEdit && activity.milestones.length ? 'none' : 'block' %>;">No milestones added yet.</div>
     </div>
 
     <!-- STEP 4: REVIEW -->
     <div class="wizard-pane">
-      <h5 class="fw-bold mb-1">Review & Publish</h5>
+      <h5 class="fw-bold mb-1">Review &amp; Publish</h5>
       <p class="text-muted small mb-4">Publish makes it public immediately; Save Draft keeps it hidden from the archive.</p>
 
       <div class="alert d-flex align-items-center gap-2" style="background:#E9EEFC;border:none;border-radius:var(--radius-md);color:var(--odoc-primary);">
@@ -193,7 +198,7 @@
 
       <div class="d-flex justify-content-end gap-2">
         <button type="submit" name="action" value="draft" class="btn btn-light rounded-pill px-4">Save Draft</button>
-        <button type="submit" name="action" value="publish" class="btn btn-primary rounded-pill px-4"><%= isEdit ? 'Save & Publish' : 'Publish Activity' %> <i class="bi bi-send ms-1"></i></button>
+        <button type="submit" name="action" value="publish" class="btn btn-primary rounded-pill px-4"><%= isEdit ? 'Save &amp; Publish' : 'Publish Activity' %> <i class="bi bi-send ms-1"></i></button>
       </div>
     </div>
 
@@ -203,3 +208,36 @@
     </div>
   </form>
 </div>
+
+<style>
+  /* Neumorphic member/milestone rows for the create form */
+  #activityWizard .member-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--odoc-primary); color: #fff; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  #activityWizard .committee-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; background: var(--odoc-bg); border-radius: var(--radius-md);
+    box-shadow: inset 2px 2px 6px rgba(178,184,192,.45), inset -2px -2px 6px rgba(255,255,255,.7);
+  }
+  #activityWizard .file-progress-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; margin-bottom: 8px; background: var(--odoc-bg);
+    border-radius: var(--radius-sm);
+    box-shadow: inset 1px 1px 4px rgba(178,184,192,.4), inset -1px -1px 4px rgba(255,255,255,.7);
+  }
+  #activityWizard .upload-drop {
+    border: 2px dashed var(--odoc-border); border-radius: var(--radius-md);
+    padding: 26px; text-align: center; cursor: pointer; transition: border-color .2s ease;
+    background: var(--odoc-bg);
+  }
+  #activityWizard .upload-drop i { font-size: 1.6rem; color: var(--odoc-primary); }
+  #activityWizard .icon-btn {
+    border: none; background: var(--odoc-bg); border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    box-shadow: 2px 2px 6px rgba(159,168,182,.42), -2px -2px 6px rgba(247,248,250,.68);
+    transition: all .2s ease; flex-shrink: 0;
+  }
+  #activityWizard .icon-btn:hover { transform: translateY(-1px); }
+</style>
