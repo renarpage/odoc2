@@ -1,5 +1,5 @@
 <style>
-  /* Critical, cache-proof styling for committee avatars + media popup. */
+  /* Critical, cache-proof styling for committee avatars, media popup + skeletons. */
   .committee-initial {
     width: 46px; height: 46px; border-radius: 50%; margin-right: 14px; flex-shrink: 0;
     display: inline-flex; align-items: center; justify-content: center;
@@ -8,40 +8,52 @@
     box-shadow: 3px 3px 8px rgba(46,82,228,.32), -3px -3px 8px rgba(255,255,255,.9),
       inset 1px 1px 2px rgba(255,255,255,.35);
   }
-  /* Committee + document rows: neumorphic hover popup. */
-  .committee-row,
-  .doc-row {
-    gap: 6px;
-    transition: all .3s ease;
-  }
-  .committee-row:hover,
-  .doc-row:hover {
-    transform: translateY(-2px);
-    scale: 1.01;
-    cursor: pointer;
-    color: var(--odoc-primary);
-    box-shadow: var(--secondary-shadow-hover);
+  .committee-row { gap: 6px; transition: all .3s ease; }
+  .committee-row:hover, .doc-row:hover {
+    transform: translateY(-2px); scale: 1.01; cursor: pointer;
+    color: var(--odoc-primary); box-shadow: var(--secondary-shadow-hover);
   }
   .doc-row:hover .bi-download { color: var(--odoc-primary) !important; }
+
+  /* Progressive media: skeleton shimmer + fade-in thumbnails */
+  .gallery-grid .gallery-skeleton { position: relative; height: 180px; border-radius: var(--radius-md); overflow: hidden; background: #e6eaf3; }
+  .gallery-grid .gallery-skeleton.wide { grid-column: span 2; height: 260px; }
+  .gallery-grid .gallery-skeleton::after {
+    content: ""; position: absolute; inset: 0; transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent);
+    animation: neuShimmer 1.3s infinite;
+  }
+  .gallery-grid .gallery-skeleton.loaded::after { display: none; animation: none; }
+  .gallery-grid img { width: 100% !important; height: 100% !important; object-fit: cover; display: block; }
+  .gallery-thumb { opacity: 0; transition: opacity .4s ease; cursor: pointer; }
+  .gallery-thumb.loaded { opacity: 1; }
+  @keyframes neuShimmer { 100% { transform: translateX(100%); } }
+
+  /* Media popup */
   .odoc-lightbox {
     position: fixed; inset: 0; z-index: 2000; display: none;
     align-items: center; justify-content: center; padding: 40px 20px 96px;
     background: rgba(20,24,40,.82); backdrop-filter: blur(4px);
   }
   .odoc-lightbox.open { display: flex; }
-  .odoc-lightbox .lb-stage { max-width: min(1100px,92vw); max-height: 80vh; display: flex; align-items: center; justify-content: center; }
+  .odoc-lightbox .lb-stage { position: relative; max-width: min(1100px,92vw); max-height: 80vh; display: flex; align-items: center; justify-content: center; }
   .odoc-lightbox .lb-stage img { max-width: 100%; max-height: 80vh; border-radius: var(--radius-md); object-fit: contain; box-shadow: 0 20px 60px rgba(0,0,0,.45); background: #fff; }
   .odoc-lightbox .lb-close, .odoc-lightbox .lb-nav {
     position: absolute; border: none; color: #fff; width: 48px; height: 48px; border-radius: 50%;
     display: inline-flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer;
     background: rgba(255,255,255,.16); transition: background .2s ease, transform .2s ease;
   }
-  .odoc-lightbox .lb-close:hover, .odoc-lightbox .lb-nav:hover { background: rgba(255,255,255,.3); transform: scale(1.06); }
+  /* Vertical centering via margin (not transform) so hover-scale doesn't shift them. */
+  .odoc-lightbox .lb-nav { top: 50%; margin-top: -24px; }
+  .odoc-lightbox .lb-prev { left: 22px; }
+  .odoc-lightbox .lb-next { right: 22px; }
   .odoc-lightbox .lb-close { top: 22px; right: 26px; }
-  .odoc-lightbox .lb-prev { left: 22px; top: 50%; transform: translateY(-50%); }
-  .odoc-lightbox .lb-next { right: 22px; top: 50%; transform: translateY(-50%); }
+  .odoc-lightbox .lb-close:hover, .odoc-lightbox .lb-nav:hover { background: rgba(255,255,255,.3); transform: scale(1.06); }
   .odoc-lightbox .lb-actions { position: absolute; bottom: 28px; left: 0; right: 0; display: flex; align-items: center; justify-content: center; gap: 18px; }
   .odoc-lightbox .lb-count { color: rgba(255,255,255,.85); font-weight: 600; font-size: .9rem; }
+  .lb-spinner { position: absolute; width: 44px; height: 44px; border: 3px solid rgba(255,255,255,.25); border-top-color: #fff; border-radius: 50%; animation: neuSpin .8s linear infinite; }
+  .lb-spinner.hidden { display: none; }
+  @keyframes neuSpin { to { transform: rotate(360deg); } }
   @media (max-width: 575px){ .odoc-lightbox .lb-prev{left:8px;} .odoc-lightbox .lb-next{right:8px;} }
 </style>
 
@@ -79,8 +91,8 @@
           </div>
           <div class="gallery-grid">
             <% activity.galleryItems.forEach(function(img, i) { %>
-              <div class="<%= (activity.galleryItems.length % 2 === 1 && i === 0) ? 'wide' : '' %>">
-                <img class="gallery-thumb" src="<%= img.thumb %>" data-gallery-index="<%= i %>" alt="Gallery image <%= i + 1 %>" referrerpolicy="no-referrer" loading="lazy">
+              <div class="gallery-skeleton<%= (activity.galleryItems.length % 2 === 1 && i === 0) ? ' wide' : '' %>">
+                <img class="gallery-thumb" src="<%= img.thumb %>" data-gallery-index="<%= i %>" alt="Gallery image <%= i + 1 %>" referrerpolicy="no-referrer" loading="lazy" decoding="async" onload="this.classList.add('loaded');this.parentNode.classList.add('loaded');">
               </div>
             <% }); %>
           </div>
@@ -88,14 +100,9 @@
       <% } %>
 
       <div class="section-card card hover-none">
-        <div class="section-heading"><i class="me-2 bi bi-graph-up"></i>Milestones</div>
-        <div class="milestone-list">
-          <% activity.milestones.forEach(function(m) { %>
-            <div class="milestone-item <%= m.current ? 'current' : '' %>">
-              <div class="milestone-title"><%= m.title %></div>
-              <div class="milestone-date"><%= m.date %></div>
-            </div>
-          <% }); %>
+        <div class="section-heading"><i class="me-2 bi bi-graph-up"></i>Event Overview Notes</div>
+        <div class="overview-text-box">
+          <p class="mb-0 text-muted">Explore the media archive, committee and documents in the panel beside this section.</p>
         </div>
       </div>
     </div>
@@ -136,7 +143,17 @@
         </div>
       <% } %>
 
-      
+      <div class="section-card card mb-4 hover-none">
+        <div class="section-heading"><i class="me-2 bi bi-graph-up"></i>Milestones</div>
+        <div class="milestone-list">
+          <% activity.milestones.forEach(function(m) { %>
+            <div class="milestone-item <%= m.current ? 'current' : '' %>">
+              <div class="milestone-title"><%= m.title %></div>
+              <div class="milestone-date"><%= m.date %></div>
+            </div>
+          <% }); %>
+        </div>
+      </div>
 
       <button type="button" id="shareBtn" class="share-btn btn btn-primary w-100 rounded-pill py-3 fw-semibold">
         <i class="bi bi-share me-2"></i>Share Activity
@@ -148,7 +165,10 @@
 <div class="odoc-lightbox" id="mediaLightbox" aria-hidden="true">
   <button class="lb-close" data-lb-close aria-label="Close"><i class="bi bi-x-lg"></i></button>
   <button class="lb-nav lb-prev" data-lb-prev aria-label="Previous"><i class="bi bi-chevron-left"></i></button>
-  <div class="lb-stage"><img id="lbImg" src="" alt="" referrerpolicy="no-referrer"></div>
+  <div class="lb-stage">
+    <div class="lb-spinner" id="lbSpinner"></div>
+    <img id="lbImg" src="" alt="" referrerpolicy="no-referrer">
+  </div>
   <button class="lb-nav lb-next" data-lb-next aria-label="Next"><i class="bi bi-chevron-right"></i></button>
   <div class="lb-actions">
     <span class="lb-count" id="lbCount"></span>
@@ -164,8 +184,18 @@
     var img = document.getElementById('lbImg');
     var dl = document.getElementById('lbDownload');
     var count = document.getElementById('lbCount');
+    var spinner = document.getElementById('lbSpinner');
     var idx = 0;
-    function show(i) { idx = (i + items.length) % items.length; img.src = items[idx].view; dl.href = items[idx].download; count.textContent = (idx + 1) + ' / ' + items.length; }
+    img.addEventListener('load', function () { if (spinner) spinner.classList.add('hidden'); img.style.visibility = 'visible'; });
+    img.addEventListener('error', function () { if (spinner) spinner.classList.add('hidden'); });
+    function show(i) {
+      idx = (i + items.length) % items.length;
+      if (spinner) spinner.classList.remove('hidden');
+      img.style.visibility = 'hidden';
+      img.src = items[idx].view;
+      dl.href = items[idx].download;
+      count.textContent = (idx + 1) + ' / ' + items.length;
+    }
     function open(i) { show(i); lb.classList.add('open'); document.body.style.overflow = 'hidden'; }
     function close() { lb.classList.remove('open'); document.body.style.overflow = ''; }
     document.querySelectorAll('[data-gallery-index]').forEach(function (el) { el.addEventListener('click', function () { open(parseInt(el.dataset.galleryIndex, 10)); }); });
