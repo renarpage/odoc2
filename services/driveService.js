@@ -90,9 +90,25 @@ async function deleteFile(fileId) {
   try {
     await drive.files.delete({ fileId });
   } catch (err) {
-    // 404 = already gone; anything else is worth surfacing in logs.
     if (err.code !== 404) logger.error("Drive delete failed", { fileId, error: err.message });
   }
 }
 
-module.exports = { ensureFolder, uploadBuffer, deleteFile };
+/**
+ * Real storage quota from the Drive account. Returns null when Drive is not
+ * configured so callers can fall back to a configured capacity.
+ */
+async function getQuota() {
+  const drive = getDrive();
+  if (!drive) return null;
+  const res = await drive.about.get({ fields: "storageQuota" });
+  const q = res.data.storageQuota || {};
+  // `limit` is absent on unlimited accounts; treat as 0 (caller falls back).
+  return {
+    limit: q.limit ? Number(q.limit) : 0,
+    usage: q.usage ? Number(q.usage) : 0,
+    usageInDrive: q.usageInDrive ? Number(q.usageInDrive) : 0,
+  };
+}
+
+module.exports = { ensureFolder, uploadBuffer, deleteFile, getQuota };

@@ -1,7 +1,7 @@
 /**
  * Dashboard statistics + system health. Returns a superset of the keys the
- * existing admin views read (storageUsedGB, totalActivities, ongoingNow, ...)
- * so templates render unchanged.
+ * existing admin views read so templates render unchanged. Storage figures
+ * prefer the real Google Drive quota, falling back to summed upload bytes.
  */
 const activityRepository = require("../repositories/activityRepository");
 const galleryRepository = require("../repositories/galleryRepository");
@@ -10,11 +10,12 @@ const userRepository = require("../repositories/userRepository");
 const visitorRepository = require("../repositories/visitorRepository");
 const settingRepository = require("../repositories/settingRepository");
 const logService = require("./logService");
+const driveService = require("./driveService");
 const dbConfig = require("../config/db");
 const driveConfig = require("../config/drive");
 const { formatBytes } = require("../helpers/bytes");
 const { ACTIVITY_STATUS } = require("../constants");
-const { logToView } = require("../helpers/serializers");
+const { logToView, activityToView } = require("../helpers/serializers");
 
 function startOfToday() {
   const d = new Date();
@@ -40,6 +41,7 @@ async function stats() {
     visitorToday,
     visitorMonth,
     totalVisitor,
+    quota,
   ] = await Promise.all([
     activityRepository.count({}),
     activityRepository.countByStatus(ACTIVITY_STATUS.ONGOING),
@@ -53,12 +55,17 @@ async function stats() {
     visitorRepository.uniqueSince(startOfToday()),
     visitorRepository.uniqueSince(startOfMonth()),
     visitorRepository.countTotal(),
+    driveService.getQuota().catch(() => null),
   ]);
 
-  const usedBytes = (galleryBytesAgg[0]?.bytes || 0) + (docBytesAgg[0]?.bytes || 0);
-  const usedGB = usedBytes / 1024 ** 3;
+  const dbBytes = (galleryBytesAgg[0]?.bytes || 0) + (docBytesAgg[0]?.bytes || 0);
   const settings = await settingRepository.getData("system", {});
-  const capacityGB = Number(settings.storageCapacityGB) || 1024;
+  const configuredCapacityGB = Number(settings.storageCapacityGB) || 1024;
+
+  const usedBytes = quota ? quota.usage : dbBytes;
+  const capacityBytes = quota && quota.limit ? quota.limit : configuredCapacityGB * 1024 ** 3;
+  const usedGB = usedBytes / 1024 ** 3;
+  const capacityGB = capacityBytes / 1024 ** 3;
 
   return {
     totalActivities,
@@ -71,10 +78,11 @@ async function stats() {
     totalGallery,
     totalDocuments,
     storageUsedGB: Number(usedGB.toFixed(1)),
-    storageCapacityGB: capacityGB,
+    storageCapacityGB: Number(capacityGB.toFixed(0)),
     storageUsedLabel: formatBytes(usedBytes),
     dataArchivedTB: (usedGB / 1024).toFixed(2),
     totalUsers: String(totalUsers),
+    driveConnected: !!quota,
     trafficPeak: `${visitorMonth.toLocaleString()} this month`,
     visitorToday,
     visitorThisMonth: visitorMonth,
@@ -83,7 +91,6 @@ async function stats() {
 }
 
 async function recentActivities(limit = 6) {
-  const { activityToView } = require("../helpers/serializers");
   const docs = await activityRepository.find({}, { sort: { createdAt: -1 }, limit });
   return docs.map(activityToView);
 }

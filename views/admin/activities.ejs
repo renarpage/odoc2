@@ -1,151 +1,78 @@
+<% var qs = function(p){ var params = new URLSearchParams(); if (filters.status) params.set('status', filters.status); if (filters.category) params.set('category', filters.category); if (filters.q) params.set('q', filters.q); params.set('page', p); return '/admin/activities?' + params.toString(); }; %>
 <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
   <div>
     <h2 class="fw-bold mb-1">Activities</h2>
     <p class="text-muted mb-0">Manage every activity in the digital archive.</p>
   </div>
-  <a href="/admin/activities/new" class="btn btn-primary rounded-pill px-4">
-    <i class="bi bi-plus-circle me-2"></i>Create New Activity
-  </a>
+  <a href="/admin/activities/new" class="btn btn-primary rounded-pill px-4"><i class="bi bi-plus-circle me-2"></i>Create New Activity</a>
 </div>
 
 <div class="row g-3 mb-4">
-  <div class="col-6 col-lg-3">
-    <div class="stat-card card hover-none">
-      <div class="stat-icon text-primary" style="background:#E9EEFC;color:var(--odoc-secondary)"><i
-          class="bi bi-bar-chart"></i></div>
-      <div class="stat-text d-flex flex-column ms-3">
-        <div class="stat-value">
-          <%= stats.totalActivities.toLocaleString() %>
-        </div>
-        <div class="stat-label">Total Activities</div>
-      </div>
-    </div>
-  </div>
-  <div class="col-6 col-lg-3">
-    <div class="stat-card card hover-none">
-      <div class="stat-icon text-primary" style="background:#E9EEFC;color:var(--odoc-secondary)"><i
-          class="bi bi-cloud-arrow-up"></i></div>
-      <div class="stat-text d-flex flex-column ms-3">
-        <div class="stat-value">
-          <%= stats.ongoingNow %>
-        </div>
-        <div class="stat-label">Ongoing Now</div>
-      </div>
-    </div>
-  </div>
-  <div class="col-6 col-lg-3">
-    <div class="stat-card card hover-none">
-      <div class="stat-icon text-primary" style="background:#E9EEFC;color:var(--odoc-secondary)"><i
-          class="bi bi-clock-history"></i></div>
-      <div class="stat-text d-flex flex-column ms-3">
-        <div class="stat-value">
-          <%= stats.completedToday %>
-        </div>
-        <div class="stat-label">Completed Today</div>
-      </div>
-    </div>
-  </div>
-  <div class="col-6 col-lg-3">
-    <div class="stat-card card hover-none">
-      <div class="stat-icon text-primary" style="background:#E9EEFC;color:var(--odoc-secondary)"><i
-          class="bi bi-database"></i></div>
-      <div class="stat-text d-flex flex-column ms-3">
-        <div class="stat-value">
-          <%= stats.dataArchivedTB %> TB
-        </div>
-        <div class="stat-label">Data Archived</div>
-      </div>
-    </div>
-  </div>
+  <div class="col-6 col-lg-3"><div class="stat-card card hover-none"><div class="stat-icon text-primary" style="background:#E9EEFC;color:var(--odoc-secondary)"><i class="bi bi-bar-chart"></i></div><div class="stat-text d-flex flex-column ms-3"><div class="stat-value"><%= stats.totalActivities.toLocaleString() %></div><div class="stat-label">Total Activities</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="stat-card card hover-none"><div class="stat-icon text-primary" style="background:#E9EEFC;color:var(--odoc-secondary)"><i class="bi bi-cloud-arrow-up"></i></div><div class="stat-text d-flex flex-column ms-3"><div class="stat-value"><%= stats.ongoingNow %></div><div class="stat-label">Ongoing Now</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="stat-card card hover-none"><div class="stat-icon text-primary" style="background:#E9EEFC;color:var(--odoc-secondary)"><i class="bi bi-clock-history"></i></div><div class="stat-text d-flex flex-column ms-3"><div class="stat-value"><%= stats.upcomingCount %></div><div class="stat-label">Upcoming</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="stat-card card hover-none"><div class="stat-icon text-primary" style="background:#E9EEFC;color:var(--odoc-secondary)"><i class="bi bi-database"></i></div><div class="stat-text d-flex flex-column ms-3"><div class="stat-value"><%= stats.dataArchivedTB %> TB</div><div class="stat-label">Data Archived</div></div></div></div>
 </div>
 
 <div class="odoc-panel">
-  <div class="d-flex flex-wrap gap-2 mb-4">
-    <select class="form-select form-select-odoc" style="max-width:180px;">
-      <option>All Statuses</option>
-      <option>Ongoing</option>
-      <option>Completed</option>
-      <option>Upcoming</option>
+  <form class="d-flex flex-wrap gap-2 mb-4" method="GET" action="/admin/activities">
+    <select name="status" class="form-select form-select-odoc" style="max-width:180px;" onchange="this.form.submit()">
+      <option value="">All Statuses</option>
+      <% ['Ongoing','Completed','Upcoming'].forEach(function(s){ %><option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s %></option><% }); %>
     </select>
-    <select class="form-select form-select-odoc" style="max-width:200px;">
-      <option>All Categories</option>
-      <option>Festival</option>
-      <option>Technology</option>
-      <option>Organization</option>
-      <option>Archival</option>
+    <select name="category" class="form-select form-select-odoc" style="max-width:200px;" onchange="this.form.submit()">
+      <option value="">All Categories</option>
+      <% ['Festival','Technology','Organization','Archival','Security Scan','Sports','Archive Gallery'].forEach(function(c){ %><option value="<%= c %>" <%= filters.category === c ? 'selected' : '' %>><%= c %></option><% }); %>
     </select>
-    <input type="date" class="form-control form-control-odoc" style="max-width:200px;">
-  </div>
+    <input type="search" name="q" class="form-control form-control-odoc" style="max-width:240px;" placeholder="Search title..." value="<%= filters.q %>">
+    <button type="submit" class="btn btn-primary rounded-pill px-3"><i class="bi bi-funnel me-1"></i>Apply</button>
+    <% if (filters.status || filters.category || filters.q) { %><a href="/admin/activities" class="btn btn-light rounded-pill px-3">Reset</a><% } %>
+  </form>
 
   <div class="d-flex justify-content-between align-items-center mb-2">
-    <span class="text-muted small">Showing 1–<%= activities.length %> of <%= activities.length %></span>
-    <button class="btn btn-sm btn-light rounded-circle"><i class="bi bi-arrow-clockwise"></i></button>
+    <span class="text-muted small">Showing <%= meta.from %>\u2013<%= meta.to %> of <%= meta.total %></span>
   </div>
 
   <div class="table-responsive">
     <table class="table table-odoc mb-0">
-      <thead>
-        <tr>
-          <th style="width:30px;"><input type="checkbox"></th>
-          <th>Activity Name</th>
-          <th>Category</th>
-          <th>Date Created</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
+      <thead><tr><th>Activity Name</th><th>Category</th><th>Date Created</th><th>Status</th><th>Actions</th></tr></thead>
       <tbody>
-        <% activities.forEach(function(a) { %>
+        <% if (!activities.length) { %>
+          <tr><td colspan="5" class="text-center text-muted py-4">No activities match. <a href="/admin/activities/new">Create one</a>.</td></tr>
+        <% } %>
+        <% activities.forEach(function(a){ %>
           <tr>
-            <td><input type="checkbox"></td>
             <td>
               <div class="d-flex align-items-center gap-3">
-                <img src="<%= a.cover %>" class="activity-thumb" alt="<%= a.title %>">
+                <% if (a.cover) { %><img src="<%= a.cover %>" class="activity-thumb" alt="<%= a.title %>"><% } else { %><span class="activity-thumb d-inline-flex align-items-center justify-content-center" style="background:#E9EEFC;color:var(--odoc-primary);"><i class="bi bi-image"></i></span><% } %>
                 <div>
-                  <div class="fw-semibold">
-                    <%= a.title %>
-                  </div>
-                  <div class="text-muted tiny">ID: <%= a.id.toUpperCase() %>
-                  </div>
+                  <div class="fw-semibold"><%= a.title %></div>
+                  <div class="text-muted tiny">ID: <%= a.id.toUpperCase() %><% if (a.visibility === 'draft') { %> \u00b7 <span class="text-warning">DRAFT</span><% } %></div>
                 </div>
               </div>
             </td>
-            <td><span class="badge rounded-pill text-bg-light border">
-                <%= a.category %>
-              </span></td>
+            <td><span class="badge rounded-pill text-bg-light border"><%= a.category %></span></td>
+            <td><%= new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) %></td>
+            <td><span class="fw-semibold small <%= a.status === 'Completed' ? 'text-success' : (a.status === 'Ongoing' ? 'text-primary' : 'text-purple') %>"><i class="bi bi-circle-fill" style="font-size:.5rem;"></i> <%= a.status %></span></td>
             <td>
-              <%= new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short' , day: '2-digit' , year: 'numeric'
-                }) %>
-            </td>
-            <td>
-              <span
-                class="fw-semibold small
-                <%= a.status === 'Completed' ? 'text-success' : (a.status === 'Ongoing' ? 'text-primary' : 'text-purple') %>">
-                <i class="bi bi-circle-fill" style="font-size:.5rem;"></i>
-                <%= a.status %>
-              </span>
-            </td>
-            <td>
-              <a href="/activity/<%= a.id %>" class="icon-btn me-1"
-                style="width:34px;height:34px;display:inline-flex;"><i class="bi bi-eye"></i></a>
-              <a href="/admin/activities/new" class="icon-btn" style="width:34px;height:34px;display:inline-flex;"><i
-                  class="bi bi-pencil"></i></a>
+              <div class="d-inline-flex align-items-center gap-1">
+                <a href="/activity/<%= a.id %>" target="_blank" rel="noopener" class="icon-btn" style="width:34px;height:34px;display:inline-flex;" title="View public page"><i class="bi bi-eye"></i></a>
+                <a href="/admin/activities/<%= a.id %>/edit" class="icon-btn" style="width:34px;height:34px;display:inline-flex;" title="Edit"><i class="bi bi-pencil"></i></a>
+                <form action="/admin/activities/<%= a.id %>/duplicate" method="POST" class="d-inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="icon-btn" style="width:34px;height:34px;display:inline-flex;" title="Duplicate"><i class="bi bi-files"></i></button></form>
+                <form action="/admin/activities/<%= a.id %>/delete" method="POST" class="d-inline" onsubmit="return confirm('Delete this activity and its files?');"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="icon-btn text-danger" style="width:34px;height:34px;display:inline-flex;" title="Delete"><i class="bi bi-trash"></i></button></form>
+              </div>
             </td>
           </tr>
-          <% }); %>
+        <% }); %>
       </tbody>
     </table>
   </div>
 
   <div class="d-flex justify-content-between align-items-center mt-4">
-    <button class="btn btn-light rounded-pill px-3"><i class="bi bi-chevron-left me-1"></i>Previous</button>
+    <% if (meta.hasPrev) { %><a href="<%= qs(meta.page - 1) %>" class="btn btn-light rounded-pill px-3"><i class="bi bi-chevron-left me-1"></i>Previous</a><% } else { %><span class="btn btn-light rounded-pill px-3 disabled"><i class="bi bi-chevron-left me-1"></i>Previous</span><% } %>
     <div class="odoc-pagination">
-      <a href="#" class="page-pill active">1</a>
-      <a href="#" class="page-pill">2</a>
-      <a href="#" class="page-pill">3</a>
-      <span class="text-muted">...</span>
-      <a href="#" class="page-pill">12</a>
+      <% for (var p = 1; p <= meta.totalPages; p++) { %><a href="<%= qs(p) %>" class="page-pill <%= p === meta.page ? 'active' : '' %>"><%= p %></a><% } %>
     </div>
-    <button class="btn btn-light rounded-pill px-3">Next<i class="bi bi-chevron-right ms-1"></i></button>
+    <% if (meta.hasNext) { %><a href="<%= qs(meta.page + 1) %>" class="btn btn-light rounded-pill px-3">Next<i class="bi bi-chevron-right ms-1"></i></a><% } else { %><span class="btn btn-light rounded-pill px-3 disabled">Next<i class="bi bi-chevron-right ms-1"></i></span><% } %>
   </div>
 </div>

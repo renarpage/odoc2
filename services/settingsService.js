@@ -9,14 +9,19 @@ const { LOG_TYPES, LOG_ACTIONS } = require("../constants");
 const BOOL_FIELDS = ["maintenanceMode", "emailAlerts", "systemLogsNotif", "errorReporting", "twoFactorAuth", "gdriveConnected"];
 const NUM_FIELDS = ["sessionTimeout", "smtpPort", "storageCapacityGB"];
 
+// A full settings form submit omits unchecked switches entirely, so an absent
+// boolean means "off". Force every known bool to a real boolean based on
+// presence; this fixes toggles that could never be turned back off.
 function coerce(patch) {
   const out = { ...patch };
   BOOL_FIELDS.forEach((f) => {
-    if (f in out) out[f] = out[f] === true || out[f] === "on" || out[f] === "true";
+    out[f] = f in patch ? (patch[f] === true || patch[f] === "on" || patch[f] === "true") : false;
   });
   NUM_FIELDS.forEach((f) => {
     if (f in out && out[f] !== "") out[f] = Number(out[f]);
   });
+  delete out._csrf;
+  delete out.sessionTimeoutRange;
   return out;
 }
 
