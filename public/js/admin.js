@@ -50,11 +50,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ===== File fields with per-file unattach =====
-  // FileList is read-only, so we track a File[] and rebuild input.files via
-  // DataTransfer whenever the user adds or removes a file.
   document.querySelectorAll(".upload-drop").forEach((drop) => {
     const input = drop.querySelector("input[type=file]");
-    if (!input) return; // link-style dropzones (dashboard quick upload)
+    if (!input) return;
     const kind = drop.getAttribute("data-upload");
     const multiple = input.multiple;
     const chips = kind ? document.querySelector('[data-chips="' + kind + '"]') : null;
@@ -189,4 +187,50 @@ document.addEventListener("DOMContentLoaded", () => {
       text.addEventListener("input", () => { if (/^#[0-9A-Fa-f]{6}$/.test(text.value)) swatch.value = text.value; });
     }
   });
+
+  // ===== Notification bell (fetches recent system logs) =====
+  const bell = document.getElementById("notifBell");
+  const notifList = document.getElementById("notifList");
+  const notifDot = document.getElementById("notifDot");
+  if (bell && notifList) {
+    let loaded = false;
+    const iconFor = (t) =>
+      t === "warning" ? "bi-exclamation-triangle"
+      : t === "error" ? "bi-x-octagon"
+      : t === "user" ? "bi-person-plus"
+      : t === "success" ? "bi-check-circle"
+      : "bi-info-circle";
+    const timeAgo = (iso) => {
+      if (!iso) return "";
+      const s = Math.floor((Date.now() - new Date(iso)) / 1000);
+      if (s < 60) return "just now";
+      const m = Math.floor(s / 60); if (m < 60) return m + "m ago";
+      const h = Math.floor(m / 60); if (h < 24) return h + "h ago";
+      return Math.floor(h / 24) + "d ago";
+    };
+    async function load() {
+      try {
+        const r = await fetch("/api/admin/notifications", { headers: { Accept: "application/json" } });
+        const j = await r.json();
+        const items = (j && j.data) || [];
+        if (!items.length) {
+          notifList.innerHTML = '<div class="notif-empty"><i class="bi bi-bell-slash d-block mb-2" style="font-size:1.4rem;"></i>No notifications yet.</div>';
+        } else {
+          notifList.innerHTML = items.map((l) =>
+            '<div class="notif-item"><span class="notif-ico ' + (l.type || "info") + '"><i class="bi ' + iconFor(l.type) + '"></i></span>' +
+            '<div class="flex-grow-1"><div class="fw-semibold small">' + esc(l.title) + '</div>' +
+            '<div class="text-muted tiny">' + esc(l.detail || "") + '</div>' +
+            '<div class="text-muted tiny mt-1">' + timeAgo(l.createdAt) + '</div></div></div>'
+          ).join("");
+        }
+        if (notifDot) notifDot.style.display = "none";
+        loaded = true;
+      } catch (e) {
+        notifList.innerHTML = '<div class="notif-empty">Could not load notifications.</div>';
+      }
+    }
+    const dd = bell.closest(".dropdown");
+    if (dd) dd.addEventListener("show.bs.dropdown", () => { if (!loaded) load(); });
+    else bell.addEventListener("click", load);
+  }
 });
