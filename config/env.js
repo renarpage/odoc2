@@ -52,6 +52,10 @@ const env = {
   GOOGLE_PRIVATE_KEY: optional("GOOGLE_PRIVATE_KEY", undefined),
   GOOGLE_DRIVE_ROOT_FOLDER_ID: optional("GOOGLE_DRIVE_ROOT_FOLDER_ID", undefined),
 
+  // Displayed storage capacity (GB) used when Drive reports no fixed quota
+  // limit (common with service accounts). Set this to your real Drive size.
+  STORAGE_CAPACITY_GB: parseFloat(optional("STORAGE_CAPACITY_GB", "15")),
+
   RATE_LIMIT_WINDOW_MS: parseInt(optional("RATE_LIMIT_WINDOW_MS", "900000"), 10),
   RATE_LIMIT_MAX: parseInt(optional("RATE_LIMIT_MAX", "300"), 10),
   AUTH_RATE_LIMIT_MAX: parseInt(optional("AUTH_RATE_LIMIT_MAX", "10"), 10),
