@@ -1,4 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // ===== Home cover image fallback (CSP-safe; no inline onerror) =====
+  document.querySelectorAll("[data-fallback-img]").forEach((im) => {
+    im.addEventListener("error", () => {
+      im.remove();
+      // parent .card-img-wrap shows its gradient + icon placeholder
+    });
+  });
+
   // ===== Calendar (guarded) =====
   const emptyEvent = document.getElementById("empty-event");
   const days = document.querySelectorAll(".day");
