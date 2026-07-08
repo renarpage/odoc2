@@ -1,7 +1,7 @@
 /**
  * Dashboard statistics + system health. Returns a superset of the keys the
  * existing admin views read so templates render unchanged. Storage figures
- * prefer the real Google Drive quota, falling back to summed upload bytes.
+ * prefer the real Google Drive quota, falling back to a configured capacity.
  */
 const activityRepository = require("../repositories/activityRepository");
 const galleryRepository = require("../repositories/galleryRepository");
@@ -14,6 +14,7 @@ const driveService = require("./driveService");
 const dbConfig = require("../config/db");
 const driveConfig = require("../config/drive");
 const { formatBytes } = require("../helpers/bytes");
+const { resolveCapacityBytes } = require("../helpers/capacity");
 const { ACTIVITY_STATUS } = require("../constants");
 const { logToView, activityToView } = require("../helpers/serializers");
 
@@ -60,10 +61,9 @@ async function stats() {
 
   const dbBytes = (galleryBytesAgg[0]?.bytes || 0) + (docBytesAgg[0]?.bytes || 0);
   const settings = await settingRepository.getData("system", {});
-  const configuredCapacityGB = Number(settings.storageCapacityGB) || 1024;
 
   const usedBytes = quota ? quota.usage : dbBytes;
-  const capacityBytes = quota && quota.limit ? quota.limit : configuredCapacityGB * 1024 ** 3;
+  const capacityBytes = resolveCapacityBytes({ quota, settings });
   const usedGB = usedBytes / 1024 ** 3;
   const capacityGB = capacityBytes / 1024 ** 3;
 

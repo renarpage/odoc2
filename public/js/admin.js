@@ -11,6 +11,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  const esc = (s) => { const d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; };
+  function bytesLabel(n) {
+    if (!n) return "0 KB";
+    const u = ["B", "KB", "MB", "GB"];
+    const i = Math.min(Math.floor(Math.log(n) / Math.log(1024)), u.length - 1);
+    return (n / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1) + " " + u[i];
+  }
+  function friendlyDate(iso) {
+    if (!iso) return "";
+    const d = new Date(iso + "T00:00:00");
+    if (isNaN(d)) return iso;
+    return d.toLocaleDateString("en-US", { month: "long", day: "2-digit", year: "numeric" });
+  }
+
   // ===== Multi-step Activity Wizard =====
   const wizard = document.getElementById("activityWizard");
   if (wizard) {
@@ -19,7 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const nextBtns = wizard.querySelectorAll("[data-wizard-next]");
     const prevBtns = wizard.querySelectorAll("[data-wizard-prev]");
     let current = 0;
-
     function renderStep() {
       steps.forEach((s, i) => {
         s.classList.remove("active", "done");
@@ -36,64 +49,90 @@ document.addEventListener("DOMContentLoaded", () => {
     renderStep();
   }
 
-  // ===== File uploads: cover preview + selected-file chips =====
-  function bytesLabel(n) {
-    if (!n) return "0 KB";
-    const u = ["B", "KB", "MB", "GB"];
-    const i = Math.min(Math.floor(Math.log(n) / Math.log(1024)), u.length - 1);
-    return (n / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1) + " " + u[i];
-  }
-  function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
-
-  function onFiles(drop, input) {
-    const kind = drop.getAttribute("data-upload");
-    if (kind === "cover") {
-      const f = input.files[0];
-      if (!f) return;
-      const wrap = document.getElementById("coverPreviewWrap");
-      const img = document.getElementById("coverPreviewImg");
-      if (img) img.src = URL.createObjectURL(f);
-      if (wrap) wrap.style.display = "flex";
-      return;
-    }
-    const chips = document.querySelector('[data-chips="' + kind + '"]');
-    if (!chips) return;
-    chips.innerHTML = "";
-    Array.from(input.files).forEach((f) => {
-      const isImg = f.type.startsWith("image/");
-      const isVid = f.type.startsWith("video/");
-      const icon = isImg ? "bi-image" : isVid ? "bi-camera-reels" : "bi-file-earmark-text";
-      const row = document.createElement("div");
-      row.className = "file-progress-row";
-      row.innerHTML = '<i class="bi ' + icon + ' text-primary"></i><div class="flex-grow-1"><div class="small fw-semibold text-truncate">' + esc(f.name) + '</div></div><span class="tiny">' + bytesLabel(f.size) + '</span>';
-      chips.appendChild(row);
-    });
-  }
-
+  // ===== File fields with per-file unattach =====
+  // FileList is read-only, so we track a File[] and rebuild input.files via
+  // DataTransfer whenever the user adds or removes a file.
   document.querySelectorAll(".upload-drop").forEach((drop) => {
     const input = drop.querySelector("input[type=file]");
-    if (!input) return; // link-style dropzones (e.g. dashboard quick upload)
-    drop.addEventListener("click", () => input.click());
+    if (!input) return; // link-style dropzones (dashboard quick upload)
+    const kind = drop.getAttribute("data-upload");
+    const multiple = input.multiple;
+    const chips = kind ? document.querySelector('[data-chips="' + kind + '"]') : null;
+    let store = [];
+
+    function commit() {
+      const dt = new DataTransfer();
+      store.forEach((f) => dt.items.add(f));
+      input.files = dt.files;
+      render();
+    }
+    function render() {
+      if (kind === "cover") {
+        const wrap = document.getElementById("coverPreviewWrap");
+        const img = document.getElementById("coverPreviewImg");
+        if (store[0]) {
+          if (img) img.src = URL.createObjectURL(store[0]);
+          if (wrap) wrap.style.display = "flex";
+        } else if (wrap) {
+          wrap.style.display = "none";
+        }
+        return;
+      }
+      if (!chips) return;
+      chips.innerHTML = "";
+      store.forEach((f, idx) => {
+        const isImg = f.type.startsWith("image/");
+        const isVid = f.type.startsWith("video/");
+        const icon = isImg ? "bi-image" : isVid ? "bi-camera-reels" : "bi-file-earmark-text";
+        const row = document.createElement("div");
+        row.className = "file-progress-row";
+        row.innerHTML =
+          '<i class="bi ' + icon + ' text-primary"></i>' +
+          '<div class="flex-grow-1"><div class="small fw-semibold text-truncate">' + esc(f.name) + '</div></div>' +
+          '<span class="tiny text-muted me-2">' + bytesLabel(f.size) + '</span>' +
+          '<button type="button" class="icon-btn text-danger" data-remove-file="' + idx + '" title="Remove" style="width:30px;height:30px;"><i class="bi bi-x-lg"></i></button>';
+        chips.appendChild(row);
+      });
+    }
+
+    drop.addEventListener("click", (e) => { if (!e.target.closest("[data-remove-file]")) input.click(); });
     ["dragover", "dragleave", "drop"].forEach((evt) => drop.addEventListener(evt, (e) => {
       e.preventDefault();
-      drop.style.borderColor = evt === "dragover" ? "#3155E7" : "";
+      drop.style.borderColor = evt === "dragover" ? "var(--odoc-primary)" : "";
     }));
     drop.addEventListener("drop", (e) => {
       if (e.dataTransfer && e.dataTransfer.files.length) {
-        input.files = e.dataTransfer.files;
-        input.dispatchEvent(new Event("change"));
+        const dropped = Array.from(e.dataTransfer.files);
+        store = multiple ? store.concat(dropped) : [dropped[0]];
+        commit();
       }
     });
-    input.addEventListener("change", () => onFiles(drop, input));
+    input.addEventListener("change", () => {
+      const picked = Array.from(input.files);
+      store = multiple ? store.concat(picked) : (picked[0] ? [picked[0]] : []);
+      commit();
+    });
+    if (chips) {
+      chips.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-remove-file]");
+        if (!btn) return;
+        store.splice(parseInt(btn.getAttribute("data-remove-file"), 10), 1);
+        commit();
+      });
+    }
+    const clearCover = document.querySelector("[data-clear-cover]");
+    if (kind === "cover" && clearCover) {
+      clearCover.addEventListener("click", () => { store = []; commit(); });
+    }
   });
 
   // ===== Dynamic committee rows =====
-  function committeeRow(name, role) {
+  function memberRow(name, role) {
     return '<div class="committee-row" data-row>' +
-      '<div class="d-flex align-items-center gap-2">' +
-      '<span class="committee-avatar d-inline-flex align-items-center justify-content-center" style="background:var(--odoc-primary);color:#fff;font-weight:700;">' + esc((name || "?").charAt(0).toUpperCase()) + '</span>' +
+      '<div class="d-flex align-items-center gap-3">' +
+      '<span class="member-avatar">' + esc((name || "?").charAt(0).toUpperCase()) + '</span>' +
       '<div><div class="fw-semibold small">' + esc(name) + '</div><div class="text-muted tiny">' + esc(role) + '</div></div></div>' +
-      '<i class="bi bi-x text-muted" data-remove-row style="cursor:pointer;"></i>' +
+      '<button type="button" class="icon-btn text-danger" data-remove-row title="Remove" style="width:32px;height:32px;"><i class="bi bi-x-lg"></i></button>' +
       '<input type="hidden" name="committeeName" value="' + esc(name) + '">' +
       '<input type="hidden" name="committeeRole" value="' + esc(role) + '"></div>';
   }
@@ -105,20 +144,22 @@ document.addEventListener("DOMContentLoaded", () => {
       const name = (n.value || "").trim();
       if (!name) { n.focus(); return; }
       const role = (r.value || "").trim() || "Member";
-      document.getElementById("committeeList").insertAdjacentHTML("beforeend", committeeRow(name, role));
+      document.getElementById("committeeList").insertAdjacentHTML("beforeend", memberRow(name, role));
+      const empty = document.getElementById("committeeEmpty"); if (empty) empty.style.display = "none";
       n.value = ""; r.value = ""; n.focus();
     });
   }
 
-  // ===== Dynamic milestone rows =====
-  function milestoneRow(title, date) {
+  // ===== Dynamic milestone rows (date picker -> friendly label) =====
+  function milestoneRow(title, isoDate) {
+    const label = friendlyDate(isoDate);
     return '<div class="committee-row" data-row>' +
-      '<div class="d-flex align-items-center gap-2">' +
-      '<span class="committee-avatar d-inline-flex align-items-center justify-content-center" style="background:#E9EEFC;color:var(--odoc-primary);"><i class="bi bi-flag"></i></span>' +
-      '<div><div class="fw-semibold small">' + esc(title) + '</div><div class="text-muted tiny">' + esc(date) + '</div></div></div>' +
-      '<i class="bi bi-x text-muted" data-remove-row style="cursor:pointer;"></i>' +
+      '<div class="d-flex align-items-center gap-3">' +
+      '<span class="member-avatar" style="background:#E9EEFC;color:var(--odoc-primary);"><i class="bi bi-flag"></i></span>' +
+      '<div><div class="fw-semibold small">' + esc(title) + '</div><div class="text-muted tiny">' + esc(label) + '</div></div></div>' +
+      '<button type="button" class="icon-btn text-danger" data-remove-row title="Remove" style="width:32px;height:32px;"><i class="bi bi-x-lg"></i></button>' +
       '<input type="hidden" name="milestoneTitle" value="' + esc(title) + '">' +
-      '<input type="hidden" name="milestoneDate" value="' + esc(date) + '"></div>';
+      '<input type="hidden" name="milestoneDate" value="' + esc(label) + '"></div>';
   }
   const addMilestone = document.getElementById("addMilestoneBtn");
   if (addMilestone) {
@@ -127,7 +168,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const d = document.getElementById("milestoneDateInput");
       const title = (t.value || "").trim();
       if (!title) { t.focus(); return; }
-      document.getElementById("milestoneList").insertAdjacentHTML("beforeend", milestoneRow(title, (d.value || "").trim()));
+      document.getElementById("milestoneList").insertAdjacentHTML("beforeend", milestoneRow(title, d.value));
+      const empty = document.getElementById("milestoneEmpty"); if (empty) empty.style.display = "none";
       t.value = ""; d.value = ""; t.focus();
     });
   }

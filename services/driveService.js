@@ -1,6 +1,7 @@
 /**
  * Google Drive storage service. Streams uploads straight to Drive so file
- * bytes never persist on the app server.
+ * bytes never persist on the app server. Works with either OAuth (personal
+ * account) or a service account, whichever config/drive resolves.
  */
 const { Readable } = require("stream");
 const { getDrive } = require("../config/drive");
@@ -8,10 +9,10 @@ const env = require("../config/env");
 const ApiError = require("../core/ApiError");
 const logger = require("../config/logger");
 
-function requireDrive() {
-  const drive = getDrive();
+async function requireDrive() {
+  const drive = await getDrive();
   if (!drive) {
-    throw ApiError.internal("Google Drive is not configured. Set GOOGLE_DRIVE_ENABLED and credentials.");
+    throw ApiError.internal("Google Drive is not connected. Connect an account from Admin \u2192 Storage.");
   }
   return drive;
 }
@@ -24,7 +25,7 @@ function bufferToStream(buffer) {
 }
 
 async function ensureFolder(name, parentId = env.GOOGLE_DRIVE_ROOT_FOLDER_ID) {
-  const drive = requireDrive();
+  const drive = await requireDrive();
   const safeName = String(name).replace(/'/g, "\\'");
   const parentClause = parentId ? ` and '${parentId}' in parents` : "";
   const existing = await drive.files.list({
@@ -47,7 +48,7 @@ async function ensureFolder(name, parentId = env.GOOGLE_DRIVE_ROOT_FOLDER_ID) {
 }
 
 async function uploadBuffer({ buffer, mimeType, name, folderId }) {
-  const drive = requireDrive();
+  const drive = await requireDrive();
   const parents = [];
   if (folderId) parents.push(folderId);
   else if (env.GOOGLE_DRIVE_ROOT_FOLDER_ID) parents.push(env.GOOGLE_DRIVE_ROOT_FOLDER_ID);
@@ -59,7 +60,6 @@ async function uploadBuffer({ buffer, mimeType, name, folderId }) {
   });
 
   const file = created.data;
-  // Make the file readable by anyone with the link (guest downloads/preview).
   await drive.permissions.create({
     fileId: file.id,
     requestBody: { role: "reader", type: "anyone" },
@@ -86,7 +86,8 @@ async function uploadBuffer({ buffer, mimeType, name, folderId }) {
 
 async function deleteFile(fileId) {
   if (!fileId) return;
-  const drive = requireDrive();
+  const drive = await getDrive();
+  if (!drive) return;
   try {
     await drive.files.delete({ fileId });
   } catch (err) {
@@ -95,15 +96,14 @@ async function deleteFile(fileId) {
 }
 
 /**
- * Real storage quota from the Drive account. Returns null when Drive is not
- * configured so callers can fall back to a configured capacity.
+ * Real storage quota from the connected Drive account. Returns null when Drive
+ * is not connected so callers can fall back to a configured capacity.
  */
 async function getQuota() {
-  const drive = getDrive();
+  const drive = await getDrive();
   if (!drive) return null;
   const res = await drive.about.get({ fields: "storageQuota" });
   const q = res.data.storageQuota || {};
-  // `limit` is absent on unlimited accounts; treat as 0 (caller falls back).
   return {
     limit: q.limit ? Number(q.limit) : 0,
     usage: q.usage ? Number(q.usage) : 0,

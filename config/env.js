@@ -7,7 +7,6 @@ require("dotenv").config();
 function required(key, fallback) {
   const value = process.env[key] ?? fallback;
   if (value === undefined || value === "") {
-    // Fail fast in production; allow local dev to surface a clear message.
     throw new Error(`Missing required environment variable: ${key}`);
   }
   return value;
@@ -26,12 +25,13 @@ function bool(key, fallback = false) {
 
 const NODE_ENV = optional("NODE_ENV", "development");
 const isProd = NODE_ENV === "production";
+const APP_URL = optional("APP_URL", "http://localhost:3000");
 
 const env = {
   NODE_ENV,
   isProd,
   PORT: parseInt(optional("PORT", "3000"), 10),
-  APP_URL: optional("APP_URL", "http://localhost:3000"),
+  APP_URL,
 
   MONGO_URI: isProd ? required("MONGO_URI") : optional("MONGO_URI", "mongodb://127.0.0.1:27017/odoc"),
 
@@ -46,11 +46,19 @@ const env = {
 
   BCRYPT_ROUNDS: parseInt(optional("BCRYPT_ROUNDS", "12"), 10),
 
-  // Google Drive (service account preferred for server-to-server uploads)
+  // ---- Google Drive via OAuth (recommended: real personal Drive) ----
+  GOOGLE_OAUTH_CLIENT_ID: optional("GOOGLE_OAUTH_CLIENT_ID", undefined),
+  GOOGLE_OAUTH_CLIENT_SECRET: optional("GOOGLE_OAUTH_CLIENT_SECRET", undefined),
+  GOOGLE_OAUTH_REDIRECT_URI: optional("GOOGLE_OAUTH_REDIRECT_URI", `${APP_URL}/admin/integrations/google/callback`),
+
+  // ---- Google Drive via service account (fallback, headless) ----
   GOOGLE_DRIVE_ENABLED: bool("GOOGLE_DRIVE_ENABLED", false),
   GOOGLE_CLIENT_EMAIL: optional("GOOGLE_CLIENT_EMAIL", undefined),
   GOOGLE_PRIVATE_KEY: optional("GOOGLE_PRIVATE_KEY", undefined),
   GOOGLE_DRIVE_ROOT_FOLDER_ID: optional("GOOGLE_DRIVE_ROOT_FOLDER_ID", undefined),
+
+  // Displayed capacity (GB) when Drive reports no fixed quota limit.
+  STORAGE_CAPACITY_GB: parseFloat(optional("STORAGE_CAPACITY_GB", "15")),
 
   RATE_LIMIT_WINDOW_MS: parseInt(optional("RATE_LIMIT_WINDOW_MS", "900000"), 10),
   RATE_LIMIT_MAX: parseInt(optional("RATE_LIMIT_MAX", "300"), 10),
@@ -58,7 +66,6 @@ const env = {
 
   MAX_UPLOAD_BYTES: parseInt(optional("MAX_UPLOAD_BYTES", String(50 * 1024 * 1024)), 10),
 
-  // Default seeded admin accounts (must be rotated on first login)
   SEED_SUPERADMIN_EMAIL: optional("SEED_SUPERADMIN_EMAIL", "superadmin@odoc.archive"),
   SEED_SUPERADMIN_PASSWORD: optional("SEED_SUPERADMIN_PASSWORD", "ChangeMe!Super123"),
   SEED_ADMIN_EMAIL: optional("SEED_ADMIN_EMAIL", "admin@odoc.archive"),
