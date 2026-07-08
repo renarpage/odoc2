@@ -9,6 +9,7 @@ const settingRepository = require("../repositories/settingRepository");
 const Backup = require("../models/Backup");
 const driveService = require("./driveService");
 const driveConfig = require("../config/drive");
+const env = require("../config/env");
 const { formatBytes } = require("../helpers/bytes");
 const { resolveCapacityBytes } = require("../helpers/capacity");
 
@@ -79,6 +80,7 @@ async function overview() {
     driveMode: status.mode,
     driveEmail: status.email,
     oauthConfigured: status.oauthConfigured,
+    rootFolderId: env.GOOGLE_DRIVE_ROOT_FOLDER_ID || null,
     quotaHasLimit: !!(quota && quota.limit && quota.limit > 0),
     usedBytes,
     capacityBytes,

@@ -1,0 +1,29 @@
+/* ============ NEUMORPHIC NATIVE CONTROLS ============ */
+/* Custom caret for selects so they match the neumorphic inputs. */
+.form-select-odoc {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 16 16' fill='none' stroke='%237c86a3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 14px;
+  padding-right: 40px;
+}
+
+/* Date picker indicator styled to feel part of the theme. */
+input[type="date"].form-control-odoc::-webkit-calendar-picker-indicator,
+input[type="time"].form-control-odoc::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
+}
+input[type="date"].form-control-odoc:hover::-webkit-calendar-picker-indicator,
+input[type="time"].form-control-odoc:hover::-webkit-calendar-picker-indicator {
+  opacity: 1;
+}
+
+/* Upcoming status text colour used across admin tables. */
+.text-purple {
+  color: #7c4fd8 !important;
+}

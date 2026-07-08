@@ -59,6 +59,8 @@
   justify-content: center;
   align-items: center;
   display: flex;
+  cursor: pointer;
+  user-select: none;
 }
 
 .filter-pill-group a.active {
@@ -88,6 +90,38 @@
   .filter-pill-group a {
     padding: 8px;
   }
+}
+
+/* ============ EQUAL-HEIGHT ACTIVITY CARDS ============ */
+.activity-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.activity-card .card-img-wrap {
+  background: var(--odoc-bg);
+}
+.activity-card .card-body-odoc {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+/* Clamp long summaries so every card is the same height. */
+.activity-card .card-desc-odoc {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 62px;
+}
+.activity-card .card-body-odoc > .d-flex:last-child {
+  margin-top: auto;
+}
+
+.archive-empty {
+  text-align: center;
+  color: var(--odoc-muted);
+  padding: 40px 0;
 }
 
 #about .about-title {

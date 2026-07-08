@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/theme-extras.css">
   <% if (typeof branding !== 'undefined' && branding) { %>
   <style id="odoc-brand-vars">
     :root {
@@ -33,7 +34,7 @@
           </div>
         <% } %>
         <% if (typeof error !== 'undefined' && error.length) { %>
-          <div class="alert alert-danger alert-dismissible fade show odoc-alert" role="alert">
+          <div class="alert alert-danger alert-dismissible fade show odoc-alert" role="alert" style="background:#fdecec;color:#b3261e;">
             <i class="bi bi-exclamation-triangle me-2"></i><%= error[0] %>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
           </div>
