@@ -1,12 +1,10 @@
 <style>
-  /* Critical, cache-proof styling for committee avatars, media popup + skeletons. */
   .committee-initial {
     width: 46px; height: 46px; border-radius: 50%; margin-right: 14px; flex-shrink: 0;
     display: inline-flex; align-items: center; justify-content: center;
     font-weight: 700; font-size: 1.05rem; letter-spacing: .3px;
     background: var(--odoc-primary); color: #fff;
-    box-shadow: 3px 3px 8px rgba(46,82,228,.32), -3px -3px 8px rgba(255,255,255,.9),
-      inset 1px 1px 2px rgba(255,255,255,.35);
+    box-shadow: 3px 3px 8px rgba(46,82,228,.32), -3px -3px 8px rgba(255,255,255,.9), inset 1px 1px 2px rgba(255,255,255,.35);
   }
   .committee-row { gap: 6px; transition: all .3s ease; }
   .committee-row:hover, .doc-row:hover {
@@ -15,7 +13,7 @@
   }
   .doc-row:hover .bi-download { color: var(--odoc-primary) !important; }
 
-  /* Progressive media: skeleton shimmer + fade-in thumbnails */
+  /* Progressive grid thumbnails */
   .gallery-grid .gallery-skeleton { position: relative; height: 180px; border-radius: var(--radius-md); overflow: hidden; background: #e6eaf3; }
   .gallery-grid .gallery-skeleton.wide { grid-column: span 2; height: 260px; }
   .gallery-grid .gallery-skeleton::after {
@@ -29,32 +27,61 @@
   .gallery-thumb.loaded { opacity: 1; }
   @keyframes neuShimmer { 100% { transform: translateX(100%); } }
 
-  /* Media popup */
-  .odoc-lightbox {
+  /* ===== Media card modal ===== */
+  .media-modal {
     position: fixed; inset: 0; z-index: 2000; display: none;
-    align-items: center; justify-content: center; padding: 40px 20px 96px;
-    background: rgba(20,24,40,.82); backdrop-filter: blur(4px);
+    align-items: center; justify-content: center; padding: 30px 16px;
+    background: rgba(20,24,40,.55); backdrop-filter: blur(4px);
   }
-  .odoc-lightbox.open { display: flex; }
-  .odoc-lightbox .lb-stage { position: relative; max-width: min(1100px,92vw); max-height: 80vh; display: flex; align-items: center; justify-content: center; }
-  .odoc-lightbox .lb-stage img { max-width: 100%; max-height: 80vh; border-radius: var(--radius-md); object-fit: contain; box-shadow: 0 20px 60px rgba(0,0,0,.45); background: #fff; }
-  .odoc-lightbox .lb-close, .odoc-lightbox .lb-nav {
-    position: absolute; border: none; color: #fff; width: 48px; height: 48px; border-radius: 50%;
-    display: inline-flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer;
-    background: rgba(255,255,255,.16); transition: background .2s ease, transform .2s ease;
+  .media-modal.open { display: flex; }
+  .media-card {
+    width: 100%; max-width: 760px; max-height: 88vh;
+    display: flex; flex-direction: column;
+    background: var(--odoc-bg); border-radius: var(--radius-lg); overflow: hidden;
+    box-shadow: 10px 10px 30px rgba(30,42,90,.35), -6px -6px 20px rgba(255,255,255,.6);
   }
-  /* Vertical centering via margin (not transform) so hover-scale doesn't shift them. */
-  .odoc-lightbox .lb-nav { top: 50%; margin-top: -24px; }
-  .odoc-lightbox .lb-prev { left: 22px; }
-  .odoc-lightbox .lb-next { right: 22px; }
-  .odoc-lightbox .lb-close { top: 22px; right: 26px; }
-  .odoc-lightbox .lb-close:hover, .odoc-lightbox .lb-nav:hover { background: rgba(255,255,255,.3); transform: scale(1.06); }
-  .odoc-lightbox .lb-actions { position: absolute; bottom: 28px; left: 0; right: 0; display: flex; align-items: center; justify-content: center; gap: 18px; }
-  .odoc-lightbox .lb-count { color: rgba(255,255,255,.85); font-weight: 600; font-size: .9rem; }
-  .lb-spinner { position: absolute; width: 44px; height: 44px; border: 3px solid rgba(255,255,255,.25); border-top-color: #fff; border-radius: 50%; animation: neuSpin .8s linear infinite; }
-  .lb-spinner.hidden { display: none; }
-  @keyframes neuSpin { to { transform: rotate(360deg); } }
-  @media (max-width: 575px){ .odoc-lightbox .lb-prev{left:8px;} .odoc-lightbox .lb-next{right:8px;} }
+  .media-card-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 22px; border-bottom: 1px solid var(--odoc-border);
+  }
+  .media-card-head .mm-title { font-weight: 700; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; }
+  .media-card-head .mm-title i { color: var(--odoc-primary); }
+  .mm-close {
+    border: none; background: var(--odoc-bg); width: 40px; height: 40px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--odoc-text);
+    box-shadow: 2px 2px 6px rgba(159,168,182,.42), -2px -2px 6px rgba(247,248,250,.68); transition: all .2s ease;
+  }
+  .mm-close:hover { color: var(--odoc-primary); transform: translateY(-1px); }
+  .media-card-toolbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 14px 22px; border-bottom: 1px solid var(--odoc-border); flex-wrap: wrap;
+  }
+  .mm-selectall { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; font-size: .9rem; cursor: pointer; user-select: none; }
+  .mm-cb, .mm-selectall input {
+    appearance: none; -webkit-appearance: none; width: 22px; height: 22px; border-radius: 7px; cursor: pointer;
+    background: var(--odoc-bg); flex-shrink: 0; position: relative;
+    box-shadow: inset 2px 2px 5px rgba(178,184,192,.5), inset -2px -2px 5px rgba(255,255,255,.7); transition: all .2s ease;
+  }
+  .mm-cb:checked, .mm-selectall input:checked { background: var(--odoc-primary); box-shadow: inset 1px 1px 3px rgba(0,0,0,.25); }
+  .mm-cb:checked::after, .mm-selectall input:checked::after {
+    content: "\2713"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: .8rem; font-weight: 700;
+  }
+  .media-card-body { overflow-y: auto; padding: 18px 22px; display: flex; flex-direction: column; gap: 16px; }
+  .mm-item { position: relative; border-radius: var(--radius-md); overflow: hidden; background: #e6eaf3; box-shadow: 2px 2px 10px rgba(152,161,174,.4); }
+  .mm-item img { width: 100%; display: block; }
+  .mm-item .mm-corner {
+    position: absolute; top: 12px; left: 12px; z-index: 2;
+    background: rgba(255,255,255,.9); border-radius: 8px; padding: 6px; display: inline-flex;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  }
+  .mm-item .mm-dl {
+    position: absolute; top: 12px; right: 12px; z-index: 2;
+    background: rgba(255,255,255,.92); border-radius: 999px; padding: 8px 12px; font-size: .8rem; font-weight: 600;
+    color: var(--odoc-text); display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    transition: all .2s ease;
+  }
+  .mm-item .mm-dl:hover { color: var(--odoc-primary); }
 </style>
 
 <div class="container py-4">
@@ -155,59 +182,100 @@
   </div>
 </div>
 
-<div class="odoc-lightbox" id="mediaLightbox" aria-hidden="true">
-  <button class="lb-close" data-lb-close aria-label="Close"><i class="bi bi-x-lg"></i></button>
-  <button class="lb-nav lb-prev" data-lb-prev aria-label="Previous"><i class="bi bi-chevron-left"></i></button>
-  <div class="lb-stage">
-    <div class="lb-spinner" id="lbSpinner"></div>
-    <img id="lbImg" src="" alt="" referrerpolicy="no-referrer">
-  </div>
-  <button class="lb-nav lb-next" data-lb-next aria-label="Next"><i class="bi bi-chevron-right"></i></button>
-  <div class="lb-actions">
-    <span class="lb-count" id="lbCount"></span>
-    <a id="lbDownload" href="#" target="_blank" rel="noopener" class="btn btn-primary rounded-pill px-4"><i class="bi bi-download me-2"></i>Download</a>
+<div class="media-modal" id="mediaModal" aria-hidden="true">
+  <div class="media-card">
+    <div class="media-card-head">
+      <div class="mm-title"><i class="bi bi-images"></i> Media Archive <span class="text-muted tiny fw-normal" id="mmCount"></span></div>
+      <button class="mm-close" data-mm-close aria-label="Close"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="media-card-toolbar">
+      <label class="mm-selectall"><input type="checkbox" id="mmSelectAll"> Select all</label>
+      <button type="button" class="btn btn-primary rounded-pill px-4" id="mmDownload"><i class="bi bi-download me-2"></i>Download (<span id="mmSelCount">0</span>)</button>
+    </div>
+    <div class="media-card-body" id="mmBody"></div>
   </div>
 </div>
 
 <script>
 (function () {
-  // Progressive thumbnails: reveal each once it finishes loading. Handlers are
-  // attached here (not inline) because CSP blocks inline event attributes.
+  // Reveal grid thumbnails once loaded (CSP-safe; no inline handlers).
   document.querySelectorAll('.gallery-thumb').forEach(function (im) {
     function done() { im.classList.add('loaded'); if (im.parentNode) im.parentNode.classList.add('loaded'); }
-    function fail() { if (im.parentNode) im.parentNode.classList.add('loaded'); im.style.opacity = '1'; }
-    if (im.complete && im.naturalWidth > 0) { done(); }
-    else { im.addEventListener('load', done); im.addEventListener('error', fail); }
+    if (im.complete && im.naturalWidth > 0) done();
+    else { im.addEventListener('load', done); im.addEventListener('error', function () { if (im.parentNode) im.parentNode.classList.add('loaded'); im.style.opacity = '1'; }); }
   });
 
   var items = <%- JSON.stringify(activity.galleryItems || []) %>;
-  var lb = document.getElementById('mediaLightbox');
-  if (lb && items.length) {
-    var img = document.getElementById('lbImg');
-    var dl = document.getElementById('lbDownload');
-    var count = document.getElementById('lbCount');
-    var spinner = document.getElementById('lbSpinner');
-    var idx = 0;
-    img.addEventListener('load', function () { if (spinner) spinner.classList.add('hidden'); img.style.visibility = 'visible'; });
-    img.addEventListener('error', function () { if (spinner) spinner.classList.add('hidden'); });
-    function show(i) {
-      idx = (i + items.length) % items.length;
-      if (spinner) spinner.classList.remove('hidden');
-      img.style.visibility = 'hidden';
-      img.src = items[idx].view;
-      dl.href = items[idx].download;
-      count.textContent = (idx + 1) + ' / ' + items.length;
+  var modal = document.getElementById('mediaModal');
+
+  if (modal && items.length) {
+    var body = document.getElementById('mmBody');
+    var selectAll = document.getElementById('mmSelectAll');
+    var selCount = document.getElementById('mmSelCount');
+    var countLbl = document.getElementById('mmCount');
+    var dlBtn = document.getElementById('mmDownload');
+    var built = false;
+
+    countLbl.textContent = '(' + items.length + ')';
+
+    function build() {
+      if (built) return;
+      built = true;
+      body.innerHTML = items.map(function (it, i) {
+        return '<div class="mm-item">' +
+          '<label class="mm-corner"><input type="checkbox" class="mm-cb" data-index="' + i + '"></label>' +
+          '<a class="mm-dl" href="' + it.download + '" target="_blank" rel="noopener"><i class="bi bi-download"></i> Save</a>' +
+          '<img src="' + it.view + '" alt="Media ' + (i + 1) + '" referrerpolicy="no-referrer" loading="lazy">' +
+          '</div>';
+      }).join('');
+      body.querySelectorAll('.mm-cb').forEach(function (cb) { cb.addEventListener('change', updateCount); });
     }
-    function open(i) { show(i); lb.classList.add('open'); document.body.style.overflow = 'hidden'; }
-    function close() { lb.classList.remove('open'); document.body.style.overflow = ''; }
-    document.querySelectorAll('[data-gallery-index]').forEach(function (el) { el.addEventListener('click', function () { open(parseInt(el.dataset.galleryIndex, 10)); }); });
-    var vd = document.getElementById('mediaViewDetails'); if (vd) vd.addEventListener('click', function (e) { e.preventDefault(); open(0); });
-    lb.querySelector('[data-lb-close]').addEventListener('click', close);
-    lb.querySelector('[data-lb-prev]').addEventListener('click', function () { show(idx - 1); });
-    lb.querySelector('[data-lb-next]').addEventListener('click', function () { show(idx + 1); });
-    lb.addEventListener('click', function (e) { if (e.target === lb) close(); });
-    document.addEventListener('keydown', function (e) { if (!lb.classList.contains('open')) return; if (e.key === 'Escape') close(); if (e.key === 'ArrowLeft') show(idx - 1); if (e.key === 'ArrowRight') show(idx + 1); });
+    function checked() { return Array.prototype.slice.call(body.querySelectorAll('.mm-cb:checked')); }
+    function updateCount() {
+      var n = checked().length;
+      selCount.textContent = n;
+      var all = body.querySelectorAll('.mm-cb').length;
+      selectAll.checked = n > 0 && n === all;
+      selectAll.indeterminate = n > 0 && n < all;
+    }
+    function open() { build(); modal.classList.add('open'); document.body.style.overflow = 'hidden'; updateCount(); }
+    function close() { modal.classList.remove('open'); document.body.style.overflow = ''; }
+
+    // Trigger downloads sequentially (browsers throttle simultaneous ones).
+    function triggerDownloads(list) {
+      list.forEach(function (url, i) {
+        setTimeout(function () {
+          var a = document.createElement('a');
+          a.href = url; a.rel = 'noopener'; a.target = '_blank';
+          document.body.appendChild(a); a.click(); a.remove();
+        }, i * 700);
+      });
+    }
+
+    var viewDetails = document.getElementById('mediaViewDetails');
+    if (viewDetails) viewDetails.addEventListener('click', function (e) { e.preventDefault(); open(); });
+    document.querySelectorAll('[data-gallery-index]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        open();
+        var target = body.querySelectorAll('.mm-item')[parseInt(el.dataset.galleryIndex, 10)];
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+    modal.querySelector('[data-mm-close]').addEventListener('click', close);
+    modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('open')) close(); });
+
+    selectAll.addEventListener('change', function () {
+      body.querySelectorAll('.mm-cb').forEach(function (cb) { cb.checked = selectAll.checked; });
+      updateCount();
+    });
+    dlBtn.addEventListener('click', function () {
+      var sel = checked().map(function (cb) { return items[parseInt(cb.dataset.index, 10)].download; });
+      if (!sel.length) { sel = items.map(function (it) { return it.download; }); } // nothing selected -> download all
+      triggerDownloads(sel);
+    });
   }
+
   var share = document.getElementById('shareBtn');
   if (share) {
     share.addEventListener('click', async function () {
