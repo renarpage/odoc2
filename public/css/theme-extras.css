@@ -1,29 +1,164 @@
-/* ============ NEUMORPHIC NATIVE CONTROLS ============ */
-/* Custom caret for selects so they match the neumorphic inputs. */
-.form-select-odoc {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 16 16' fill='none' stroke='%237c86a3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 14px center;
-  background-size: 14px;
-  padding-right: 40px;
+/* ============ CUSTOM NEUMORPHIC SELECT ============ */
+/* Native option lists can't be themed, so selects are enhanced into these. */
+.neu-native-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  opacity: 0; pointer-events: none;
+  margin: 0; padding: 0; border: 0;
+}
+.neu-select { position: relative; }
+.neu-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  background: var(--odoc-bg);
+  border: none;
+  color: var(--odoc-text);
+  font-weight: 500;
+  font-size: 0.92rem;
+}
+.neu-select-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.neu-select-caret { color: var(--odoc-muted); transition: transform 0.25s ease; flex-shrink: 0; }
+.neu-select.open .neu-select-caret { transform: rotate(180deg); color: var(--odoc-primary); }
+.neu-select-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0; right: 0;
+  z-index: 70;
+  background: var(--odoc-bg);
+  border-radius: var(--radius-md);
+  padding: 8px;
+  display: none;
+  max-height: 280px;
+  overflow-y: auto;
+  box-shadow:
+    6px 6px 16px rgba(159, 168, 182, 0.5),
+    -6px -6px 16px rgba(255, 255, 255, 0.92);
+}
+.neu-select.open .neu-select-menu { display: block; animation: neuFade 0.15s ease; }
+@keyframes neuFade { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.neu-select-option {
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: var(--odoc-text);
+  transition: all 0.15s ease;
+}
+.neu-select-option:hover { background: #e9eefc; color: var(--odoc-primary); }
+.neu-select-option.active {
+  background: var(--odoc-primary);
+  color: #fff;
+  box-shadow: inset 1px 1px 3px rgba(0,0,0,.18);
 }
 
-/* Date picker indicator styled to feel part of the theme. */
-input[type="date"].form-control-odoc::-webkit-calendar-picker-indicator,
-input[type="time"].form-control-odoc::-webkit-calendar-picker-indicator {
-  cursor: pointer;
-  opacity: 0.55;
-  transition: opacity 0.2s ease;
+/* ============ FLATPICKR (neumorphic) ============ */
+.flatpickr-calendar {
+  background: var(--odoc-bg) !important;
+  border: none !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow:
+    8px 8px 20px rgba(159, 168, 182, 0.5),
+    -8px -8px 20px rgba(255, 255, 255, 0.92) !important;
+  padding: 6px;
 }
-input[type="date"].form-control-odoc:hover::-webkit-calendar-picker-indicator,
-input[type="time"].form-control-odoc:hover::-webkit-calendar-picker-indicator {
-  opacity: 1;
+.flatpickr-calendar::before, .flatpickr-calendar::after { display: none !important; }
+.flatpickr-months, .flatpickr-month { background: transparent !important; color: var(--odoc-text) !important; }
+.flatpickr-current-month .flatpickr-monthDropdown-months,
+.flatpickr-current-month input.cur-year { color: var(--odoc-text) !important; font-weight: 700; }
+.flatpickr-weekday { color: var(--odoc-muted) !important; font-weight: 600; }
+.flatpickr-months .flatpickr-prev-month svg,
+.flatpickr-months .flatpickr-next-month svg { fill: var(--odoc-muted) !important; }
+.flatpickr-months .flatpickr-prev-month:hover svg,
+.flatpickr-months .flatpickr-next-month:hover svg { fill: var(--odoc-primary) !important; }
+.flatpickr-day {
+  color: var(--odoc-text);
+  border-radius: 10px !important;
+  border: none !important;
 }
+.flatpickr-day:hover { background: #e9eefc !important; color: var(--odoc-primary) !important; }
+.flatpickr-day.selected, .flatpickr-day.selected:hover {
+  background: var(--odoc-primary) !important;
+  color: #fff !important;
+  box-shadow:
+    inset 1px 1px 2px rgba(0,0,0,.2),
+    2px 2px 6px rgba(46,82,228,.4);
+}
+.flatpickr-day.today { border: 1px solid var(--odoc-primary) !important; }
+.flatpickr-day.flatpickr-disabled, .flatpickr-day.prevMonthDay, .flatpickr-day.nextMonthDay { color: var(--odoc-muted); opacity: 0.5; }
+
+/* ============ TOPBAR NOTIFICATION MENU ============ */
+.notif-menu {
+  width: 320px;
+  max-width: 88vw;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--odoc-bg);
+  box-shadow:
+    8px 8px 20px rgba(159, 168, 182, 0.5),
+    -8px -8px 20px rgba(255, 255, 255, 0.92);
+  overflow: hidden;
+}
+.notif-head {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--odoc-border);
+}
+.notif-list { max-height: 340px; overflow-y: auto; }
+.notif-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--odoc-border);
+  transition: background 0.2s ease;
+}
+.notif-item:last-child { border-bottom: none; }
+.notif-item:hover { background: #eef1f8; }
+.notif-ico {
+  width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.notif-ico.warning { background: #fdecec; color: var(--odoc-danger); }
+.notif-ico.error { background: #fdecec; color: var(--odoc-danger); }
+.notif-ico.info { background: #e9eefc; color: var(--odoc-primary); }
+.notif-ico.user { background: #e4f5ec; color: var(--odoc-success); }
+.notif-ico.success { background: #e4f5ec; color: var(--odoc-success); }
+.notif-empty { padding: 26px 16px; text-align: center; color: var(--odoc-muted); }
+
+/* ============ MEDIA SKELETON + LIGHTBOX SPINNER ============ */
+.gallery-thumb {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.gallery-thumb.loaded { opacity: 1; }
+.gallery-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #e6eaf3;
+}
+.gallery-skeleton::after {
+  content: "";
+  position: absolute; inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+  animation: neuShimmer 1.3s infinite;
+}
+.gallery-skeleton.loaded::after { display: none; animation: none; }
+@keyframes neuShimmer { 100% { transform: translateX(100%); } }
+
+.lb-spinner {
+  position: absolute;
+  width: 44px; height: 44px;
+  border: 3px solid rgba(255,255,255,0.25);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: neuSpin 0.8s linear infinite;
+}
+.lb-spinner.hidden { display: none; }
+@keyframes neuSpin { to { transform: rotate(360deg); } }
 
 /* Upcoming status text colour used across admin tables. */
-.text-purple {
-  color: #7c4fd8 !important;
-}
+.text-purple { color: #7c4fd8 !important; }
