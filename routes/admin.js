@@ -10,6 +10,7 @@ const brandingController = require("../controllers/brandingController");
 const settingsController = require("../controllers/settingsController");
 const userController = require("../controllers/userController");
 const authController = require("../controllers/authController");
+const integrationsController = require("../controllers/integrationsController");
 
 // Multipart handler for the activity form (cover + gallery + documents).
 const activityUpload = upload.fields([
@@ -36,6 +37,11 @@ router.post("/activities/:slug/duplicate", activityController.duplicateFromForm)
 router.post("/activities/:slug/delete", activityController.deleteFromForm);
 
 router.get("/storage", storageController.page);
+
+// Google Drive OAuth (Super Admin only)
+router.get("/integrations/google/connect", requireSuperAdmin, integrationsController.connect);
+router.get("/integrations/google/callback", requireSuperAdmin, integrationsController.callback);
+router.post("/integrations/google/disconnect", requireSuperAdmin, integrationsController.disconnect);
 
 router.get("/branding", brandingController.page);
 router.post("/branding", brandingController.updateFromForm);

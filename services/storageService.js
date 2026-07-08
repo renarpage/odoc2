@@ -8,6 +8,7 @@ const documentRepository = require("../repositories/documentRepository");
 const settingRepository = require("../repositories/settingRepository");
 const Backup = require("../models/Backup");
 const driveService = require("./driveService");
+const driveConfig = require("../config/drive");
 const { formatBytes } = require("../helpers/bytes");
 const { resolveCapacityBytes } = require("../helpers/capacity");
 
@@ -50,13 +51,14 @@ async function recentUploads() {
 }
 
 async function overview() {
-  const [images, videos, docs, backups, quota, settings] = await Promise.all([
+  const [images, videos, docs, backups, quota, settings, status] = await Promise.all([
     typeAgg(galleryRepository.model, { mime: { $regex: "^image/" } }),
     typeAgg(galleryRepository.model, { mime: { $regex: "^video/" } }),
     typeAgg(documentRepository.model, null),
     typeAgg(Backup, null),
     driveService.getQuota().catch(() => null),
     settingRepository.getData("system", {}),
+    driveConfig.getStatus().catch(() => ({ connected: false, mode: null, email: null, oauthConfigured: false })),
   ]);
 
   const sumBytes = images.bytes + videos.bytes + docs.bytes + backups.bytes;
@@ -73,7 +75,10 @@ async function overview() {
   });
 
   return {
-    driveConnected: !!quota,
+    driveConnected: status.connected,
+    driveMode: status.mode,
+    driveEmail: status.email,
+    oauthConfigured: status.oauthConfigured,
     quotaHasLimit: !!(quota && quota.limit && quota.limit > 0),
     usedBytes,
     capacityBytes,
