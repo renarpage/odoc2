@@ -1,12 +1,10 @@
 /**
  * Populates view locals every request so templates never hit undefined vars.
- * Branding is loaded once and cached briefly to avoid a per-request DB hit.
+ * Branding is read fresh each request (single indexed doc, cheap) so changes
+ * saved on the Branding page propagate to the site immediately.
  */
 const brandingService = require("../services/brandingService");
 const logger = require("../config/logger");
-
-let cache = { value: null, at: 0 };
-const TTL_MS = 30 * 1000;
 
 async function locals(req, res, next) {
   res.locals.currentPath = req.path;
@@ -14,10 +12,7 @@ async function locals(req, res, next) {
   res.locals.success = res.locals.success || [];
   res.locals.error = res.locals.error || [];
   try {
-    if (!cache.value || Date.now() - cache.at > TTL_MS) {
-      cache = { value: await brandingService.get(), at: Date.now() };
-    }
-    res.locals.branding = cache.value;
+    res.locals.branding = await brandingService.get();
   } catch (err) {
     logger.warn("Branding locals unavailable", { error: err.message });
     res.locals.branding = res.locals.branding || null;

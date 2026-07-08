@@ -1,8 +1,9 @@
 /**
  * Stateless double-submit-cookie CSRF protection.
  * A random token is stored in a readable cookie and mirrored into forms
- * (partials/csrf.ejs) or the X-CSRF-Token header; the two must match on
- * state-changing requests.
+ * (partials/csrf.ejs), the X-CSRF-Token header, or a _csrf query param.
+ * The query param is needed for multipart forms, whose body is not parsed
+ * until multer runs (after this middleware).
  */
 const crypto = require("crypto");
 const { COOKIES } = require("../constants");
@@ -11,11 +12,9 @@ const ApiError = require("../core/ApiError");
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
-// Paths not yet carrying a CSRF token (legacy server-rendered forms).
-// Drop-in hardening: add <%- include('partials/csrf') %> to those forms,
-// then remove them from this list.
+// Legacy server-rendered forms that do not yet carry a CSRF token.
+// (Branding + Settings are same-site POSTs guarded by SameSite=Lax cookies.)
 const IGNORE_PATHS = [
-  "/admin/activities/new",
   "/admin/branding",
   "/admin/settings",
 ];
@@ -25,7 +24,7 @@ function ensureToken(req, res) {
   if (!token) {
     token = crypto.randomBytes(24).toString("hex");
     res.cookie(COOKIES.CSRF, token, {
-      httpOnly: false, // must be readable by the template/JS to echo back
+      httpOnly: false, // readable so templates/JS can echo it back
       secure: env.COOKIE_SECURE,
       sameSite: "lax",
       path: "/",
@@ -40,7 +39,10 @@ function csrfProtection(req, res, next) {
   if (SAFE_METHODS.has(req.method)) return next();
   if (IGNORE_PATHS.includes(req.path)) return next();
 
-  const submitted = req.get("x-csrf-token") || (req.body && req.body._csrf);
+  const submitted =
+    req.get("x-csrf-token") ||
+    (req.body && req.body._csrf) ||
+    (req.query && req.query._csrf);
   if (!submitted || submitted !== token) {
     return next(ApiError.forbidden("Invalid or missing CSRF token"));
   }
