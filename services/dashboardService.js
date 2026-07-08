@@ -74,6 +74,7 @@ async function stats() {
     ongoingCount,
     upcomingCount,
     completedToday: completedCount,
+    completedActivities: completedCount,
     activeEvents: ongoingCount + upcomingCount,
     totalGallery,
     totalDocuments,

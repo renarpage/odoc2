@@ -3,25 +3,39 @@
  * existing EJS views already consume, so templates render identically.
  */
 const { ROLE_LABELS } = require("../constants");
+const { toDriveImage, toDriveDownload } = require("./driveUrl");
 
 function activityToView(doc) {
   if (!doc) return null;
   const a = typeof doc.toObject === "function" ? doc.toObject() : doc;
+  const gallery = (a.gallery || []).map((g) => toDriveImage(g));
   return {
-    id: a.slug, // views build /activity/:id and print ID from this
+    id: a.slug,
     title: a.title,
     category: a.category,
     status: a.status,
-    date: a.date, // Date -> views call new Date(a.date)
+    date: a.date,
     endDate: a.endDate || null,
     location: a.location,
     organizer: a.organizer,
     division: a.division,
-    cover: a.cover,
+    cover: toDriveImage(a.cover),
     summary: a.summary,
     description: Array.isArray(a.description) ? a.description : (a.description ? [a.description] : []),
-    gallery: a.gallery || [],
-    documents: (a.documents || []).map((d) => ({ name: d.name, size: d.size, type: d.type, url: d.url || null })),
+    gallery,
+    galleryItems: (a.gallery || []).map((g, i) => ({
+      thumb: toDriveImage(g, 800),
+      view: toDriveImage(g, 2000),
+      download: toDriveDownload(g),
+      index: i,
+    })),
+    documents: (a.documents || []).map((d) => ({
+      name: d.name,
+      size: d.size,
+      type: d.type,
+      url: d.url || null,
+      download: toDriveDownload(d.url || d.driveId),
+    })),
     committee: (a.committee || []).map((c) => ({ name: c.name, role: c.role })),
     milestones: (a.milestones || []).map((m) => ({ title: m.title, date: m.date, done: !!m.done, current: !!m.current })),
     tags: a.tags || [],
@@ -30,7 +44,7 @@ function activityToView(doc) {
     visibility: a.visibility,
     attendeeAvatarCount: a.attendeeAvatarCount || 0,
     views: a.views || 0,
-    createdAt: a.createdAt, // Date -> views call new Date(a.createdAt)
+    createdAt: a.createdAt,
   };
 }
 

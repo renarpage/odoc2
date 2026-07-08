@@ -12,7 +12,7 @@ const logger = require("../config/logger");
 async function requireDrive() {
   const drive = await getDrive();
   if (!drive) {
-    throw ApiError.internal("Google Drive is not connected. Connect an account from Admin \u2192 Storage.");
+    throw ApiError.internal("Google Drive is not connected. Connect an account from Admin > Storage.");
   }
   return drive;
 }
@@ -66,8 +66,9 @@ async function uploadBuffer({ buffer, mimeType, name, folderId }) {
   });
 
   const isImage = String(mimeType).startsWith("image/");
+  // lh3 content host renders reliably inside <img>; uc?export=view does not.
   const viewUrl = isImage
-    ? `https://drive.google.com/uc?export=view&id=${file.id}`
+    ? `https://lh3.googleusercontent.com/d/${file.id}=w1600`
     : (file.webViewLink || `https://drive.google.com/file/d/${file.id}/view`);
 
   logger.info("Uploaded file to Google Drive", { id: file.id, name: file.name, mimeType });
@@ -95,10 +96,6 @@ async function deleteFile(fileId) {
   }
 }
 
-/**
- * Real storage quota from the connected Drive account. Returns null when Drive
- * is not connected so callers can fall back to a configured capacity.
- */
 async function getQuota() {
   const drive = await getDrive();
   if (!drive) return null;
