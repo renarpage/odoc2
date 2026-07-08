@@ -190,7 +190,7 @@
     </div>
     <div class="media-card-toolbar">
       <label class="mm-selectall"><input type="checkbox" id="mmSelectAll"> Select all</label>
-      <button type="button" class="btn btn-primary rounded-pill px-4" id="mmDownload"><i class="bi bi-download me-2"></i>Download (<span id="mmSelCount">0</span>)</button>
+      <button type="button" class="btn btn-primary rounded-pill px-4" id="mmDownload"><i class="bi bi-file-earmark-zip me-2"></i><span id="mmDlLabel">Download ZIP</span></button>
     </div>
     <div class="media-card-body" id="mmBody"></div>
   </div>
@@ -206,12 +206,18 @@
   });
 
   var items = <%- JSON.stringify(activity.galleryItems || []) %>;
+  var slug = <%- JSON.stringify(activity.id) %>;
   var modal = document.getElementById('mediaModal');
+
+  function idFromDownload(url) {
+    var m = String(url || '').match(/[?&]id=([A-Za-z0-9_-]+)/);
+    return m ? m[1] : null;
+  }
 
   if (modal && items.length) {
     var body = document.getElementById('mmBody');
     var selectAll = document.getElementById('mmSelectAll');
-    var selCount = document.getElementById('mmSelCount');
+    var dlLabel = document.getElementById('mmDlLabel');
     var countLbl = document.getElementById('mmCount');
     var dlBtn = document.getElementById('mmDownload');
     var built = false;
@@ -233,24 +239,13 @@
     function checked() { return Array.prototype.slice.call(body.querySelectorAll('.mm-cb:checked')); }
     function updateCount() {
       var n = checked().length;
-      selCount.textContent = n;
       var all = body.querySelectorAll('.mm-cb').length;
+      dlLabel.textContent = n > 0 ? ('Download ZIP (' + n + ')') : 'Download all (ZIP)';
       selectAll.checked = n > 0 && n === all;
       selectAll.indeterminate = n > 0 && n < all;
     }
     function open() { build(); modal.classList.add('open'); document.body.style.overflow = 'hidden'; updateCount(); }
     function close() { modal.classList.remove('open'); document.body.style.overflow = ''; }
-
-    // Trigger downloads sequentially (browsers throttle simultaneous ones).
-    function triggerDownloads(list) {
-      list.forEach(function (url, i) {
-        setTimeout(function () {
-          var a = document.createElement('a');
-          a.href = url; a.rel = 'noopener'; a.target = '_blank';
-          document.body.appendChild(a); a.click(); a.remove();
-        }, i * 700);
-      });
-    }
 
     var viewDetails = document.getElementById('mediaViewDetails');
     if (viewDetails) viewDetails.addEventListener('click', function (e) { e.preventDefault(); open(); });
@@ -269,10 +264,17 @@
       body.querySelectorAll('.mm-cb').forEach(function (cb) { cb.checked = selectAll.checked; });
       updateCount();
     });
+
+    // Build the ZIP endpoint URL and let the browser download one file.
     dlBtn.addEventListener('click', function () {
-      var sel = checked().map(function (cb) { return items[parseInt(cb.dataset.index, 10)].download; });
-      if (!sel.length) { sel = items.map(function (it) { return it.download; }); } // nothing selected -> download all
-      triggerDownloads(sel);
+      var url = '/api/activities/' + encodeURIComponent(slug) + '/media.zip';
+      var sel = checked().map(function (cb) { return idFromDownload(items[parseInt(cb.dataset.index, 10)].download); }).filter(Boolean);
+      if (sel.length && sel.length < items.length) url += '?ids=' + encodeURIComponent(sel.join(','));
+      var prev = dlLabel.textContent;
+      dlLabel.textContent = 'Preparing\u2026';
+      dlBtn.disabled = true;
+      window.location.href = url;
+      setTimeout(function () { dlLabel.textContent = prev; dlBtn.disabled = false; }, 4000);
     });
   }
 
