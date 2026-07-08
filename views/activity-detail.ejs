@@ -92,7 +92,7 @@
           <div class="gallery-grid">
             <% activity.galleryItems.forEach(function(img, i) { %>
               <div class="gallery-skeleton<%= (activity.galleryItems.length % 2 === 1 && i === 0) ? ' wide' : '' %>">
-                <img class="gallery-thumb" src="<%= img.thumb %>" data-gallery-index="<%= i %>" alt="Gallery image <%= i + 1 %>" referrerpolicy="no-referrer" loading="lazy" decoding="async" onload="this.classList.add('loaded');this.parentNode.classList.add('loaded');">
+                <img class="gallery-thumb" src="<%= img.thumb %>" data-gallery-index="<%= i %>" alt="Gallery image <%= i + 1 %>" referrerpolicy="no-referrer" loading="lazy" decoding="async">
               </div>
             <% }); %>
           </div>
@@ -171,6 +171,15 @@
 
 <script>
 (function () {
+  // Progressive thumbnails: reveal each once it finishes loading. Handlers are
+  // attached here (not inline) because CSP blocks inline event attributes.
+  document.querySelectorAll('.gallery-thumb').forEach(function (im) {
+    function done() { im.classList.add('loaded'); if (im.parentNode) im.parentNode.classList.add('loaded'); }
+    function fail() { if (im.parentNode) im.parentNode.classList.add('loaded'); im.style.opacity = '1'; }
+    if (im.complete && im.naturalWidth > 0) { done(); }
+    else { im.addEventListener('load', done); im.addEventListener('error', fail); }
+  });
+
   var items = <%- JSON.stringify(activity.galleryItems || []) %>;
   var lb = document.getElementById('mediaLightbox');
   if (lb && items.length) {
