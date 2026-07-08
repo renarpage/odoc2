@@ -34,6 +34,7 @@ router.use("/admin", requireAuth);
 
 router.get("/admin/dashboard/stats", dashboardController.statsApi);
 router.get("/admin/health", dashboardController.healthApi);
+router.get("/admin/notifications", dashboardController.notificationsApi);
 
 router.get("/admin/activities", activityController.listApi);
 router.post("/admin/activities", activityController.createApi);

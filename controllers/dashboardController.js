@@ -24,4 +24,10 @@ const statsApi = asyncHandler(async (req, res) => {
   ok(res, await dashboardService.stats());
 });
 
-module.exports = { index, healthApi, statsApi };
+// Recent system logs for the topbar notification bell.
+const notificationsApi = asyncHandler(async (req, res) => {
+  const logs = await dashboardService.systemLogs(8);
+  ok(res, logs);
+});
+
+module.exports = { index, healthApi, statsApi, notificationsApi };
