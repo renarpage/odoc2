@@ -8,14 +8,14 @@
 </div>
 
 <div class="row g-3 mb-4">
-  <div class="col-6 col-lg-3"><div class="stat-card card hover-none"><div class="stat-icon text-primary" style="background:#E9EEFC;color:var(--odoc-secondary)"><i class="bi bi-bar-chart"></i></div><div class="stat-text d-flex flex-column ms-3"><div class="stat-value"><%= stats.totalActivities.toLocaleString() %></div><div class="stat-label">Total Activities</div></div></div></div>
-  <div class="col-6 col-lg-3"><div class="stat-card card hover-none"><div class="stat-icon text-primary" style="background:#E9EEFC;color:var(--odoc-secondary)"><i class="bi bi-cloud-arrow-up"></i></div><div class="stat-text d-flex flex-column ms-3"><div class="stat-value"><%= stats.ongoingNow %></div><div class="stat-label">Ongoing Now</div></div></div></div>
-  <div class="col-6 col-lg-3"><div class="stat-card card hover-none"><div class="stat-icon text-primary" style="background:#E9EEFC;color:var(--odoc-secondary)"><i class="bi bi-clock-history"></i></div><div class="stat-text d-flex flex-column ms-3"><div class="stat-value"><%= stats.upcomingCount %></div><div class="stat-label">Upcoming</div></div></div></div>
-  <div class="col-6 col-lg-3"><div class="stat-card card hover-none"><div class="stat-icon text-primary" style="background:#E9EEFC;color:var(--odoc-secondary)"><i class="bi bi-database"></i></div><div class="stat-text d-flex flex-column ms-3"><div class="stat-value"><%= stats.dataArchivedTB %> TB</div><div class="stat-label">Data Archived</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="stat-card card hover-none"><div class="stat-icon" style="background:#E9EEFC;color:var(--odoc-primary)"><i class="bi bi-collection"></i></div><div class="stat-text d-flex flex-column ms-3"><div class="stat-value"><%= stats.totalActivities.toLocaleString() %></div><div class="stat-label">Total Activities</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="stat-card card hover-none"><div class="stat-icon" style="background:#E7F0FF;color:var(--odoc-primary)"><i class="bi bi-broadcast"></i></div><div class="stat-text d-flex flex-column ms-3"><div class="stat-value"><%= stats.ongoingNow %></div><div class="stat-label">Ongoing Now</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="stat-card card hover-none"><div class="stat-icon" style="background:#F0EAFB;color:#7c4fd8"><i class="bi bi-clock-history"></i></div><div class="stat-text d-flex flex-column ms-3"><div class="stat-value"><%= stats.upcomingCount %></div><div class="stat-label">Upcoming</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="stat-card card hover-none"><div class="stat-icon" style="background:#E4F5EC;color:var(--odoc-success)"><i class="bi bi-check2-circle"></i></div><div class="stat-text d-flex flex-column ms-3"><div class="stat-value"><%= stats.completedActivities %></div><div class="stat-label">Completed Activities</div></div></div></div>
 </div>
 
 <div class="odoc-panel">
-  <form class="d-flex flex-wrap gap-2 mb-4" method="GET" action="/admin/activities">
+  <form class="d-flex flex-wrap gap-2 mb-4 align-items-center" method="GET" action="/admin/activities">
     <select name="status" class="form-select form-select-odoc" style="max-width:180px;" onchange="this.form.submit()">
       <option value="">All Statuses</option>
       <% ['Ongoing','Completed','Upcoming'].forEach(function(s){ %><option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s %></option><% }); %>
@@ -34,8 +34,8 @@
   </div>
 
   <div class="table-responsive">
-    <table class="table table-odoc mb-0">
-      <thead><tr><th>Activity Name</th><th>Category</th><th>Date Created</th><th>Status</th><th>Actions</th></tr></thead>
+    <table class="table table-odoc mb-0 align-middle">
+      <thead><tr><th>Activity Name</th><th>Category</th><th>Date Created</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
       <tbody>
         <% if (!activities.length) { %>
           <tr><td colspan="5" class="text-center text-muted py-4">No activities match. <a href="/admin/activities/new">Create one</a>.</td></tr>
@@ -44,7 +44,7 @@
           <tr>
             <td>
               <div class="d-flex align-items-center gap-3">
-                <% if (a.cover) { %><img src="<%= a.cover %>" class="activity-thumb" alt="<%= a.title %>"><% } else { %><span class="activity-thumb d-inline-flex align-items-center justify-content-center" style="background:#E9EEFC;color:var(--odoc-primary);"><i class="bi bi-image"></i></span><% } %>
+                <% if (a.cover) { %><img src="<%= a.cover %>" class="activity-thumb" alt="" referrerpolicy="no-referrer" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex';"><span class="activity-thumb d-none align-items-center justify-content-center" style="background:#E9EEFC;color:var(--odoc-primary);"><i class="bi bi-image"></i></span><% } else { %><span class="activity-thumb d-inline-flex align-items-center justify-content-center" style="background:#E9EEFC;color:var(--odoc-primary);"><i class="bi bi-image"></i></span><% } %>
                 <div>
                   <div class="fw-semibold"><%= a.title %></div>
                   <div class="text-muted tiny">ID: <%= a.id.toUpperCase() %><% if (a.visibility === 'draft') { %> &middot; <span class="text-warning">DRAFT</span><% } %></div>
@@ -53,13 +53,13 @@
             </td>
             <td><span class="badge rounded-pill text-bg-light border"><%= a.category %></span></td>
             <td><%= new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) %></td>
-            <td><span class="fw-semibold small <%= a.status === 'Completed' ? 'text-success' : (a.status === 'Ongoing' ? 'text-primary' : 'text-purple') %>"><i class="bi bi-circle-fill" style="font-size:.5rem;"></i> <%= a.status %></span></td>
+            <td><span class="fw-semibold small <%= a.status === 'Completed' ? 'text-success' : (a.status === 'Ongoing' ? 'text-primary' : 'text-purple') %>"><i class="bi bi-circle-fill me-1" style="font-size:.5rem;"></i><%= a.status %></span></td>
             <td>
-              <div class="d-inline-flex align-items-center gap-1">
-                <a href="/activity/<%= a.id %>" target="_blank" rel="noopener" class="icon-btn" style="width:34px;height:34px;display:inline-flex;" title="View public page"><i class="bi bi-eye"></i></a>
-                <a href="/admin/activities/<%= a.id %>/edit" class="icon-btn" style="width:34px;height:34px;display:inline-flex;" title="Edit"><i class="bi bi-pencil"></i></a>
-                <form action="/admin/activities/<%= a.id %>/duplicate" method="POST" class="d-inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="icon-btn" style="width:34px;height:34px;display:inline-flex;" title="Duplicate"><i class="bi bi-files"></i></button></form>
-                <form action="/admin/activities/<%= a.id %>/delete" method="POST" class="d-inline" onsubmit="return confirm('Delete this activity and its files?');"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="icon-btn text-danger" style="width:34px;height:34px;display:inline-flex;" title="Delete"><i class="bi bi-trash"></i></button></form>
+              <div class="d-flex align-items-center gap-1 justify-content-end">
+                <a href="/activity/<%= a.id %>" target="_blank" rel="noopener" class="icon-btn btn-secondary" style="width:34px;height:34px;" title="View public page"><i class="bi bi-eye"></i></a>
+                <a href="/admin/activities/<%= a.id %>/edit" class="icon-btn btn-secondary" style="width:34px;height:34px;" title="Edit"><i class="bi bi-pencil"></i></a>
+                <form action="/admin/activities/<%= a.id %>/duplicate" method="POST" class="d-inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="icon-btn btn-secondary" style="width:34px;height:34px;" title="Duplicate"><i class="bi bi-files"></i></button></form>
+                <form action="/admin/activities/<%= a.id %>/delete" method="POST" class="d-inline" onsubmit="return confirm('Delete this activity and its files?');"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="icon-btn btn-secondary text-danger" style="width:34px;height:34px;" title="Delete"><i class="bi bi-trash"></i></button></form>
               </div>
             </td>
           </tr>
