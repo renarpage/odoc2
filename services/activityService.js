@@ -1,5 +1,6 @@
 /**
- * Activity domain logic: public listing/search, admin CRUD, duplicate, status.
+ * Activity domain logic: public listing/search, admin CRUD, duplicate, status,
+ * committee/milestones parsing, and cover upload.
  */
 const activityRepository = require("../repositories/activityRepository");
 const galleryRepository = require("../repositories/galleryRepository");
@@ -16,6 +17,48 @@ const STATUS_BY_FILTER = {
   upcoming: ACTIVITY_STATUS.UPCOMING,
   completed: ACTIVITY_STATUS.COMPLETED,
 };
+
+function toArray(v) {
+  if (v === undefined || v === null || v === "") return [];
+  return Array.isArray(v) ? v : [v];
+}
+
+// Committee + milestones arrive as parallel arrays of form fields.
+function parseCommittee(payload) {
+  const names = toArray(payload.committeeName);
+  const roles = toArray(payload.committeeRole);
+  const out = [];
+  names.forEach((name, i) => {
+    const n = String(name || "").trim();
+    if (n) out.push({ name: n, role: String(roles[i] || "Member").trim() || "Member" });
+  });
+  return out;
+}
+
+function parseMilestones(payload) {
+  const titles = toArray(payload.milestoneTitle);
+  const dates = toArray(payload.milestoneDate);
+  const currentIndex = payload.milestoneCurrent !== undefined ? parseInt(payload.milestoneCurrent, 10) : -1;
+  const out = [];
+  titles.forEach((title, i) => {
+    const t = String(title || "").trim();
+    if (t) out.push({ title: t, date: String(dates[i] || "").trim(), done: true, current: i === currentIndex });
+  });
+  if (out.length && !out.some((m) => m.current)) out[out.length - 1].current = true;
+  return out;
+}
+
+function parseDescription(value) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  return String(value || "")
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+}
+
+function parseTags(value) {
+  return String(value || "").split(",").map((t) => t.trim()).filter(Boolean);
+}
 
 function buildQuery({ filter, status, category, search, publicOnly }) {
   const q = {};
@@ -71,30 +114,32 @@ async function getDocBySlug(slug) {
 async function create(payload, ctx = {}) {
   if (!payload.title || !payload.title.trim()) throw ApiError.badRequest("Activity title is required");
   const slug = await activityRepository.generateUniqueSlug(payload.title);
-  const description = payload.description
-    ? (Array.isArray(payload.description) ? payload.description : [payload.description])
-    : [];
+  const description = parseDescription(payload.description);
+  const isDraft = payload.action === "draft";
+  const visibility = payload.visibility
+    ? payload.visibility
+    : (isDraft ? VISIBILITY.DRAFT : VISIBILITY.PUBLIC);
 
   const doc = await activityRepository.create({
     title: payload.title.trim(),
     slug,
     category: payload.category || "Archive Gallery",
-    status: payload.status || ACTIVITY_STATUS.UPCOMING,
+    status: Object.values(ACTIVITY_STATUS).includes(payload.status) ? payload.status : ACTIVITY_STATUS.UPCOMING,
     date: payload.date ? new Date(payload.date) : new Date(),
     endDate: payload.endDate ? new Date(payload.endDate) : null,
-    location: payload.location || "TBA",
-    organizer: payload.organizer || "OSIS SMAVO",
-    division: payload.division || "",
-    summary: payload.summary || (description[0] ? description[0].slice(0, 140) : ""),
+    location: payload.location ? payload.location.trim() : "TBA",
+    organizer: payload.organizer ? payload.organizer.trim() : "OSIS SMAVO",
+    division: payload.division ? payload.division.trim() : "",
+    summary: payload.summary ? payload.summary.trim() : (description[0] ? description[0].slice(0, 160) : ""),
     description,
     cover: payload.cover || "",
-    tags: payload.tags ? String(payload.tags).split(",").map((t) => t.trim()).filter(Boolean) : [],
-    visibility: payload.visibility || VISIBILITY.PUBLIC,
+    tags: parseTags(payload.tags),
+    visibility,
     featured: payload.featured === "on" || payload.featured === true,
     pinned: payload.pinned === "on" || payload.pinned === true,
-    committee: payload.committee || [],
-    milestones: payload.milestones && payload.milestones.length
-      ? payload.milestones
+    committee: parseCommittee(payload),
+    milestones: parseMilestones(payload).length
+      ? parseMilestones(payload)
       : [{ title: "Planning Phase Initiated", date: payload.date || new Date().toISOString().slice(0, 10), done: true, current: true }],
     createdBy: ctx.userId || null,
   });
@@ -103,7 +148,7 @@ async function create(payload, ctx = {}) {
     type: LOG_TYPES.SUCCESS,
     action: LOG_ACTIONS.CREATE,
     title: "Activity created",
-    detail: `"${doc.title}" created`,
+    detail: `"${doc.title}" ${isDraft ? "saved as draft" : "published"}`,
     user: ctx.userId,
     userEmail: ctx.userEmail,
     ip: ctx.ip,
@@ -111,19 +156,51 @@ async function create(payload, ctx = {}) {
   return activityToView(doc);
 }
 
+async function setCover(slug, file, ctx = {}) {
+  if (!file) return null;
+  const activity = await getDocBySlug(slug);
+  if (!activity.driveFolderId) {
+    activity.driveFolderId = await driveService.ensureFolder(`ODOC - ${activity.title}`);
+  }
+  const uploaded = await driveService.uploadBuffer({
+    buffer: file.buffer,
+    mimeType: file.mimetype,
+    name: file.originalname,
+    folderId: activity.driveFolderId,
+  });
+  activity.cover = uploaded.url;
+  activity.coverDriveId = uploaded.id;
+  await activity.save();
+  await logService.record({
+    type: LOG_TYPES.INFO,
+    action: LOG_ACTIONS.UPLOAD,
+    title: "Cover image set",
+    detail: `Cover updated for "${activity.title}"`,
+    user: ctx.userId,
+    userEmail: ctx.userEmail,
+    ip: ctx.ip,
+  });
+  return activityToView(activity);
+}
+
 async function update(slug, payload, ctx = {}) {
   const doc = await getDocBySlug(slug);
-  const fields = ["title", "category", "status", "location", "organizer", "division", "summary", "cover", "visibility"];
-  fields.forEach((f) => {
-    if (payload[f] !== undefined) doc[f] = payload[f];
+  const scalar = ["title", "category", "location", "organizer", "division", "summary"];
+  scalar.forEach((f) => {
+    if (payload[f] !== undefined && payload[f] !== "") doc[f] = String(payload[f]).trim();
   });
+  if (payload.status && Object.values(ACTIVITY_STATUS).includes(payload.status)) doc.status = payload.status;
+  if (payload.action === "draft") doc.visibility = VISIBILITY.DRAFT;
+  else if (payload.action === "publish") doc.visibility = VISIBILITY.PUBLIC;
+  else if (payload.visibility && Object.values(VISIBILITY).includes(payload.visibility)) doc.visibility = payload.visibility;
   if (payload.date) doc.date = new Date(payload.date);
   if (payload.endDate) doc.endDate = new Date(payload.endDate);
-  if (payload.description !== undefined) {
-    doc.description = Array.isArray(payload.description) ? payload.description : [payload.description];
-  }
-  if (payload.tags !== undefined) {
-    doc.tags = String(payload.tags).split(",").map((t) => t.trim()).filter(Boolean);
+  if (payload.description !== undefined) doc.description = parseDescription(payload.description);
+  if (payload.tags !== undefined) doc.tags = parseTags(payload.tags);
+  if ("committeeName" in payload) doc.committee = parseCommittee(payload);
+  if ("milestoneTitle" in payload) {
+    const ms = parseMilestones(payload);
+    if (ms.length) doc.milestones = ms;
   }
   if (payload.featured !== undefined) doc.featured = payload.featured === "on" || payload.featured === true;
   if (payload.pinned !== undefined) doc.pinned = payload.pinned === "on" || payload.pinned === true;
@@ -144,8 +221,6 @@ async function update(slug, payload, ctx = {}) {
 
 async function remove(slug, ctx = {}) {
   const doc = await getDocBySlug(slug);
-
-  // Best-effort cleanup of associated Drive assets.
   const [galleries, documents] = await Promise.all([
     galleryRepository.byActivity(doc._id),
     documentRepository.byActivity(doc._id),
@@ -153,6 +228,7 @@ async function remove(slug, ctx = {}) {
   await Promise.allSettled([
     ...galleries.map((g) => driveService.deleteFile(g.driveId)),
     ...documents.map((d) => driveService.deleteFile(d.driveId)),
+    doc.coverDriveId ? driveService.deleteFile(doc.coverDriveId) : Promise.resolve(),
   ]);
   await Promise.all([
     galleryRepository.model.deleteMany({ activity: doc._id }),
@@ -178,6 +254,7 @@ async function duplicate(slug, ctx = {}) {
   delete obj._id;
   delete obj.createdAt;
   delete obj.updatedAt;
+  delete obj.id;
   obj.title = `${obj.title} (Copy)`;
   obj.slug = await activityRepository.generateUniqueSlug(obj.title);
   obj.visibility = VISIBILITY.DRAFT;
@@ -196,4 +273,4 @@ async function duplicate(slug, ctx = {}) {
   return activityToView(doc);
 }
 
-module.exports = { listPublic, listAdmin, getBySlug, getDocBySlug, create, update, remove, duplicate };
+module.exports = { listPublic, listAdmin, getBySlug, getDocBySlug, create, setCover, update, remove, duplicate };
