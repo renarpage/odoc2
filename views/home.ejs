@@ -32,10 +32,10 @@
     <% allActivities.forEach(function(a) { %>
       <div class="col-12 col-md-6 col-lg-4" data-activity-card data-status="<%= a.status.toLowerCase() %>">
         <div class="activity-card card">
-          <div class="card-img-wrap">
+          <div class="card-img-wrap<%= a.cover ? '' : ' no-img' %>">
             <% if (a.cover) { %>
               <img src="<%= a.cover %>" alt="<%= a.title %>" referrerpolicy="no-referrer" loading="lazy"
-                onerror="this.style.display='none';this.parentNode.classList.add('no-img');">
+                onerror="this.remove();this.parentNode.classList.add('no-img');">
             <% } %>
           </div>
           <div class="card-body-odoc">
