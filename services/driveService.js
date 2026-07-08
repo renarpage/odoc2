@@ -66,7 +66,6 @@ async function uploadBuffer({ buffer, mimeType, name, folderId }) {
   });
 
   const isImage = String(mimeType).startsWith("image/");
-  // lh3 content host renders reliably inside <img>; uc?export=view does not.
   const viewUrl = isImage
     ? `https://lh3.googleusercontent.com/d/${file.id}=w1600`
     : (file.webViewLink || `https://drive.google.com/file/d/${file.id}/view`);
@@ -108,4 +107,18 @@ async function getQuota() {
   };
 }
 
-module.exports = { ensureFolder, uploadBuffer, deleteFile, getQuota };
+// File metadata (name/mime/size) for a single Drive file.
+async function getMeta(fileId) {
+  const drive = await requireDrive();
+  const res = await drive.files.get({ fileId, fields: "id,name,mimeType,size" });
+  return res.data;
+}
+
+// Readable stream of a Drive file's bytes (for zipping / proxied downloads).
+async function downloadStream(fileId) {
+  const drive = await requireDrive();
+  const res = await drive.files.get({ fileId, alt: "media" }, { responseType: "stream" });
+  return res.data;
+}
+
+module.exports = { ensureFolder, uploadBuffer, deleteFile, getQuota, getMeta, downloadStream };

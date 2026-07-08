@@ -10,6 +10,7 @@
     "sync": "browser-sync start --proxy localhost:3000 --files views/**/*.ejs, public/**/*.css"
   },
   "dependencies": {
+    "archiver": "^7.0.1",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.4.5",

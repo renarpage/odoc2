@@ -15,12 +15,14 @@ const dashboardController = require("../controllers/dashboardController");
 const activityController = require("../controllers/activityController");
 const galleryController = require("../controllers/galleryController");
 const documentController = require("../controllers/documentController");
+const mediaController = require("../controllers/mediaController");
 const brandingController = require("../controllers/brandingController");
 const settingsController = require("../controllers/settingsController");
 const userController = require("../controllers/userController");
 
 // ---- Public ----
 router.get("/activities/search", guestController.search);
+router.get("/activities/:slug/media.zip", mediaController.zipGallery);
 router.get("/documents/:id/download", documentController.download);
 
 // ---- Auth ----
