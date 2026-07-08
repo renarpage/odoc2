@@ -61,9 +61,6 @@ a {
   background: var(--odoc-bg);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease;
   transition: all 0.3s ease;
   box-shadow:
     inset 2px 2px 7px rgba(178, 184, 192, 0.52),
@@ -79,9 +76,6 @@ a {
     2px 2px 28px rgba(152, 161, 174, 0.75),
     -2px -2px 28px rgba(255, 255, 255, 0.95);
   overflow: hidden;
-  transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease;
   transition: all 0.3s ease;
 }
 
@@ -135,6 +129,24 @@ a {
   cursor: pointer;
 }
 
+/* Neumorphic light button (used for Back / secondary actions) */
+.btn-light {
+  background: var(--odoc-bg);
+  border: none;
+  color: var(--odoc-text);
+  font-weight: 600;
+  box-shadow:
+    2px 2px 6px rgba(159, 168, 182, 0.42),
+    -2px -2px 6px rgba(247, 248, 250, 0.68);
+  transition: all 0.3s ease;
+}
+.btn-light:hover {
+  background: var(--odoc-bg);
+  color: var(--odoc-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--secondary-shadow-hover);
+}
+
 .odoc-brand {
   font-weight: 800;
   font-size: 1.35rem;
@@ -160,9 +172,19 @@ a {
 }
 
 /* ============ ACTIVITY CARDS (Guest) ============ */
+.activity-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
 .activity-card .card-img-wrap {
   height: 190px;
   overflow: hidden;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #eef1f8, #e3e8f5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .activity-card .card-img-wrap img {
   width: 100%;
@@ -170,8 +192,18 @@ a {
   object-fit: cover;
   transition: transform 0.4s ease;
 }
+.activity-card .card-img-wrap.no-img::after {
+  content: "\F32B";
+  font-family: "bootstrap-icons";
+  font-size: 2rem;
+  color: var(--odoc-muted);
+  opacity: 0.5;
+}
 .activity-card .card-body-odoc {
   padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 .status-chip {
   font-size: 0.72rem;
@@ -198,12 +230,24 @@ a {
   font-size: 1.15rem;
   margin: 12px 0 8px;
   color: var(--odoc-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.4em;
 }
 .card-desc-odoc {
   color: var(--odoc-muted);
   font-size: 0.9rem;
   line-height: 1.5;
   min-height: 62px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.activity-card .card-body-odoc > .d-flex:last-child {
+  margin-top: auto;
 }
 .avatar-stack {
   display: flex;
@@ -253,6 +297,7 @@ a {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  flex-wrap: wrap;
 }
 .odoc-pagination .page-pill {
   width: 40px;
@@ -265,6 +310,9 @@ a {
   color: var(--odoc-muted);
   font-weight: 600;
   transition: all 0.3s ease;
+  box-shadow:
+    2px 2px 6px rgba(159, 168, 182, 0.42),
+    -2px -2px 6px rgba(247, 248, 250, 0.68);
 }
 .odoc-pagination .page-pill.active {
   background: var(--odoc-primary);
@@ -275,13 +323,13 @@ a {
     -1px -1px 8px rgba(54, 90, 236, 0.33);
   color: var(--odoc-bg);
 }
+.odoc-pagination .page-pill.disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
 .odoc-pagination .page-pill:not(.active):hover {
   box-shadow: var(--secondary-shadow-hover);
   color: var(--odoc-primary);
   scale: 1.05;
-  transform: translateY(-2px);
-}
-
-.odoc-pagination .page-pill:hover {
   transform: translateY(-2px);
 }

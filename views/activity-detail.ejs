@@ -1,7 +1,40 @@
+<style>
+  /* Critical, cache-proof styling for committee avatars + media popup. */
+  .committee-initial {
+    width: 46px; height: 46px; border-radius: 50%; margin-right: 14px; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 1.05rem; letter-spacing: .3px;
+    background: var(--odoc-primary); color: #fff;
+    box-shadow: 3px 3px 8px rgba(46,82,228,.32), -3px -3px 8px rgba(255,255,255,.9),
+      inset 1px 1px 2px rgba(255,255,255,.35);
+  }
+  .committee-row { gap: 6px; }
+  .odoc-lightbox {
+    position: fixed; inset: 0; z-index: 2000; display: none;
+    align-items: center; justify-content: center; padding: 40px 20px 96px;
+    background: rgba(20,24,40,.82); backdrop-filter: blur(4px);
+  }
+  .odoc-lightbox.open { display: flex; }
+  .odoc-lightbox .lb-stage { max-width: min(1100px,92vw); max-height: 80vh; display: flex; align-items: center; justify-content: center; }
+  .odoc-lightbox .lb-stage img { max-width: 100%; max-height: 80vh; border-radius: var(--radius-md); object-fit: contain; box-shadow: 0 20px 60px rgba(0,0,0,.45); background: #fff; }
+  .odoc-lightbox .lb-close, .odoc-lightbox .lb-nav {
+    position: absolute; border: none; color: #fff; width: 48px; height: 48px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer;
+    background: rgba(255,255,255,.16); transition: background .2s ease, transform .2s ease;
+  }
+  .odoc-lightbox .lb-close:hover, .odoc-lightbox .lb-nav:hover { background: rgba(255,255,255,.3); transform: scale(1.06); }
+  .odoc-lightbox .lb-close { top: 22px; right: 26px; }
+  .odoc-lightbox .lb-prev { left: 22px; top: 50%; transform: translateY(-50%); }
+  .odoc-lightbox .lb-next { right: 22px; top: 50%; transform: translateY(-50%); }
+  .odoc-lightbox .lb-actions { position: absolute; bottom: 28px; left: 0; right: 0; display: flex; align-items: center; justify-content: center; gap: 18px; }
+  .odoc-lightbox .lb-count { color: rgba(255,255,255,.85); font-weight: 600; font-size: .9rem; }
+  @media (max-width: 575px){ .odoc-lightbox .lb-prev{left:8px;} .odoc-lightbox .lb-next{right:8px;} }
+</style>
+
 <div class="container py-4">
   <a href="/" class="back-link"><i class="bi bi-arrow-left me-2"></i>Back to Archive</a>
 
-  <div class="detail-hero mt-3 mb-4 card">
+  <div class="detail-hero mt-3 mb-4 card hover-none">
     <div class="d-flex gap-2 mb-3">
       <span class="status-chip ongoing" style="background:#fff;"><%= activity.category.toUpperCase() %></span>
       <span class="status-chip <%= activity.status.toLowerCase() %>"><i class="bi bi-check-circle me-1"></i><%= activity.status %></span>
@@ -17,7 +50,7 @@
 
   <div class="row g-4">
     <div class="col-lg-8">
-      <div class="section-card mb-4 card">
+      <div class="section-card mb-4 card hover-none">
         <div class="section-heading"><i class="me-2 bi bi-info-circle"></i>Event Overview</div>
         <div class="overview-text-box">
           <% activity.description.forEach(function(p) { %><p class="mb-3"><%= p %></p><% }); %>
@@ -25,7 +58,7 @@
       </div>
 
       <% if (activity.galleryItems.length) { %>
-        <div class="section-card card mb-4">
+        <div class="section-card card mb-4 hover-none">
           <div class="section-heading d-flex justify-content-between align-items-center">
             <div><i class="me-2 bi bi-images"></i>Media Archive</div>
             <a href="#" id="mediaViewDetails" class="me-2 view-details-link">View Details <i class="ms-2 bi bi-arrow-right"></i></a>
@@ -40,7 +73,7 @@
         </div>
       <% } %>
 
-      <div class="section-card card">
+      <div class="section-card card hover-none">
         <div class="section-heading"><i class="me-2 bi bi-graph-up"></i>Milestones</div>
         <div class="milestone-list">
           <% activity.milestones.forEach(function(m) { %>
@@ -55,7 +88,7 @@
 
     <div class="col-lg-4">
       <% if (activity.committee.length) { %>
-        <div class="section-card card mb-4">
+        <div class="section-card card mb-4 hover-none">
           <div class="section-heading"><i class="me-2 bi bi-people"></i>Core Committee</div>
           <% activity.committee.forEach(function(c) { %>
             <div class="committee-row">
@@ -72,7 +105,7 @@
       <% } %>
 
       <% if (activity.documents.length) { %>
-        <div class="section-card card mb-4">
+        <div class="section-card card mb-4 hover-none">
           <div class="section-heading"><i class="me-2 bi bi-folder2"></i> Documents</div>
           <% activity.documents.forEach(function(doc) { %>
             <a class="doc-row" href="<%= doc.download || '#' %>" target="_blank" rel="noopener" <%= doc.download ? '' : 'style="pointer-events:none;opacity:.6;"' %>>
@@ -138,7 +171,7 @@
           share.innerHTML = '<i class="bi bi-check2 me-2"></i>Link Copied';
           setTimeout(function () { share.innerHTML = '<i class="bi bi-share me-2"></i>Share Activity'; }, 1800);
         }
-      } catch (e) { /* user cancelled */ }
+      } catch (e) { /* cancelled */ }
     });
   }
 })();

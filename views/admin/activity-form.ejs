@@ -98,7 +98,7 @@
         <div class="tiny">Represents this activity across the archive</div>
       </div>
       <div class="d-flex align-items-center gap-3 mb-4 p-3" id="coverPreviewWrap" style="background:var(--odoc-bg);border-radius:var(--radius-md);display:<%= isEdit && activity.cover ? 'flex' : 'none' %>;">
-        <img id="coverPreviewImg" src="<%= isEdit && activity.cover ? activity.cover : '' %>" class="rounded-3" style="width:90px;height:70px;object-fit:cover;">
+        <img id="coverPreviewImg" src="<%= isEdit && activity.cover ? activity.cover : '' %>" class="rounded-3" referrerpolicy="no-referrer" onerror="this.closest('#coverPreviewWrap').style.display='none';" style="width:90px;height:70px;object-fit:cover;background:#e3e8f5;">
         <div class="flex-grow-1">
           <div class="fw-semibold text-primary small">Cover Image Preview</div>
           <div class="text-muted tiny">Shown in the gallery, timeline and detail hero.</div>
@@ -214,6 +214,7 @@
     width: 40px; height: 40px; border-radius: 50%;
     background: var(--odoc-primary); color: #fff; font-weight: 700;
     display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    box-shadow: 3px 3px 8px rgba(46,82,228,.3), -3px -3px 8px rgba(255,255,255,.9);
   }
   #activityWizard .committee-row {
     display: flex; align-items: center; justify-content: space-between;
