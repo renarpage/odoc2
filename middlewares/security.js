@@ -4,10 +4,10 @@
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 
-// The frontend loads Bootstrap + Bootstrap Icons + GSAP from cdn.jsdelivr.net
-// and cdnjs.cloudflare.com, fonts from Google Fonts, and images from Google
-// Drive / Unsplash. IMPORTANT: Bootstrap Icons ships its glyphs as a webfont
-// served from cdnjs, so cdnjs MUST be allowed in font-src or every icon breaks.
+// The frontend loads Bootstrap + Bootstrap Icons + GSAP + flatpickr from
+// cdn.jsdelivr.net / cdnjs.cloudflare.com, fonts from Google Fonts, and images
+// from Google Drive / lh3 / Unsplash. connect-src includes the CDNs so their
+// sourcemap (.map) fetches don't throw console errors.
 const contentSecurityPolicy = {
   useDefaults: true,
   directives: {
@@ -16,7 +16,7 @@ const contentSecurityPolicy = {
     "style-src": ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
     "font-src": ["'self'", "data:", "https://fonts.gstatic.com", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
     "img-src": ["'self'", "data:", "blob:", "https:"],
-    "connect-src": ["'self'"],
+    "connect-src": ["'self'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
     "frame-src": ["'self'", "https://drive.google.com"],
     "media-src": ["'self'", "https:", "blob:"],
   },

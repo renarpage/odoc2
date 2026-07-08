@@ -34,8 +34,7 @@
         <div class="activity-card card">
           <div class="card-img-wrap<%= a.cover ? '' : ' no-img' %>">
             <% if (a.cover) { %>
-              <img src="<%= a.cover %>" alt="<%= a.title %>" referrerpolicy="no-referrer" loading="lazy"
-                onerror="this.remove();this.parentNode.classList.add('no-img');">
+              <img src="<%= a.cover %>" alt="<%= a.title %>" referrerpolicy="no-referrer" loading="lazy" data-fallback-img>
             <% } %>
           </div>
           <div class="card-body-odoc">
