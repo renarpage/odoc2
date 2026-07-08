@@ -1,73 +1,42 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Calendar
+  // ===== Calendar (guarded: only runs where calendar markup exists) =====
+  const emptyEvent = document.getElementById("empty-event");
   const days = document.querySelectorAll(".day");
   const events = document.querySelectorAll(".event-item");
 
-  days.forEach((day) => {
-    day.addEventListener("click", () => {
-      document.querySelectorAll(".day").forEach((d) => {
-        d.classList.remove("active");
-      });
-      day.classList.add("active");
-
-      const selectedDay = day.dataset.day;
-
-      events.forEach((event) => {
-        if (event.dataset.date === selectedDay) {
-          event.style.display = "block";
-        } else {
-          event.style.display = "none";
-        }
+  if (days.length) {
+    days.forEach((day) => {
+      day.addEventListener("click", () => {
+        days.forEach((d) => d.classList.remove("active"));
+        day.classList.add("active");
+        const selectedDay = day.dataset.day;
+        let found = false;
+        events.forEach((event) => {
+          const match = event.dataset.date === selectedDay;
+          event.style.display = match ? "block" : "none";
+          if (match) found = true;
+        });
+        if (emptyEvent) emptyEvent.classList.toggle("d-none", found);
       });
     });
-  });
+    events.forEach((event) => {
+      const cell = document.querySelector(`.day[data-day="${event.dataset.date}"]`);
+      if (cell) cell.classList.add("has-event");
+    });
+  }
 
-  events.forEach((event) => {
-    const day = event.dataset.date;
-    const cell = document.querySelector(`.day[data-day="${day}"]`);
-    if (cell) {
-      cell.classList.add("has-event");
-    }
-  });
-
-  let found = false;
-  events.forEach((event) => {
-    if (event.dataset.date === selectedDay) {
-      found = true;
-    }
-  });
-
-  document.getElementById("empty-event").classList.toggle("d-none", found);
-
-  // GSAP reveal animations
+  // ===== GSAP reveal animations =====
   if (window.gsap) {
-    if (window.ScrollTrigger) {
-      gsap.registerPlugin(ScrollTrigger);
-    }
+    if (window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
 
-    const heroTl = gsap.timeline();
-    heroTl
-      .from(".hero-eyebrow", {
-        y: 20,
-        opacity: 0,
-        duration: 0.5,
-        ease: "power2.out",
-      })
-      .from(
-        ".hero-title",
-        { y: 30, opacity: 0, duration: 0.6, ease: "power2.out" },
-        "-=0.3",
-      )
-      .from(
-        ".hero-sub",
-        { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" },
-        "-=0.3",
-      )
-      .from(
-        ".hero-cta",
-        { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" },
-        "-=0.3",
-      );
+    if (document.querySelector(".hero-title")) {
+      const heroTl = gsap.timeline();
+      heroTl
+        .from(".hero-eyebrow", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" })
+        .from(".hero-title", { y: 30, opacity: 0, duration: 0.6, ease: "power2.out" }, "-=0.3")
+        .from(".hero-sub", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, "-=0.3")
+        .from(".hero-cta", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, "-=0.3");
+    }
 
     gsap.utils.toArray(".reveal-up").forEach((el, i) => {
       gsap.to(el, {
@@ -76,10 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
         duration: 0.6,
         delay: (i % 6) * 0.06,
         ease: "power2.out",
-        scrollTrigger: {
-          trigger: el,
-          start: "top 90%",
-        },
+        scrollTrigger: { trigger: el, start: "top 90%" },
       });
     });
 
@@ -94,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Theme toggle (guest)
+  // ===== Theme toggle (guest) =====
   const themeBtn = document.getElementById("themeToggle");
   if (themeBtn) {
     themeBtn.addEventListener("click", () => {
