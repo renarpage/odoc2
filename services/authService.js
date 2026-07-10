@@ -1,5 +1,6 @@
 /**
- * Authentication use-cases: login, refresh rotation, logout, password change.
+ * Authentication use-cases: login, refresh rotation, logout, password change,
+ * and password reset (forgot-password).
  */
 const bcrypt = require("bcryptjs");
 const env = require("../config/env");
@@ -73,7 +74,6 @@ async function refresh(rawRefresh, ctx = {}) {
   const user = await userRepository.findById(existing.user);
   if (!user || !user.active) throw ApiError.unauthorized("Account unavailable");
 
-  // Rotate: issue a fresh refresh token and revoke the used one.
   const tokens = await issueTokens(user, ctx);
   await refreshTokenRepository.revokeByHash(tokenHash, tokenService.hashToken(tokens.refreshValue));
 
@@ -96,7 +96,6 @@ async function changePassword(userId, { currentPassword, newPassword }, ctx = {}
   user.mustChangePassword = false;
   await user.save();
 
-  // Force re-login everywhere else after a credential change.
   await refreshTokenRepository.revokeAllForUser(user._id);
   await logService.record({
     type: LOG_TYPES.INFO,
@@ -110,4 +109,25 @@ async function changePassword(userId, { currentPassword, newPassword }, ctx = {}
   return user;
 }
 
-module.exports = { hashPassword, login, refresh, logout, changePassword, issueTokens };
+// Reset a password without the current one (forgot-password flow). The OTP is
+// verified by the caller (controller) before this runs.
+async function resetPasswordByEmail(email, newPassword, ctx = {}) {
+  const user = await userRepository.findByEmail(email);
+  if (!user || !user.active) throw ApiError.badRequest("Unable to reset password for this account");
+  user.passwordHash = await hashPassword(newPassword);
+  user.mustChangePassword = false;
+  await user.save();
+  await refreshTokenRepository.revokeAllForUser(user._id);
+  await logService.record({
+    type: LOG_TYPES.WARNING,
+    action: LOG_ACTIONS.UPDATE,
+    title: "Password reset",
+    detail: `${user.email} reset their password via OTP`,
+    user: user._id,
+    userEmail: user.email,
+    ip: ctx.ip,
+  });
+  return user;
+}
+
+module.exports = { hashPassword, login, refresh, logout, changePassword, resetPasswordByEmail, issueTokens };
