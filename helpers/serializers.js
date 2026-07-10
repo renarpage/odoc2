@@ -1,7 +1,8 @@
-/**
- * The plug-and-play seam: map Mongo documents into the EXACT object shapes the
- * existing EJS views already consume, so templates render identically.
- */
+//==============================================================//
+//  HELPER — Serializers                                       //
+//  The plug-and-play seam: map Mongo documents into the exact  //
+//  object shapes the EJS views expect.                         //
+//==============================================================//
 const { ROLE_LABELS } = require("../constants");
 const { toDriveImage, toDriveDownload, toDrivePreview, extractDriveId } = require("./driveUrl");
 
@@ -30,6 +31,7 @@ function activityToView(doc) {
       preview: toDrivePreview(g),
       download: toDriveDownload(g),
       index: i,
+      // Enriched later (getBySlug) from the Gallery collection when available.
       name: "Media " + (i + 1),
       typeLabel: "IMAGE",
       isVideo: false,

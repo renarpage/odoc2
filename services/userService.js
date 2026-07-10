@@ -1,8 +1,8 @@
-/**
- * Admin account management.
- * Super Admin: full CRUD on all users.
- * Standard Admin: read-only (list) via controller-level gating.
- */
+//==============================================================//
+//  SERVICE — Admin account management                         //
+//  Super Admin: full CRUD. Standard Admin: read-only (gated    //
+//  at the route/controller layer).                            //
+//==============================================================//
 const userRepository = require("../repositories/userRepository");
 const refreshTokenRepository = require("../repositories/refreshTokenRepository");
 const authService = require("./authService");
@@ -68,13 +68,11 @@ async function toggleActive(id, ctx = {}) {
   if (!user) throw ApiError.notFound("User not found");
   user.active = !user.active;
   await user.save();
-  if (!user.active) {
-    await refreshTokenRepository.revokeAllForUser(user._id);
-  }
+  if (!user.active) await refreshTokenRepository.revokeAllForUser(user._id);
   await logService.record({
     type: LOG_TYPES.INFO,
     action: LOG_ACTIONS.UPDATE,
-    title: `Admin account ${user.active ? 'activated' : 'deactivated'}`,
+    title: `Admin account ${user.active ? "activated" : "deactivated"}`,
     detail: user.email,
     user: ctx.userId,
     userEmail: ctx.userEmail,
@@ -95,12 +93,11 @@ async function resetPassword(id, ctx = {}) {
     type: LOG_TYPES.WARNING,
     action: LOG_ACTIONS.UPDATE,
     title: "Password reset by admin",
-    detail: `${user.email} — temp password printed to server console`,
+    detail: `${user.email} \u2014 temp password printed to server console`,
     user: ctx.userId,
     userEmail: ctx.userEmail,
     ip: ctx.ip,
   });
-  // Print to console (same pattern as OTP)
   console.log(`\n[PASSWORD RESET] ${user.email} -> ${tempPassword}\n`);
   return userToView(user);
 }

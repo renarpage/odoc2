@@ -1,3 +1,8 @@
+//==============================================================//
+//  CONTROLLER — Activities                                     //
+//  Create redirects immediately; media uploads run as a        //
+//  background job so the admin never waits on the request.     //
+//==============================================================//
 const asyncHandler = require("../core/asyncHandler");
 const activityService = require("../services/activityService");
 const galleryService = require("../services/galleryService");
@@ -44,21 +49,14 @@ const editForm = asyncHandler(async (req, res) => {
   res.render("admin/activity-form", { title: "Edit Activity", activity, mode: "edit" });
 });
 
-// Create the activity record right away, kick file uploads to the background,
-// and redirect to the dashboard so the admin never waits on this page.
+// Create the record now, kick uploads to the background, redirect to dashboard.
 const createFromForm = asyncHandler(async (req, res) => {
   const ctx = ctxOf(req);
   const activity = await activityService.create(req.body, ctx);
   const label = req.body.action === "draft" ? "saved as draft" : "published";
 
   if (uploadJobService.hasFiles(req.files)) {
-    uploadJobService.start({
-      user: req.user && req.user._id,
-      title: activity.title,
-      slug: activity.id,
-      files: req.files,
-      ctx,
-    });
+    uploadJobService.start({ user: req.user && req.user._id, title: activity.title, slug: activity.id, files: req.files, ctx });
     req.flash("success", `Activity "${activity.title}" ${label}. Uploading media in the background\u2026`);
   } else {
     req.flash("success", `Activity "${activity.title}" was ${label}.`);
@@ -71,13 +69,7 @@ const updateFromForm = asyncHandler(async (req, res) => {
   const activity = await activityService.update(req.params.slug, req.body, ctx);
 
   if (uploadJobService.hasFiles(req.files)) {
-    uploadJobService.start({
-      user: req.user && req.user._id,
-      title: activity.title,
-      slug: activity.id,
-      files: req.files,
-      ctx,
-    });
+    uploadJobService.start({ user: req.user && req.user._id, title: activity.title, slug: activity.id, files: req.files, ctx });
     req.flash("success", `Activity "${activity.title}" updated. Uploading new media in the background\u2026`);
     return res.redirect("/admin");
   }
@@ -97,7 +89,7 @@ const duplicateFromForm = asyncHandler(async (req, res) => {
   res.redirect("/admin/activities");
 });
 
-// ---- JSON API variants ----
+//-- JSON API ---------------------------------------------------//
 const createApi = asyncHandler(async (req, res) => {
   created(res, await activityService.create(req.body, ctxOf(req)));
 });

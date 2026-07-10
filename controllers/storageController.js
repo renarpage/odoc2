@@ -1,3 +1,6 @@
+//==============================================================//
+//  CONTROLLER — Storage analytics                              //
+//==============================================================//
 const asyncHandler = require("../core/asyncHandler");
 const storageService = require("../services/storageService");
 const dashboardService = require("../services/dashboardService");
