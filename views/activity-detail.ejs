@@ -33,7 +33,7 @@
   }
   .media-modal.open { display: flex; }
   .media-card {
-    width: 100%; max-width: 720px; max-height: 90vh; display: flex; flex-direction: column;
+    width: 100%; max-width: 860px; max-height: 92vh; display: flex; flex-direction: column;
     background: var(--odoc-bg); border-radius: var(--radius-lg); overflow: hidden;
     box-shadow: 12px 12px 34px rgba(30,42,90,.4), -6px -6px 20px rgba(255,255,255,.6);
   }
@@ -72,31 +72,36 @@
   }
   .mm-hero .mm-fs:hover { background: rgba(255,255,255,.32); transform: scale(1.06); }
 
-  .mm-strip-head { display: flex; align-items: center; justify-content: space-between; margin: 18px 0 10px; }
+  .mm-strip-head { display: flex; align-items: center; justify-content: space-between; margin: 18px 0 12px; }
   .mm-strip-head .mm-strip-title { font-weight: 700; font-size: .95rem; }
   .mm-strip-head .mm-total { color: var(--odoc-muted); font-size: .8rem; }
-  .mm-strip { display: flex; gap: 12px; overflow-x: auto; padding: 4px 2px 12px; }
+  /* Vertical grid so items stack down and wrap (mobile-friendly). */
+  .mm-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px; padding: 2px 2px 12px; }
   .mm-thumb {
-    position: relative; flex: 0 0 96px; width: 96px; height: 96px; border-radius: 14px; overflow: hidden;
+    position: relative; aspect-ratio: 1 / 1; border-radius: 16px; overflow: hidden;
     cursor: pointer; background: #e6eaf3; transition: all .2s ease;
     box-shadow: inset 1px 1px 3px rgba(178,184,192,.5), inset -1px -1px 3px rgba(255,255,255,.7);
   }
   .mm-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .mm-thumb.active { outline: 3px solid var(--odoc-primary); outline-offset: -3px; }
   .mm-thumb .mm-check {
-    position: absolute; top: 6px; left: 6px; width: 22px; height: 22px; border-radius: 50%;
+    position: absolute; top: 8px; left: 8px; width: 26px; height: 26px; border-radius: 50%;
     background: rgba(255,255,255,.85); color: transparent; display: inline-flex; align-items: center; justify-content: center;
-    font-size: .7rem; transition: all .15s ease; box-shadow: 0 1px 4px rgba(0,0,0,.2);
+    font-size: .8rem; transition: all .15s ease; box-shadow: 0 1px 4px rgba(0,0,0,.2);
   }
   .mm-thumb.selected { box-shadow: none; }
   .mm-thumb.selected::after { content: ""; position: absolute; inset: 0; background: rgba(49,85,231,.28); }
   .mm-thumb.selected .mm-check { background: var(--odoc-primary); color: #fff; z-index: 2; }
   .mm-thumb .mm-tdl {
-    position: absolute; bottom: 6px; right: 6px; width: 22px; height: 22px; border-radius: 50%; z-index: 2;
-    background: rgba(255,255,255,.9); color: var(--odoc-text); display: inline-flex; align-items: center; justify-content: center;
-    font-size: .7rem; box-shadow: 0 1px 4px rgba(0,0,0,.2); transition: all .15s ease;
+    position: absolute; bottom: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; z-index: 2;
+    background: rgba(255,255,255,.92); color: var(--odoc-text); display: inline-flex; align-items: center; justify-content: center;
+    font-size: .8rem; box-shadow: 0 1px 4px rgba(0,0,0,.2); transition: all .15s ease;
   }
   .mm-thumb .mm-tdl:hover { color: var(--odoc-primary); }
+  .mm-thumb .mm-cap {
+    position: absolute; left: 0; right: 0; bottom: 0; padding: 16px 8px 6px; color: #fff; font-size: .68rem; font-weight: 600;
+    background: linear-gradient(to top, rgba(0,0,0,.65), transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
 
   .mm-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 22px; border-top: 1px solid var(--odoc-border); flex-wrap: wrap; }
   .mm-foot-left { display: flex; align-items: center; gap: 14px; }
@@ -121,7 +126,10 @@
   }
   .mm-cancel:hover { color: var(--odoc-primary); transform: translateY(-1px); }
   .mm-dlbtn:disabled { opacity: .5; cursor: not-allowed; }
-  @media (max-width: 520px) { .mm-foot { justify-content: center; } }
+  @media (max-width: 520px) {
+    .mm-foot { justify-content: center; }
+    .mm-strip { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+  }
 </style>
 
 <div class="container py-4">
@@ -251,7 +259,7 @@
           <span class="mm-switch"><input type="checkbox" id="mmSelectAll"><span class="mm-slider"></span></span>
           Select All
         </label>
-        <span class="mm-selinfo" id="mmSelInfo">0 files selected</span>
+        <span class="mm-selinfo" id="mmSelInfo">No files selected</span>
       </div>
       <div class="mm-foot-actions">
         <button type="button" class="mm-cancel" data-mm-close>Cancel</button>
@@ -331,18 +339,20 @@
   function build() {
     if (built) return; built = true;
     strip.innerHTML = items.map(function (it, i) {
+      var cap = (it.name || ('Media ' + (i + 1)));
       return '<div class="mm-thumb" data-i="' + i + '">' +
         '<span class="mm-check"><i class="bi bi-check-lg"></i></span>' +
         '<a class="mm-tdl" href="' + it.download + '" target="_blank" rel="noopener" title="Download"><i class="bi bi-download"></i></a>' +
-        '<img src="' + it.thumb + '" alt="' + (it.name || ('Media ' + (i + 1))) + '" referrerpolicy="no-referrer" loading="lazy">' +
+        '<img src="' + it.thumb + '" alt="' + cap + '" referrerpolicy="no-referrer" loading="lazy">' +
+        '<span class="mm-cap">' + cap + '</span>' +
         '</div>';
     }).join('');
     strip.querySelectorAll('.mm-thumb').forEach(function (t) {
       var i = parseInt(t.dataset.i, 10);
       t.addEventListener('click', function (e) {
-        if (e.target.closest('.mm-tdl')) return;      // download icon
-        if (e.target.closest('.mm-check')) { toggle(i); return; } // checkmark toggles select
-        setHero(i);                                    // body sets hero preview
+        if (e.target.closest('.mm-tdl')) return;
+        if (e.target.closest('.mm-check')) { toggle(i); return; }
+        setHero(i);
       });
     });
     setHero(0);
