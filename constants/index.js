@@ -47,13 +47,24 @@ const COOKIES = Object.freeze({
   FLASH: "odoc_flash",
 });
 
+// Browsers report inconsistent MIME types (e.g. Windows Chrome sends
+// "application/x-zip-compressed" for .zip). We therefore validate primarily by
+// file EXTENSION and treat MIME as a secondary signal. Keep both lists in sync
+// with the client-side check in public/js/admin.js.
+const ALLOWED_UPLOAD_EXT = Object.freeze([
+  // images
+  "jpg", "jpeg", "png", "webp", "gif", "bmp", "svg", "heic", "heif",
+  // video
+  "mp4", "webm", "mov", "mkv", "avi",
+  // documents
+  "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "csv", "rtf", "odt", "ods", "odp",
+  // archives
+  "zip", "rar", "7z",
+]);
+
 const ALLOWED_UPLOAD_MIME = Object.freeze([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-  "video/mp4",
-  "video/webm",
+  "image/jpeg", "image/png", "image/webp", "image/gif", "image/bmp", "image/svg+xml", "image/heic", "image/heif",
+  "video/mp4", "video/webm", "video/quicktime", "video/x-matroska", "video/x-msvideo",
   "application/pdf",
   "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -61,7 +72,15 @@ const ALLOWED_UPLOAD_MIME = Object.freeze([
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   "application/vnd.ms-powerpoint",
   "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  "application/zip",
+  "text/plain", "text/csv", "application/rtf",
+  "application/vnd.oasis.opendocument.text",
+  "application/vnd.oasis.opendocument.spreadsheet",
+  "application/vnd.oasis.opendocument.presentation",
+  // zip + variants across browsers/OSes
+  "application/zip", "application/x-zip-compressed", "application/x-zip", "multipart/x-zip",
+  "application/x-rar-compressed", "application/vnd.rar", "application/x-7z-compressed",
+  // generic fallback some browsers use
+  "application/octet-stream",
 ]);
 
 module.exports = {
@@ -72,5 +91,6 @@ module.exports = {
   LOG_TYPES,
   LOG_ACTIONS,
   COOKIES,
+  ALLOWED_UPLOAD_EXT,
   ALLOWED_UPLOAD_MIME,
 };
