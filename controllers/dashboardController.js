@@ -1,5 +1,6 @@
 const asyncHandler = require("../core/asyncHandler");
 const dashboardService = require("../services/dashboardService");
+const uploadJobService = require("../services/uploadJobService");
 const { ok } = require("../helpers/response");
 
 const index = asyncHandler(async (req, res) => {
@@ -30,4 +31,9 @@ const notificationsApi = asyncHandler(async (req, res) => {
   ok(res, logs);
 });
 
-module.exports = { index, healthApi, statsApi, notificationsApi };
+// Live background upload jobs for the current admin (dashboard progress panel).
+const uploadJobsApi = asyncHandler(async (req, res) => {
+  ok(res, uploadJobService.listForUser(req.user && req.user._id));
+});
+
+module.exports = { index, healthApi, statsApi, notificationsApi, uploadJobsApi };

@@ -3,6 +3,7 @@ const activityService = require("../services/activityService");
 const galleryService = require("../services/galleryService");
 const documentService = require("../services/documentService");
 const dashboardService = require("../services/dashboardService");
+const uploadJobService = require("../services/uploadJobService");
 const logger = require("../config/logger");
 const { ok, created } = require("../helpers/response");
 
@@ -10,9 +11,7 @@ function ctxOf(req) {
   return { userId: req.user && req.user._id, userEmail: req.user && req.user.email, ip: req.ip };
 }
 
-// Handle cover/gallery/document files attached to a create/edit submit.
-// File failures (e.g. Drive not configured) never lose the saved activity;
-// they surface as a flash warning instead.
+// Synchronous file handling (used by edit, where we stay on the page).
 async function handleFiles(slug, files, ctx) {
   const f = files || {};
   if (!f.cover && !f.gallery && !f.documents) return null;
@@ -45,22 +44,45 @@ const editForm = asyncHandler(async (req, res) => {
   res.render("admin/activity-form", { title: "Edit Activity", activity, mode: "edit" });
 });
 
+// Create the activity record right away, kick file uploads to the background,
+// and redirect to the dashboard so the admin never waits on this page.
 const createFromForm = asyncHandler(async (req, res) => {
   const ctx = ctxOf(req);
   const activity = await activityService.create(req.body, ctx);
-  const warning = await handleFiles(activity.id, req.files, ctx);
-  if (warning) req.flash("error", `Activity saved, but files were not uploaded: ${warning}`);
-  else req.flash("success", `Activity "${activity.title}" was ${req.body.action === "draft" ? "saved as draft" : "published"}.`);
-  res.redirect("/admin/activities");
+  const label = req.body.action === "draft" ? "saved as draft" : "published";
+
+  if (uploadJobService.hasFiles(req.files)) {
+    uploadJobService.start({
+      user: req.user && req.user._id,
+      title: activity.title,
+      slug: activity.id,
+      files: req.files,
+      ctx,
+    });
+    req.flash("success", `Activity "${activity.title}" ${label}. Uploading media in the background\u2026`);
+  } else {
+    req.flash("success", `Activity "${activity.title}" was ${label}.`);
+  }
+  res.redirect("/admin");
 });
 
 const updateFromForm = asyncHandler(async (req, res) => {
   const ctx = ctxOf(req);
   const activity = await activityService.update(req.params.slug, req.body, ctx);
-  const warning = await handleFiles(activity.id, req.files, ctx);
-  if (warning) req.flash("error", `Changes saved, but files were not uploaded: ${warning}`);
-  else req.flash("success", `Activity "${activity.title}" was updated.`);
-  res.redirect("/admin/activities");
+
+  if (uploadJobService.hasFiles(req.files)) {
+    uploadJobService.start({
+      user: req.user && req.user._id,
+      title: activity.title,
+      slug: activity.id,
+      files: req.files,
+      ctx,
+    });
+    req.flash("success", `Activity "${activity.title}" updated. Uploading new media in the background\u2026`);
+    return res.redirect("/admin");
+  }
+  req.flash("success", `Activity "${activity.title}" was updated.`);
+  return res.redirect("/admin/activities");
 });
 
 const deleteFromForm = asyncHandler(async (req, res) => {
