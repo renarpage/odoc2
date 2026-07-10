@@ -42,12 +42,10 @@
     display: flex; align-items: center; justify-content: center; color: #fff; font-size: 2rem;
     text-shadow: 0 2px 10px rgba(0,0,0,.6); pointer-events: none;
   }
-  /* "+N more" overlay on the last visible tile */
   .gallery-skeleton .more-overlay {
     position: absolute; inset: 0; z-index: 5; cursor: pointer;
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
-    background: rgba(20,24,40,.6); color: #fff; text-decoration: none;
-    transition: background .2s ease;
+    background: rgba(20,24,40,.6); color: #fff; text-decoration: none; transition: background .2s ease;
   }
   .gallery-skeleton .more-overlay:hover { background: rgba(20,24,40,.72); }
   .gallery-skeleton .more-overlay .more-num { font-size: 1.6rem; font-weight: 800; line-height: 1; }
@@ -157,18 +155,44 @@
   .mm-cancel:hover { color: var(--odoc-primary); transform: translateY(-1px); }
   .mm-dlbtn:disabled { opacity: .5; cursor: not-allowed; }
   @media (max-width: 520px) {
+    .media-modal { padding: 0; }
+    .media-card { max-width: 100%; max-height: 100vh; height: 100vh; border-radius: 0; }
     .mm-foot { justify-content: center; }
     .mm-strip { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
   }
+
+  /* ===== Fullscreen preview overlay (custom, mobile-friendly) ===== */
+  .fs-overlay {
+    position: fixed; inset: 0; z-index: 3000; display: none;
+    align-items: center; justify-content: center; padding: 16px;
+    background: rgba(8,10,20,.95);
+  }
+  .fs-overlay.open { display: flex; }
+  .fs-stage { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+  .fs-stage img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; }
+  .fs-stage .fs-video-wrap { width: min(100%, 1280px); aspect-ratio: 16 / 9; max-height: 100%; }
+  .fs-stage .fs-video-wrap iframe { width: 100%; height: 100%; border: 0; border-radius: 8px; }
+  .fs-close {
+    position: absolute; top: 16px; right: 16px; z-index: 3; width: 46px; height: 46px; border-radius: 50%;
+    border: none; cursor: pointer; color: #fff; background: rgba(255,255,255,.16);
+    display: inline-flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: all .2s ease;
+  }
+  .fs-close:hover { background: rgba(255,255,255,.3); transform: scale(1.06); }
+  .fs-nav {
+    position: absolute; top: 50%; margin-top: -24px; z-index: 3; width: 48px; height: 48px; border-radius: 50%;
+    border: none; cursor: pointer; color: #fff; background: rgba(255,255,255,.16);
+    display: inline-flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: all .2s ease;
+  }
+  .fs-nav:hover { background: rgba(255,255,255,.3); transform: scale(1.06); }
+  .fs-prev { left: 14px; } .fs-next { right: 14px; }
+  .fs-cap { position: absolute; bottom: 18px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,.85); font-size: .85rem; }
+  @media (max-width: 520px) { .fs-prev { left: 6px; } .fs-next { right: 6px; } .fs-close { top: 10px; right: 10px; } }
 </style>
 
 <%
-  // Cap the on-page Media Archive to ~4 rows of a 2-column grid. When the
-  // first item is rendered wide (odd count) it occupies a full row, so the
-  // capacity differs. Overflow is surfaced via a "+N more" tile -> View Details.
   var totalMedia = activity.galleryItems.length;
   var firstWide = (totalMedia % 2 === 1);
-  var gridCap = firstWide ? 7 : 8; // 1 wide + 3 rows*2  OR  4 rows*2
+  var gridCap = firstWide ? 7 : 8;
   var visibleMedia = Math.min(totalMedia, gridCap);
   var hiddenMedia = totalMedia - visibleMedia;
 %>
@@ -333,6 +357,15 @@
   </div>
 </div>
 
+<!-- Custom fullscreen preview (responsive, works on mobile) -->
+<div class="fs-overlay" id="fsOverlay" aria-hidden="true">
+  <button type="button" class="fs-close" id="fsClose" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+  <button type="button" class="fs-nav fs-prev" id="fsPrev" aria-label="Previous"><i class="bi bi-chevron-left"></i></button>
+  <div class="fs-stage" id="fsStage"></div>
+  <button type="button" class="fs-nav fs-next" id="fsNext" aria-label="Next"><i class="bi bi-chevron-right"></i></button>
+  <div class="fs-cap" id="fsCap"></div>
+</div>
+
 <script>
 (function () {
   document.querySelectorAll('.gallery-thumb').forEach(function (im) {
@@ -445,6 +478,38 @@
     heroVideo.removeAttribute('src');
   }
 
+  // ===== Custom fullscreen preview (image + video), mobile-friendly =====
+  var fs = document.getElementById('fsOverlay');
+  var fsStage = document.getElementById('fsStage');
+  var fsCap = document.getElementById('fsCap');
+  var fsIdx = 0;
+
+  function fsRender() {
+    var it = items[fsIdx];
+    fsStage.innerHTML = '';
+    if (it.isVideo) {
+      var wrap = document.createElement('div');
+      wrap.className = 'fs-video-wrap';
+      var ifr = document.createElement('iframe');
+      ifr.src = it.preview; ifr.allow = 'autoplay; fullscreen'; ifr.setAttribute('allowfullscreen', '');
+      wrap.appendChild(ifr); fsStage.appendChild(wrap);
+    } else {
+      var im = document.createElement('img');
+      im.src = it.view; im.alt = it.name || ('Media ' + (fsIdx + 1)); im.referrerPolicy = 'no-referrer';
+      fsStage.appendChild(im);
+    }
+    fsCap.textContent = (fsIdx + 1) + ' / ' + items.length + '   \u2022   ' + (it.name || '');
+  }
+  function fsShow(i) { fsIdx = (i + items.length) % items.length; fsRender(); }
+  function fsOpen(i) { fsShow(i); fs.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function fsCloseFn() { fs.classList.remove('open'); fsStage.innerHTML = ''; if (!modal.classList.contains('open')) document.body.style.overflow = ''; }
+
+  document.getElementById('fsClose').addEventListener('click', fsCloseFn);
+  document.getElementById('fsPrev').addEventListener('click', function () { fsShow(fsIdx - 1); });
+  document.getElementById('fsNext').addEventListener('click', function () { fsShow(fsIdx + 1); });
+  fs.addEventListener('click', function (e) { if (e.target === fs) fsCloseFn(); });
+  fsBtn.addEventListener('click', function () { fsOpen(active); });
+
   var vd = document.getElementById('mediaViewDetails');
   if (vd) vd.addEventListener('click', function (e) { e.preventDefault(); open(0); });
   var more = document.getElementById('mediaMore');
@@ -454,17 +519,19 @@
   });
   modal.querySelectorAll('[data-mm-close]').forEach(function (b) { b.addEventListener('click', close); });
   modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('open')) close(); });
+  document.addEventListener('keydown', function (e) {
+    if (fs.classList.contains('open')) {
+      if (e.key === 'Escape') fsCloseFn();
+      if (e.key === 'ArrowLeft') fsShow(fsIdx - 1);
+      if (e.key === 'ArrowRight') fsShow(fsIdx + 1);
+      return;
+    }
+    if (e.key === 'Escape' && modal.classList.contains('open')) close();
+  });
 
   selectAll.addEventListener('change', function () {
     var on = selectAll.checked;
     items.forEach(function (_, i) { toggle(i, on); });
-  });
-
-  fsBtn.addEventListener('click', function () {
-    var el = heroImg;
-    if (el.requestFullscreen) el.requestFullscreen();
-    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
   });
 
   function idFromDownload(url) { var m = String(url || '').match(/[?&]id=([A-Za-z0-9_-]+)/); return m ? m[1] : null; }
