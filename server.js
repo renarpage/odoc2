@@ -1,26 +1,22 @@
-/**
- * ODOC Digital Archive - application entry point.
- * Boots MongoDB, wires security + middleware, mounts routes, starts HTTP.
- */
-const path = require("path");
+require("dotenv").config();
 const express = require("express");
+const path = require("path");
 const cookieParser = require("cookie-parser");
 const methodOverride = require("method-override");
 const expressLayouts = require("express-ejs-layouts");
-const morgan = require("morgan");
 
+const { connectDB } = require("./config/db");
 const env = require("./config/env");
 const logger = require("./config/logger");
-const { connectDB, disconnectDB } = require("./config/db");
 
-const { applySecurity } = require("./middlewares/security");
-const { apiLimiter } = require("./middlewares/rateLimiter");
-const { flashMiddleware } = require("./helpers/flash");
 const { authenticate } = require("./middlewares/auth");
-const { csrfProtection } = require("./middlewares/csrf");
 const locals = require("./middlewares/locals");
-const notFound = require("./middlewares/notFound");
+const maintenance = require("./middlewares/maintenance");
+const { securityMiddleware } = require("./middlewares/security");
+const { globalLimiter } = require("./middlewares/rateLimiter");
+const { flashMiddleware } = require("./helpers/flash");
 const errorHandler = require("./middlewares/errorHandler");
+const notFound = require("./middlewares/notFound");
 
 const guestRoutes = require("./routes/guest");
 const authRoutes = require("./routes/auth");
@@ -28,48 +24,54 @@ const adminRoutes = require("./routes/admin");
 const apiRoutes = require("./routes/api");
 
 const app = express();
-app.set("trust proxy", 1);
 
-// Views
+// View engine
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(expressLayouts);
 app.set("layout", "layouts/guest");
 
-// Security + parsers
-applySecurity(app);
-app.use(morgan(env.isProd ? "combined" : "dev", { stream: logger.stream }));
+// Static assets
+app.use(express.static(path.join(__dirname, "public")));
+
+// Body parsing
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(methodOverride("_method"));
-app.use(express.static(path.join(__dirname, "public")));
 
-// Request context
+// Security & rate limiting
+app.use(securityMiddleware);
+app.use(globalLimiter);
+
+// Flash messages (cookie-based)
 app.use(flashMiddleware);
+
+// Auth: silently attach user if token present
 app.use(authenticate);
-app.use(csrfProtection);
+
+// Populate view locals (currentUser, currentPath, flash, settings)
 app.use(locals);
 
-// API rate limiting
-app.use("/api", apiLimiter);
+// Maintenance mode gate (must come after auth + locals so we know who the user is)
+app.use(maintenance);
 
 // Routes
 app.use("/api", apiRoutes);
 app.use("/", authRoutes);
-app.use("/", guestRoutes);
 app.use("/admin", adminRoutes);
+app.use("/", guestRoutes);
 
-// Fallbacks
+// 404 & error handling
 app.use(notFound);
 app.use(errorHandler);
 
-let server;
+// Boot
 async function start() {
   try {
     await connectDB();
-    server = app.listen(env.PORT, () => {
-      logger.info(`ODOC Digital Archive running at ${env.APP_URL} (port ${env.PORT}, ${env.NODE_ENV})`);
+    app.listen(env.PORT, () => {
+      logger.info(`ODOC Digital Archive running at http://localhost:${env.PORT}`);
     });
   } catch (err) {
     logger.error("Failed to start server", { error: err.message });
@@ -77,15 +79,6 @@ async function start() {
   }
 }
 
-async function shutdown(signal) {
-  logger.info(`Received ${signal}, shutting down gracefully`);
-  if (server) server.close();
-  await disconnectDB();
-  process.exit(0);
-}
-["SIGINT", "SIGTERM"].forEach((sig) => process.on(sig, () => shutdown(sig)));
-process.on("unhandledRejection", (reason) => logger.error("Unhandled rejection", { reason: String(reason) }));
+start();
 
-if (require.main === module) start();
-
-module.exports = { app, start };
+module.exports = app;

@@ -1,5 +1,7 @@
 /**
- * Admin account management (Super Admin only).
+ * Admin account management.
+ * Super Admin: full CRUD on all users.
+ * Standard Admin: read-only (list) via controller-level gating.
  */
 const userRepository = require("../repositories/userRepository");
 const refreshTokenRepository = require("../repositories/refreshTokenRepository");
@@ -61,6 +63,48 @@ async function update(id, payload, ctx = {}) {
   return userToView(user);
 }
 
+async function toggleActive(id, ctx = {}) {
+  const user = await userRepository.findById(id);
+  if (!user) throw ApiError.notFound("User not found");
+  user.active = !user.active;
+  await user.save();
+  if (!user.active) {
+    await refreshTokenRepository.revokeAllForUser(user._id);
+  }
+  await logService.record({
+    type: LOG_TYPES.INFO,
+    action: LOG_ACTIONS.UPDATE,
+    title: `Admin account ${user.active ? 'activated' : 'deactivated'}`,
+    detail: user.email,
+    user: ctx.userId,
+    userEmail: ctx.userEmail,
+    ip: ctx.ip,
+  });
+  return userToView(user);
+}
+
+async function resetPassword(id, ctx = {}) {
+  const user = await userRepository.findById(id);
+  if (!user) throw ApiError.notFound("User not found");
+  const tempPassword = "Reset@" + Math.random().toString(36).slice(2, 10);
+  user.passwordHash = await authService.hashPassword(tempPassword);
+  user.mustChangePassword = true;
+  await user.save();
+  await refreshTokenRepository.revokeAllForUser(user._id);
+  await logService.record({
+    type: LOG_TYPES.WARNING,
+    action: LOG_ACTIONS.UPDATE,
+    title: "Password reset by admin",
+    detail: `${user.email} — temp password printed to server console`,
+    user: ctx.userId,
+    userEmail: ctx.userEmail,
+    ip: ctx.ip,
+  });
+  // Print to console (same pattern as OTP)
+  console.log(`\n[PASSWORD RESET] ${user.email} -> ${tempPassword}\n`);
+  return userToView(user);
+}
+
 async function remove(id, ctx = {}) {
   if (String(id) === String(ctx.userId)) throw ApiError.badRequest("You cannot delete your own account");
   const user = await userRepository.findById(id);
@@ -79,4 +123,4 @@ async function remove(id, ctx = {}) {
   return { id: String(id) };
 }
 
-module.exports = { list, create, update, remove };
+module.exports = { list, create, update, toggleActive, resetPassword, remove };

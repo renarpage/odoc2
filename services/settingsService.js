@@ -5,9 +5,16 @@ const settingRepository = require("../repositories/settingRepository");
 const logService = require("./logService");
 const { settingsToView, DEFAULT_SETTINGS } = require("../helpers/serializers");
 const { LOG_TYPES, LOG_ACTIONS } = require("../constants");
+const logger = require("../config/logger");
 
-const BOOL_FIELDS = ["maintenanceMode", "emailAlerts", "systemLogsNotif", "errorReporting", "twoFactorAuth", "gdriveConnected"];
-const NUM_FIELDS = ["sessionTimeout", "smtpPort", "storageCapacityGB"];
+const BOOL_FIELDS = [
+  "maintenanceMode", "emailAlerts", "systemLogsNotif", "errorReporting",
+  "gdriveConnected", "allowVideoUpload", "autoBackup"
+];
+const NUM_FIELDS = [
+  "smtpPort", "storageCapacityGB", "itemsPerPage",
+  "maxFilesPerRequest", "maxUploadMB", "dataRetentionDays"
+];
 
 // A full settings form submit omits unchecked switches entirely, so an absent
 // boolean means "off". Force every known bool to a real boolean based on
@@ -21,7 +28,6 @@ function coerce(patch) {
     if (f in out && out[f] !== "") out[f] = Number(out[f]);
   });
   delete out._csrf;
-  delete out.sessionTimeoutRange;
   return out;
 }
 
@@ -44,4 +50,28 @@ async function update(patch, ctx = {}) {
   return settingsToView(saved.data);
 }
 
-module.exports = { get, update };
+/**
+ * Test SMTP connection without saving.
+ */
+async function testSmtpConnection({ smtpHost, smtpPort, smtpUser, smtpPass, systemEmail }) {
+  try {
+    const nodemailer = require("nodemailer");
+    const transporter = nodemailer.createTransport({
+      host: smtpHost || "smtp.gmail.com",
+      port: parseInt(smtpPort) || 587,
+      secure: parseInt(smtpPort) === 465,
+      auth: {
+        user: smtpUser || "",
+        pass: smtpPass || "",
+      },
+      connectionTimeout: 10000,
+    });
+    await transporter.verify();
+    return { success: true };
+  } catch (err) {
+    logger.warn("SMTP test failed", { error: err.message });
+    return { success: false, message: err.message };
+  }
+}
+
+module.exports = { get, update, testSmtpConnection };

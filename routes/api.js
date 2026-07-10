@@ -16,7 +16,6 @@ const activityController = require("../controllers/activityController");
 const galleryController = require("../controllers/galleryController");
 const documentController = require("../controllers/documentController");
 const mediaController = require("../controllers/mediaController");
-const brandingController = require("../controllers/brandingController");
 const settingsController = require("../controllers/settingsController");
 const userController = require("../controllers/userController");
 
@@ -50,10 +49,10 @@ router.delete("/admin/gallery/:id", galleryController.remove);
 
 router.post("/admin/activities/:slug/documents", upload.array("files", 20), documentController.upload);
 
-router.put("/admin/branding", brandingController.updateApi);
-router.put("/admin/settings", settingsController.updateApi);
+router.put("/admin/settings", requireSuperAdmin, settingsController.updateApi);
+router.post("/admin/settings/test-smtp", requireSuperAdmin, settingsController.testSmtpApi);
 
-router.get("/admin/users", requireSuperAdmin, userController.page);
+router.get("/admin/users", requireSuperAdmin, userController.listApi);
 router.post("/admin/users", requireSuperAdmin, userController.createApi);
 router.put("/admin/users/:id", requireSuperAdmin, userController.updateApi);
 router.delete("/admin/users/:id", requireSuperAdmin, userController.removeApi);

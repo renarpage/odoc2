@@ -1,59 +1,50 @@
 const express = require("express");
 const router = express.Router();
 
-const { requireAuth, requireSuperAdmin } = require("../middlewares/auth");
+const { requireAuth, requireSuperAdmin, requireAdmin } = require("../middlewares/auth");
 const upload = require("../middlewares/upload");
+
 const dashboardController = require("../controllers/dashboardController");
 const activityController = require("../controllers/activityController");
 const storageController = require("../controllers/storageController");
-const brandingController = require("../controllers/brandingController");
 const settingsController = require("../controllers/settingsController");
 const userController = require("../controllers/userController");
-const authController = require("../controllers/authController");
-const integrationsController = require("../controllers/integrationsController");
 
-// Multipart handler for the activity form (cover + gallery + documents).
-// Gallery/documents allow large batches; total is capped in the upload mw.
-const activityUpload = upload.fields([
-  { name: "cover", maxCount: 1 },
-  { name: "gallery", maxCount: 150 },
-  { name: "documents", maxCount: 100 },
-]);
-
-// All admin pages require authentication and use the admin layout.
+// All admin routes require authentication
 router.use(requireAuth);
+
+// Every admin view uses the admin layout
 router.use((req, res, next) => {
   res.locals.layout = "layouts/admin";
   next();
 });
 
+// Dashboard
 router.get("/", dashboardController.index);
 
+// Activities
 router.get("/activities", activityController.adminList);
 router.get("/activities/new", activityController.newForm);
-router.post("/activities/new", activityUpload, activityController.createFromForm);
+router.post("/activities/new", upload.fields([{ name: "cover", maxCount: 1 }, { name: "gallery", maxCount: 200 }, { name: "documents", maxCount: 50 }]), activityController.createFromForm);
 router.get("/activities/:slug/edit", activityController.editForm);
-router.post("/activities/:slug/edit", activityUpload, activityController.updateFromForm);
-router.post("/activities/:slug/duplicate", activityController.duplicateFromForm);
+router.post("/activities/:slug/edit", upload.fields([{ name: "cover", maxCount: 1 }, { name: "gallery", maxCount: 200 }, { name: "documents", maxCount: 50 }]), activityController.updateFromForm);
 router.post("/activities/:slug/delete", activityController.deleteFromForm);
+router.post("/activities/:slug/duplicate", activityController.duplicateFromForm);
 
+// Storage
 router.get("/storage", storageController.page);
 
-// Google Drive OAuth (Super Admin only)
-router.get("/integrations/google/connect", requireSuperAdmin, integrationsController.connect);
-router.get("/integrations/google/callback", requireSuperAdmin, integrationsController.callback);
-router.post("/integrations/google/disconnect", requireSuperAdmin, integrationsController.disconnect);
+// Settings (super_admin only)
+router.get("/settings", requireSuperAdmin, settingsController.page);
+router.post("/settings", requireSuperAdmin, settingsController.updateFromForm);
+router.post("/settings/test-smtp", requireSuperAdmin, settingsController.testSmtp);
 
-router.get("/branding", brandingController.page);
-router.post("/branding", brandingController.updateFromForm);
-
-router.get("/settings", settingsController.page);
-router.post("/settings", settingsController.updateFromForm);
-
-router.get("/account/password", authController.getChangePassword);
-router.post("/account/password", authController.postChangePassword);
-
-router.get("/users", requireSuperAdmin, userController.page);
+// Users
+router.get("/users", userController.page);
 router.post("/users", requireSuperAdmin, userController.createFromForm);
+router.post("/users/:id/update", requireSuperAdmin, userController.updateFromForm);
+router.post("/users/:id/delete", requireSuperAdmin, userController.removeFromForm);
+router.post("/users/:id/toggle", requireSuperAdmin, userController.toggleActiveFromForm);
+router.post("/users/:id/reset-password", requireSuperAdmin, userController.resetPasswordFromForm);
 
 module.exports = router;

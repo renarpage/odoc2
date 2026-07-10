@@ -30,7 +30,6 @@ function activityToView(doc) {
       preview: toDrivePreview(g),
       download: toDriveDownload(g),
       index: i,
-      // Enriched later (getBySlug) from the Gallery collection when available.
       name: "Media " + (i + 1),
       typeLabel: "IMAGE",
       isVideo: false,
@@ -95,17 +94,37 @@ function brandingToView(data) {
 const DEFAULT_SETTINGS = {
   platformName: "ODOC Digital Archive",
   maintenanceMode: false,
+  maintenanceMessage: "",
   timezone: "(GMT+07:00) Western Indonesia Time",
+  language: "id",
+  // Notifications
   emailAlerts: true,
   systemLogsNotif: true,
   errorReporting: false,
-  twoFactorAuth: true,
-  passwordPolicy: "Strong (Alpha-numeric + Special)",
-  sessionTimeout: 30,
+  // API & Integrations
   gdriveConnected: false,
   smtpHost: "smtp.gmail.com",
   smtpPort: 587,
+  smtpUser: "",
+  smtpPass: "",
   systemEmail: "no-reply@odoc.archive",
+  webhookUrl: "",
+  // SEO
+  metaDescription: "",
+  metaKeywords: "",
+  faviconUrl: "",
+  ogImageUrl: "",
+  // Content
+  itemsPerPage: 9,
+  maxFilesPerRequest: 200,
+  maxUploadMB: 50,
+  allowVideoUpload: true,
+  // Backup
+  autoBackup: false,
+  backupFrequency: "weekly",
+  dataRetentionDays: 365,
+  // Storage
+  storageCapacityGB: 15,
 };
 
 function settingsToView(data) {

@@ -1,126 +1,299 @@
-<div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+<% const s = settings || {}; %>
+
+<div class="d-flex justify-content-between align-items-start mb-4">
   <div>
     <h2 class="fw-bold mb-1">System Settings</h2>
-    <p class="text-muted mb-0">Configure core platform behavior and security protocols.</p>
+    <p class="text-muted mb-0">Configure core platform behavior and integrations.</p>
   </div>
-  <button type="submit" form="settingsForm" class="btn btn-primary rounded-pill px-4">
-    <i class="bi bi-save me-2"></i>Save All Changes
+  <button type="submit" form="settingsForm" class="btn btn-primary">
+    <i class="bi bi-check2-square"></i> Save All Changes
   </button>
 </div>
 
-<form action="/admin/settings" method="POST" id="settingsForm">
-<div class="row g-4">
-  <div class="col-lg-6">
-    <div class="odoc-panel mb-4 card">
-      <div class="panel-title mb-3"><i class="bi bi-sliders"></i> General Configuration</div>
+<form id="settingsForm" method="POST" action="/admin/settings">
+  <%- include('../partials/csrf') %>
 
-      <div class="mb-3">
-        <label class="form-label-odoc">Platform Name</label>
-        <input type="text" name="platformName" class="form-control form-control-odoc" value="<%= settings.platformName %>">
-      </div>
+  <div class="row g-4">
 
-      <div class="radio-checkbox d-flex justify-content-between align-items-center mb-3 p-3">
-        <div>
-          <div class="fw-semibold small">Maintenance Mode</div>
-          <div class="text-muted tiny">Disable public access for scheduled updates</div>
+    <!-- ============ LEFT COLUMN ============ -->
+    <div class="col-lg-6">
+
+      <!-- General Configuration -->
+      <div class="card neu-card mb-4" style="overflow: visible;">
+        <div class="card-body">
+          <h5 class="fw-semibold mb-3"><i class="bi bi-sliders text-primary"></i> General Configuration</h5>
+
+          <div class="mb-3">
+            <label class="form-label">Platform Name</label>
+            <input type="text" name="platformName" class="form-control" value="<%= s.platformName || '' %>">
+          </div>
+
+          <div class="mb-3 d-flex justify-content-between align-items-center">
+            <div>
+              <label class="form-label mb-0">Maintenance Mode</label>
+              <small class="d-block text-muted">Disable public access for scheduled updates</small>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="maintenanceMode" id="maintenanceMode" <%= s.maintenanceMode ? 'checked' : '' %>>
+            </div>
+          </div>
+
+          <div class="mb-3" id="maintenanceMessageWrap" style="<%= s.maintenanceMode ? '' : 'display:none;' %>">
+            <label class="form-label">Maintenance Message</label>
+            <textarea name="maintenanceMessage" class="form-control" rows="2" placeholder="We are performing scheduled maintenance..."><%= s.maintenanceMessage || '' %></textarea>
+          </div>
+
+          <div class="mb-3" style="position: relative; z-index: 10;">
+            <label class="form-label">Default Timezone</label>
+            <select name="timezone" class="form-select">
+              <option value="(GMT+07:00) Western Indonesia Time" <%= s.timezone && s.timezone.includes('+07:00') ? 'selected' : '' %>>(GMT+07:00) Western Indonesia Time</option>
+              <option value="(GMT+08:00) Central Indonesia Time" <%= s.timezone && s.timezone.includes('+08:00') ? 'selected' : '' %>>(GMT+08:00) Central Indonesia Time</option>
+              <option value="(GMT+09:00) Eastern Indonesia Time" <%= s.timezone && s.timezone.includes('+09:00') ? 'selected' : '' %>>(GMT+09:00) Eastern Indonesia Time</option>
+              <option value="(GMT+00:00) UTC" <%= s.timezone && s.timezone.includes('+00:00') ? 'selected' : '' %>>(GMT+00:00) UTC</option>
+              <option value="(GMT+05:30) India Standard Time" <%= s.timezone && s.timezone.includes('+05:30') ? 'selected' : '' %>>(GMT+05:30) India Standard Time</option>
+              <option value="(GMT+09:00) Japan Standard Time" <%= s.timezone && s.timezone.includes('Japan') ? 'selected' : '' %>>(GMT+09:00) Japan Standard Time</option>
+              <option value="(GMT-05:00) Eastern Time (US)" <%= s.timezone && s.timezone.includes('-05:00') ? 'selected' : '' %>>(GMT-05:00) Eastern Time (US)</option>
+              <option value="(GMT-08:00) Pacific Time (US)" <%= s.timezone && s.timezone.includes('-08:00') ? 'selected' : '' %>>(GMT-08:00) Pacific Time (US)</option>
+              <option value="(GMT+01:00) Central European Time" <%= s.timezone && s.timezone.includes('+01:00') ? 'selected' : '' %>>(GMT+01:00) Central European Time</option>
+            </select>
+          </div>
+
+          <div class="mb-0">
+            <label class="form-label">Default Language</label>
+            <select name="language" class="form-select">
+              <option value="id" <%= s.language === 'id' ? 'selected' : '' %>>Bahasa Indonesia</option>
+              <option value="en" <%= s.language === 'en' ? 'selected' : '' %>>English</option>
+            </select>
+          </div>
         </div>
-        <div class="form-check form-switch">
-          <input class="form-check-input" type="checkbox" name="maintenanceMode" <%= settings.maintenanceMode ? 'checked' : '' %>>
+      </div>
+
+      <!-- SEO & Meta -->
+      <div class="card neu-card mb-4">
+        <div class="card-body">
+          <h5 class="fw-semibold mb-3"><i class="bi bi-search text-primary"></i> SEO & Meta</h5>
+
+          <div class="mb-3">
+            <label class="form-label">Meta Description</label>
+            <textarea name="metaDescription" class="form-control" rows="2" placeholder="Short description for search engines"><%= s.metaDescription || '' %></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Meta Keywords</label>
+            <input type="text" name="metaKeywords" class="form-control" placeholder="archive, osis, school, activities" value="<%= s.metaKeywords || '' %>">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Favicon URL</label>
+            <input type="url" name="faviconUrl" class="form-control" placeholder="https://..." value="<%= s.faviconUrl || '' %>">
+          </div>
+
+          <div class="mb-0">
+            <label class="form-label">OG Image URL</label>
+            <input type="url" name="ogImageUrl" class="form-control" placeholder="https://..." value="<%= s.ogImageUrl || '' %>">
+          </div>
         </div>
       </div>
 
-      <div>
-        <label class="form-label-odoc">Default Timezone</label>
-        <select name="timezone" class="form-select form-select-odoc">
-          <option selected><%= settings.timezone %></option>
-          <option>(GMT+07:00) Western Indonesia Time</option>
-          <option>(GMT+00:00) UTC</option>
-        </select>
+      <!-- Content Settings -->
+      <div class="card neu-card mb-4">
+        <div class="card-body">
+          <h5 class="fw-semibold mb-3"><i class="bi bi-layout-text-sidebar text-primary"></i> Content Settings</h5>
+
+          <div class="mb-3">
+            <label class="form-label">Activities Per Page (Guest)</label>
+            <input type="number" name="itemsPerPage" class="form-control" min="3" max="50" value="<%= s.itemsPerPage || 9 %>">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Max Files Per Upload</label>
+            <input type="number" name="maxFilesPerRequest" class="form-control" min="1" max="500" value="<%= s.maxFilesPerRequest || 200 %>">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Max Upload Size (MB)</label>
+            <input type="number" name="maxUploadMB" class="form-control" min="1" max="500" value="<%= s.maxUploadMB || 50 %>">
+          </div>
+
+          <div class="mb-0 d-flex justify-content-between align-items-center">
+            <div>
+              <label class="form-label mb-0">Allow Video Uploads</label>
+              <small class="d-block text-muted">mp4, webm, mov, mkv</small>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="allowVideoUpload" <%= s.allowVideoUpload !== false ? 'checked' : '' %>>
+            </div>
+          </div>
+        </div>
       </div>
+
     </div>
 
-    <div class="odoc-panel card">
-      <div class="panel-title mb-3"><i class="bi bi-shield-check"></i> Security Protocols</div>
+    <!-- ============ RIGHT COLUMN ============ -->
+    <div class="col-lg-6">
 
-      <div class="radio-checkbox d-flex justify-content-between align-items-center mb-3 p-3">
-        <div>
-          <div class="fw-semibold small">Two-Factor Auth</div>
-          <div class="text-muted tiny">Mandatory for all administrator roles.</div>
+      <!-- Notifications -->
+      <div class="card neu-card mb-4">
+        <div class="card-body">
+          <h5 class="fw-semibold mb-3"><i class="bi bi-bell text-primary"></i> Notifications</h5>
+
+          <div class="mb-3 d-flex justify-content-between align-items-center">
+            <span>Email Alerts</span>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="emailAlerts" <%= s.emailAlerts ? 'checked' : '' %>>
+            </div>
+          </div>
+          <div class="mb-3 d-flex justify-content-between align-items-center">
+            <span>System Logs</span>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="systemLogsNotif" <%= s.systemLogsNotif ? 'checked' : '' %>>
+            </div>
+          </div>
+          <div class="mb-0 d-flex justify-content-between align-items-center">
+            <span>Error Reporting</span>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="errorReporting" <%= s.errorReporting ? 'checked' : '' %>>
+            </div>
+          </div>
+
+          <div class="mt-3 p-2 bg-light rounded small text-muted">
+            <i class="bi bi-info-circle"></i> Critical alerts bypass these settings.
+          </div>
         </div>
-        <div class="form-check form-switch">
-          <input class="form-check-input" type="checkbox" name="twoFactorAuth" <%= settings.twoFactorAuth ? 'checked' : '' %>>
+      </div>
+
+      <!-- API & Integrations -->
+      <div class="card neu-card mb-4">
+        <div class="card-body">
+          <h5 class="fw-semibold mb-3"><i class="bi bi-plug text-primary"></i> API & Integrations</h5>
+
+          <div class="mb-3 d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-google text-primary"></i>
+              <span>Google Drive API</span>
+            </div>
+            <% if (s.gdriveConnected) { %>
+              <span class="badge bg-success">Connected</span>
+            <% } else { %>
+              <span class="badge bg-secondary">Disconnected</span>
+            <% } %>
+          </div>
+
+          <hr>
+
+          <h6 class="fw-semibold">SMTP Server Configuration</h6>
+          <div class="row g-2 mb-2">
+            <div class="col-8">
+              <input type="text" name="smtpHost" class="form-control" placeholder="smtp.gmail.com" value="<%= s.smtpHost || '' %>">
+            </div>
+            <div class="col-4">
+              <input type="number" name="smtpPort" class="form-control" placeholder="587" value="<%= s.smtpPort || 587 %>">
+            </div>
+          </div>
+          <div class="mb-2">
+            <input type="text" name="smtpUser" class="form-control" placeholder="SMTP Username / Email" value="<%= s.smtpUser || '' %>">
+          </div>
+          <div class="mb-2">
+            <input type="password" name="smtpPass" class="form-control" placeholder="SMTP Password (App Password)" value="<%= s.smtpPass || '' %>">
+          </div>
+          <div class="mb-3">
+            <input type="email" name="systemEmail" class="form-control" placeholder="no-reply@odoc.archive" value="<%= s.systemEmail || '' %>">
+          </div>
+          <button type="button" class="btn btn-outline-primary btn-sm" id="btnTestSmtp">
+            <i class="bi bi-envelope-check"></i> Test SMTP Connection
+          </button>
+          <span id="smtpTestResult" class="ms-2 small"></span>
+
+          <hr>
+
+          <h6 class="fw-semibold">Webhook URL</h6>
+          <div class="mb-0">
+            <input type="url" name="webhookUrl" class="form-control" placeholder="https://hooks.example.com/odoc" value="<%= s.webhookUrl || '' %>">
+            <small class="text-muted">Receives POST on activity create/update/delete events</small>
+          </div>
         </div>
       </div>
 
-      <label class="form-label-odoc">Password Policy</label>
-      <div class="d-flex gap-2 mb-3">
-        <label class="rounded-5 text-center w-auto h-auto px-3 py-2 btn-primary rounded-3 flex-fill <%= settings.passwordPolicy.startsWith('Strong') ? 'active' : '' %>">
-          <input type="radio" name="passwordPolicy" value="Strong (Alpha-numeric + Special)" class="d-none" <%= settings.passwordPolicy.startsWith('Strong') ? 'checked' : '' %>>
-          Strong
-        </label>
-        <label class="rounded-5 text-center w-auto h-auto px-3 py-2 btn-secondary rounded-3 flex-fill <%= settings.passwordPolicy.startsWith('Medium') ? 'active' : '' %>">
-          <input type="radio" name="passwordPolicy" value="Medium (Alpha-numeric)" class="d-none" <%= settings.passwordPolicy.startsWith('Medium') ? 'checked' : '' %>>
-          Medium
-        </label>
+      <!-- Backup & Data -->
+      <div class="card neu-card mb-4">
+        <div class="card-body">
+          <h5 class="fw-semibold mb-3"><i class="bi bi-cloud-arrow-up text-primary"></i> Backup & Data</h5>
+
+          <div class="mb-3 d-flex justify-content-between align-items-center">
+            <div>
+              <label class="form-label mb-0">Auto Backup</label>
+              <small class="d-block text-muted">Backup database to Drive periodically</small>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="autoBackup" <%= s.autoBackup ? 'checked' : '' %>>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Backup Frequency</label>
+            <select name="backupFrequency" class="form-select">
+              <option value="daily" <%= s.backupFrequency === 'daily' ? 'selected' : '' %>>Daily</option>
+              <option value="weekly" <%= s.backupFrequency === 'weekly' || !s.backupFrequency ? 'selected' : '' %>>Weekly</option>
+              <option value="monthly" <%= s.backupFrequency === 'monthly' ? 'selected' : '' %>>Monthly</option>
+            </select>
+          </div>
+
+          <div class="mb-0">
+            <label class="form-label">Data Retention (days)</label>
+            <input type="number" name="dataRetentionDays" class="form-control" min="30" max="3650" value="<%= s.dataRetentionDays || 365 %>">
+            <small class="text-muted">Logs older than this are auto-purged</small>
+          </div>
+        </div>
       </div>
 
-      <label class="form-label-odoc">Session Timeout (minutes)</label>
-      <div class="d-flex align-items-center gap-3">
-        <input type="range" class="form-range flex-grow-1" min="5" max="120" name="sessionTimeoutRange" value="<%= settings.sessionTimeout %>" oninput="document.getElementById('sessionTimeoutVal').value = this.value">
-        <input type="text" id="sessionTimeoutVal" name="sessionTimeout" class="form-control form-control-odoc text-center" style="width:70px;" value="<%= settings.sessionTimeout %>" readonly>
-      </div>
     </div>
   </div>
-
-  <div class="col-lg-6">
-    <div class="odoc-panel mb-4 card">
-      <div class="panel-title mb-3"><i class="bi bi-bell"></i> Notifications</div>
-
-      <div class="radio-checkbox d-flex justify-content-between align-items-center mb-3 p-3">
-        <div class="fw-semibold small">Email Alerts</div>
-        <div class="form-check form-switch">
-          <input class="form-check-input" type="checkbox" name="emailAlerts" <%= settings.emailAlerts ? 'checked' : '' %>>
-        </div>
-      </div>
-      <div class="radio-checkbox d-flex justify-content-between align-items-center mb-3 p-3">
-        <div class="fw-semibold small">System Logs</div>
-        <div class="form-check form-switch">
-          <input class="form-check-input" type="checkbox" name="systemLogsNotif" <%= settings.systemLogsNotif ? 'checked' : '' %>>
-        </div>
-      </div>
-      <div class="radio-checkbox d-flex justify-content-between align-items-center mb-3 p-3">
-        <div class="fw-semibold small">Error Reporting</div>
-        <div class="form-check form-switch">
-          <input class="form-check-input" type="checkbox" name="errorReporting" <%= settings.errorReporting ? 'checked' : '' %>>
-        </div>
-      </div>
-
-      <div class="alert d-flex align-items-center gap-2 mb-0" style="background:#E9EEFC;border:none;color:var(--odoc-primary);border-radius:var(--radius-sm);">
-        <i class="bi bi-info-circle"></i> Critical alerts bypass these settings.
-      </div>
-    </div>
-
-    <div class="odoc-panel card">
-      <div class="panel-title mb-3"><i class="bi bi-plug"></i> API & Integrations</div>
-
-      <div class="d-flex justify-content-between align-items-center p-3 mb-2" style="background:var(--odoc-bg);border-radius:var(--radius-sm);">
-        <div class="d-flex align-items-center gap-2">
-          <i class="bi bi-google text-primary"></i>
-          <span class="fw-semibold small">Google Drive API</span>
-        </div>
-        <span class="badge rounded-pill text-bg-success">Connected</span>
-      </div>
-      <input type="text" class="form-control form-control-odoc mb-3 text-muted" value="••••••••••••••••••••" disabled>
-
-      <label class="form-label-odoc">SMTP Server Configuration</label>
-      <div class="row g-2 mb-2">
-        <div class="col-8"><input type="text" name="smtpHost" class="form-control form-control-odoc" value="<%= settings.smtpHost %>"></div>
-        <div class="col-4"><input type="text" name="smtpPort" class="form-control form-control-odoc" value="<%= settings.smtpPort %>"></div>
-      </div>
-      <input type="text" name="systemEmail" class="form-control form-control-odoc mb-3" value="<%= settings.systemEmail %>">
-
-      <button type="button" class="btn btn-primary w-100 h-100 rounded-5 fs-6"><i class="fs-6 bi bi-link-45deg me-1"></i>Add New Webhook</button>
-    </div>
-  </div>
-</div>
 </form>
+
+<script>
+(function() {
+  // Toggle maintenance message visibility
+  var mmToggle = document.getElementById('maintenanceMode');
+  var mmWrap = document.getElementById('maintenanceMessageWrap');
+  if (mmToggle && mmWrap) {
+    mmToggle.addEventListener('change', function() {
+      mmWrap.style.display = this.checked ? '' : 'none';
+    });
+  }
+
+  // Test SMTP
+  var btnTest = document.getElementById('btnTestSmtp');
+  var resultEl = document.getElementById('smtpTestResult');
+  if (btnTest) {
+    btnTest.addEventListener('click', function() {
+      resultEl.textContent = 'Testing...';
+      resultEl.className = 'ms-2 small text-muted';
+      fetch('/admin/settings/test-smtp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          smtpHost: document.querySelector('[name=smtpHost]').value,
+          smtpPort: document.querySelector('[name=smtpPort]').value,
+          smtpUser: document.querySelector('[name=smtpUser]').value,
+          smtpPass: document.querySelector('[name=smtpPass]').value,
+          systemEmail: document.querySelector('[name=systemEmail]').value,
+        })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.success) {
+          resultEl.textContent = 'Connection successful!';
+          resultEl.className = 'ms-2 small text-success';
+        } else {
+          resultEl.textContent = data.message || 'Connection failed';
+          resultEl.className = 'ms-2 small text-danger';
+        }
+      })
+      .catch(function() {
+        resultEl.textContent = 'Network error';
+        resultEl.className = 'ms-2 small text-danger';
+      });
+    });
+  }
+})();
+</script>

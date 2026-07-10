@@ -1,10 +1,192 @@
-<div class="mb-4">
-  <h2 class="fw-bold mb-1">Users</h2>
-  <p class="text-muted mb-0">Manage administrator and staff access to the platform.</p>
+<% const isSuperAdmin = currentUser && currentUser.role === 'super_admin'; %>
+
+<div class="d-flex justify-content-between align-items-start mb-4">
+  <div>
+    <h2 class="fw-bold mb-1">Users</h2>
+    <p class="text-muted mb-0">Manage administrator access to the platform.</p>
+  </div>
+  <% if (isSuperAdmin) { %>
+  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createUserModal">
+    <i class="bi bi-person-plus"></i> Add Admin
+  </button>
+  <% } %>
 </div>
 
-<div class="odoc-panel text-center py-5">
-  <i class="bi bi-people display-4 text-primary mb-3 d-block"></i>
-  <h5 class="fw-bold">User management coming soon</h5>
-  <p class="text-muted">This section will let you invite admins, assign roles, and manage permissions.</p>
+<!-- Users Table -->
+<div class="card neu-card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="bg-light">
+          <tr>
+            <th class="ps-4">User</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Last Login</th>
+            <% if (isSuperAdmin) { %><th class="text-end pe-4">Actions</th><% } %>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (users && users.length) { %>
+            <% users.forEach(function(u) { %>
+            <tr>
+              <td class="ps-4">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="avatar-circle" style="background:<%= u.avatarColor || '#3155E7' %>;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:.875rem;">
+                    <%= u.name ? u.name.charAt(0).toUpperCase() : '?' %>
+                  </div>
+                  <span class="fw-medium"><%= u.name %></span>
+                </div>
+              </td>
+              <td><%= u.email %></td>
+              <td>
+                <span class="badge <%= u.role === 'super_admin' ? 'bg-primary' : 'bg-secondary' %>">
+                  <%= u.roleLabel %>
+                </span>
+              </td>
+              <td>
+                <% if (u.active) { %>
+                  <span class="badge bg-success-subtle text-success">Active</span>
+                <% } else { %>
+                  <span class="badge bg-danger-subtle text-danger">Inactive</span>
+                <% } %>
+              </td>
+              <td>
+                <% if (u.lastLoginAt) { %>
+                  <small class="text-muted"><%= new Date(u.lastLoginAt).toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' }) %></small>
+                <% } else { %>
+                  <small class="text-muted">Never</small>
+                <% } %>
+              </td>
+              <% if (isSuperAdmin) { %>
+              <td class="text-end pe-4">
+                <div class="btn-group btn-group-sm">
+                  <button class="btn btn-outline-primary" title="Edit" data-bs-toggle="modal" data-bs-target="#editUserModal"
+                    data-id="<%= u.id %>" data-name="<%= u.name %>" data-email="<%= u.email %>" data-role="<%= u.role %>" data-active="<%= u.active %>">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <% if (u.id !== currentUser.id) { %>
+                  <form method="POST" action="/admin/users/<%= u.id %>/toggle" class="d-inline">
+                    <%- include('../partials/csrf') %>
+                    <button class="btn btn-outline-<%= u.active ? 'warning' : 'success' %>" title="<%= u.active ? 'Deactivate' : 'Activate' %>">
+                      <i class="bi bi-<%= u.active ? 'pause-circle' : 'play-circle' %>"></i>
+                    </button>
+                  </form>
+                  <form method="POST" action="/admin/users/<%= u.id %>/reset-password" class="d-inline">
+                    <%- include('../partials/csrf') %>
+                    <button class="btn btn-outline-info" title="Reset Password">
+                      <i class="bi bi-key"></i>
+                    </button>
+                  </form>
+                  <form method="POST" action="/admin/users/<%= u.id %>/delete" class="d-inline" onsubmit="return confirm('Delete this user permanently?')">
+                    <%- include('../partials/csrf') %>
+                    <button class="btn btn-outline-danger" title="Delete">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
+                  <% } %>
+                </div>
+              </td>
+              <% } %>
+            </tr>
+            <% }); %>
+          <% } else { %>
+            <tr><td colspan="6" class="text-center py-4 text-muted">No users found.</td></tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
+
+<% if (isSuperAdmin) { %>
+<!-- Create User Modal -->
+<div class="modal fade" id="createUserModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form method="POST" action="/admin/users" class="modal-content">
+      <%- include('../partials/csrf') %>
+      <div class="modal-header">
+        <h5 class="modal-title">Add New Admin</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Full Name</label>
+          <input type="text" name="name" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" class="form-control" required minlength="8">
+          <small class="text-muted">User will be forced to change on first login.</small>
+        </div>
+        <div class="mb-0">
+          <label class="form-label">Role</label>
+          <select name="role" class="form-select">
+            <option value="standard_admin">Standard Admin</option>
+            <option value="super_admin">Super Admin</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create User</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form method="POST" action="#" class="modal-content" id="editUserForm">
+      <%- include('../partials/csrf') %>
+      <div class="modal-header">
+        <h5 class="modal-title">Edit User</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Full Name</label>
+          <input type="text" name="name" class="form-control" id="editName" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-control" id="editEmail" disabled>
+        </div>
+        <div class="mb-0">
+          <label class="form-label">Role</label>
+          <select name="role" class="form-select" id="editRole">
+            <option value="standard_admin">Standard Admin</option>
+            <option value="super_admin">Super Admin</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+(function() {
+  var editModal = document.getElementById('editUserModal');
+  if (editModal) {
+    editModal.addEventListener('show.bs.modal', function(event) {
+      var btn = event.relatedTarget;
+      var form = document.getElementById('editUserForm');
+      form.action = '/admin/users/' + btn.getAttribute('data-id') + '/update';
+      document.getElementById('editName').value = btn.getAttribute('data-name');
+      document.getElementById('editEmail').value = btn.getAttribute('data-email');
+      document.getElementById('editRole').value = btn.getAttribute('data-role');
+    });
+  }
+})();
+</script>
+<% } %>
