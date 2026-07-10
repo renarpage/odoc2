@@ -78,9 +78,11 @@
   .mm-close:hover { color: var(--odoc-primary); transform: translateY(-1px); }
   .mm-body { overflow-y: auto; padding: 0 22px 8px; }
 
-  /* Media hero: always 16:9. Images cover; the Drive video player fills the
-     same frame edge-to-edge, so the video sits at the top with no dead space. */
+  /* Media hero. Images = 16:9 cover. Video = 16:10 so the Drive player's
+     control bar (pause / volume / settings) fits below the frame instead of
+     being clipped by the 16:9 edge. */
   .mm-hero { position: relative; border-radius: var(--radius-md); overflow: hidden; background: #0d1020; aspect-ratio: 16 / 9; }
+  .mm-hero.playing { aspect-ratio: 16 / 10; }
   .mm-hero img, .mm-hero iframe { width: 100%; height: 100%; border: 0; display: block; }
   .mm-hero img { object-fit: cover; }
   .mm-hero iframe { background: #000; }
@@ -160,6 +162,7 @@
   @media (max-width: 520px) {
     .media-modal { padding: 0; }
     .media-card { max-width: 100%; max-height: 100vh; height: 100vh; border-radius: 0; }
+    .mm-hero.playing { aspect-ratio: 16 / 11; }
     .mm-foot { justify-content: center; }
     .mm-strip { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
   }
