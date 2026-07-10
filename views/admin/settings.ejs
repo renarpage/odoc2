@@ -5,7 +5,7 @@
     <h2 class="fw-bold mb-1">System Settings</h2>
     <p class="text-muted mb-0">Configure core platform behavior and integrations.</p>
   </div>
-  <button type="submit" form="settingsForm" class="btn btn-primary px-4 py-2">
+  <button type="submit" form="settingsForm" class="btn btn-primary rounded-pill px-4 py-2">
     <i class="bi bi-check2-square"></i> Save All Changes
   </button>
 </div>
@@ -190,7 +190,7 @@
         <div class="mb-3">
           <input type="email" name="systemEmail" class="form-control form-control-odoc" placeholder="no-reply@odoc.archive" value="<%= s.systemEmail || '' %>">
         </div>
-        <button type="button" class="btn btn-secondary" id="btnTestSmtp" style="width:auto;height:auto;border-radius:var(--radius-sm);padding:8px 16px;font-size:.85rem;">
+        <button type="button" class="btn btn-outline-neu rounded-pill px-3 py-2" id="btnTestSmtp">
           <i class="bi bi-envelope-check"></i> Test SMTP Connection
         </button>
         <span id="smtpTestResult" class="ms-2 small"></span>
