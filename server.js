@@ -1,3 +1,7 @@
+//==============================================================//
+//  SERVER — Application entry point                            //
+//  Boots MongoDB, wires the middleware chain, mounts routes.   //
+//==============================================================//
 require("dotenv").config();
 const express = require("express");
 const path = require("path");
@@ -26,53 +30,59 @@ const apiRoutes = require("./routes/api");
 
 const app = express();
 
-// View engine
+//==============================================================//
+//  VIEW ENGINE                                                 //
+//==============================================================//
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(expressLayouts);
 app.set("layout", "layouts/guest");
 
-// Static assets
+//==============================================================//
+//  CORE MIDDLEWARE                                             //
+//==============================================================//
 app.use(express.static(path.join(__dirname, "public")));
-
-// Body parsing
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(methodOverride("_method"));
 
-// Security (helmet + mongo sanitize)
+// Security headers + NoSQL sanitization, then rate limiting.
 applySecurity(app);
-
-// Rate limiting
 app.use(apiLimiter);
 
-// Flash messages (cookie-based)
+// Cookie-based flash messages.
 app.use(flashMiddleware);
 
-// Auth: silently attach user if token present
+// Attach the current user (silent JWT refresh) if a token is present.
 app.use(authenticate);
 
-// CSRF protection (sets res.locals.csrfToken for views)
+// Issue/verify CSRF token and expose it to views.
 app.use(csrfProtection);
 
-// Populate view locals (currentUser, currentPath, flash, settings)
+// Per-request view locals (currentUser, flash, settings).
 app.use(locals);
 
-// Maintenance mode gate (must come after auth + locals so we know who the user is)
+// Gate public traffic when maintenance mode is on (admins bypass).
 app.use(maintenance);
 
-// Routes
+//==============================================================//
+//  ROUTES                                                      //
+//==============================================================//
 app.use("/api", apiRoutes);
 app.use("/", authRoutes);
 app.use("/admin", adminRoutes);
 app.use("/", guestRoutes);
 
-// 404 & error handling
+//==============================================================//
+//  ERROR HANDLING                                              //
+//==============================================================//
 app.use(notFound);
 app.use(errorHandler);
 
-// Boot
+//==============================================================//
+//  BOOT                                                        //
+//==============================================================//
 async function start() {
   try {
     await connectDB();

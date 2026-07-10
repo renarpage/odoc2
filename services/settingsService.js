@@ -1,6 +1,7 @@
-/**
- * System settings (singleton, key="system"). Coerces HTML form values.
- */
+//==============================================================//
+//  SERVICE — System settings (singleton, key="system")         //
+//  Coerces HTML form values into typed settings.               //
+//==============================================================//
 const settingRepository = require("../repositories/settingRepository");
 const logService = require("./logService");
 const { settingsToView, DEFAULT_SETTINGS } = require("../helpers/serializers");
@@ -9,16 +10,15 @@ const logger = require("../config/logger");
 
 const BOOL_FIELDS = [
   "maintenanceMode", "emailAlerts", "systemLogsNotif", "errorReporting",
-  "gdriveConnected", "allowVideoUpload", "autoBackup"
+  "gdriveConnected", "allowVideoUpload", "autoBackup",
 ];
 const NUM_FIELDS = [
   "smtpPort", "storageCapacityGB", "itemsPerPage",
-  "maxFilesPerRequest", "maxUploadMB", "dataRetentionDays"
+  "maxFilesPerRequest", "maxUploadMB", "dataRetentionDays",
 ];
 
-// A full settings form submit omits unchecked switches entirely, so an absent
-// boolean means "off". Force every known bool to a real boolean based on
-// presence; this fixes toggles that could never be turned back off.
+// An unchecked switch is omitted from the submit, so absence means "off".
+// Force every known boolean based on presence; coerce numeric fields too.
 function coerce(patch) {
   const out = { ...patch };
   BOOL_FIELDS.forEach((f) => {
@@ -50,20 +50,15 @@ async function update(patch, ctx = {}) {
   return settingsToView(saved.data);
 }
 
-/**
- * Test SMTP connection without saving.
- */
-async function testSmtpConnection({ smtpHost, smtpPort, smtpUser, smtpPass, systemEmail }) {
+// Verify an SMTP config by opening a connection. Never saves.
+async function testSmtpConnection({ smtpHost, smtpPort, smtpUser, smtpPass }) {
   try {
     const nodemailer = require("nodemailer");
     const transporter = nodemailer.createTransport({
       host: smtpHost || "smtp.gmail.com",
       port: parseInt(smtpPort) || 587,
       secure: parseInt(smtpPort) === 465,
-      auth: {
-        user: smtpUser || "",
-        pass: smtpPass || "",
-      },
+      auth: { user: smtpUser || "", pass: smtpPass || "" },
       connectionTimeout: 10000,
     });
     await transporter.verify();

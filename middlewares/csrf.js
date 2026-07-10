@@ -1,10 +1,8 @@
-/**
- * Stateless double-submit-cookie CSRF protection.
- * A random token is stored in a readable cookie and mirrored into forms
- * (partials/csrf.ejs), the X-CSRF-Token header, or a _csrf query param.
- * The query param is needed for multipart forms, whose body is not parsed
- * until multer runs (after this middleware).
- */
+//==============================================================//
+//  MIDDLEWARE — CSRF (stateless double-submit cookie)          //
+//  Token lives in a readable cookie, mirrored via form field,  //
+//  X-CSRF-Token header, or _csrf query param.                  //
+//==============================================================//
 const crypto = require("crypto");
 const { COOKIES } = require("../constants");
 const env = require("../config/env");
@@ -12,6 +10,7 @@ const ApiError = require("../core/ApiError");
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
+// Ensure a CSRF token exists for this session and expose it to views.
 function ensureToken(req, res) {
   let token = req.cookies ? req.cookies[COOKIES.CSRF] : null;
   if (!token) {
@@ -31,13 +30,11 @@ function csrfProtection(req, res, next) {
   const token = ensureToken(req, res);
   if (SAFE_METHODS.has(req.method)) return next();
 
-  // API routes use JWT auth, not CSRF cookies
+  // API routes authenticate via JWT, not CSRF cookies.
   if (req.originalUrl.startsWith("/api/")) return next();
 
   const submitted =
-    req.get("x-csrf-token") ||
-    (req.body && req.body._csrf) ||
-    (req.query && req.query._csrf);
+    req.get("x-csrf-token") || (req.body && req.body._csrf) || (req.query && req.query._csrf);
   if (!submitted || submitted !== token) {
     return next(ApiError.forbidden("Invalid or missing CSRF token"));
   }

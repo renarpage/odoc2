@@ -1,6 +1,6 @@
-/**
- * MongoDB connection via Mongoose.
- */
+//==============================================================//
+//  CONFIG — MongoDB connection (Mongoose)                      //
+//==============================================================//
 const mongoose = require("mongoose");
 const env = require("./env");
 const logger = require("./logger");
@@ -29,8 +29,8 @@ async function disconnectDB() {
   connected = false;
 }
 
+// readyState 1 === connected
 async function healthCheck() {
-  // 1 === connected
   return mongoose.connection.readyState === 1;
 }
 

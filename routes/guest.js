@@ -1,11 +1,14 @@
+//==============================================================//
+//  ROUTES — Guest (public site)                                //
+//==============================================================//
 const express = require("express");
 const router = express.Router();
 const guestController = require("../controllers/guestController");
 
-// Landing / Home
+// Landing / archive listing.
 router.get("/", guestController.home);
 
-// Activity detail (public)
+// Public activity detail page.
 router.get("/activity/:id", guestController.activityDetail);
 
 module.exports = router;

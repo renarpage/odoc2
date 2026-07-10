@@ -1,7 +1,7 @@
-/**
- * Populates view locals every request so templates never hit undefined vars.
- * Settings are read for maintenance banner awareness in admin views.
- */
+//==============================================================//
+//  MIDDLEWARE — View locals                                    //
+//  Ensures templates never hit undefined vars; loads settings. //
+//==============================================================//
 const settingRepository = require("../repositories/settingRepository");
 const { settingsToView } = require("../helpers/serializers");
 const logger = require("../config/logger");

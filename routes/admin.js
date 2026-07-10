@@ -1,7 +1,11 @@
+//==============================================================//
+//  ROUTES — Admin (server-rendered pages)                      //
+//  Auth-gated. Super-admin-only actions guarded per route.     //
+//==============================================================//
 const express = require("express");
 const router = express.Router();
 
-const { requireAuth, requireSuperAdmin, requireAdmin } = require("../middlewares/auth");
+const { requireAuth, requireSuperAdmin } = require("../middlewares/auth");
 const upload = require("../middlewares/upload");
 
 const dashboardController = require("../controllers/dashboardController");
@@ -10,19 +14,19 @@ const storageController = require("../controllers/storageController");
 const settingsController = require("../controllers/settingsController");
 const userController = require("../controllers/userController");
 
-// All admin routes require authentication
+// Every admin route requires an authenticated user.
 router.use(requireAuth);
 
-// Every admin view uses the admin layout
+// All admin views render inside the admin layout.
 router.use((req, res, next) => {
   res.locals.layout = "layouts/admin";
   next();
 });
 
-// Dashboard
+//-- Dashboard --------------------------------------------------//
 router.get("/", dashboardController.index);
 
-// Activities
+//-- Activities -------------------------------------------------//
 router.get("/activities", activityController.adminList);
 router.get("/activities/new", activityController.newForm);
 router.post("/activities/new", upload.fields([{ name: "cover", maxCount: 1 }, { name: "gallery", maxCount: 200 }, { name: "documents", maxCount: 50 }]), activityController.createFromForm);
@@ -31,15 +35,15 @@ router.post("/activities/:slug/edit", upload.fields([{ name: "cover", maxCount: 
 router.post("/activities/:slug/delete", activityController.deleteFromForm);
 router.post("/activities/:slug/duplicate", activityController.duplicateFromForm);
 
-// Storage
+//-- Storage ----------------------------------------------------//
 router.get("/storage", storageController.page);
 
-// Settings (super_admin only)
+//-- Settings (super admin only) --------------------------------//
 router.get("/settings", requireSuperAdmin, settingsController.page);
 router.post("/settings", requireSuperAdmin, settingsController.updateFromForm);
 router.post("/settings/test-smtp", requireSuperAdmin, settingsController.testSmtp);
 
-// Users
+//-- Users (view open to all admins; mutations super-admin only) //
 router.get("/users", userController.page);
 router.post("/users", requireSuperAdmin, userController.createFromForm);
 router.post("/users/:id/update", requireSuperAdmin, userController.updateFromForm);

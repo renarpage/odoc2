@@ -1,25 +1,26 @@
+//==============================================================//
+//  CONTROLLER — User management                                //
+//  Page is open to all admins; mutations are super-admin only  //
+//  (enforced at the route layer).                              //
+//==============================================================//
 const asyncHandler = require("../core/asyncHandler");
 const userService = require("../services/userService");
 const { validateCreate } = require("../validators/userValidator");
-const { ROLES, ROLE_LABELS } = require("../constants");
+const { ROLE_LABELS } = require("../constants");
 const { ok, created } = require("../helpers/response");
 
 function ctxOf(req) {
   return { userId: req.user && req.user._id, userEmail: req.user && req.user.email, ip: req.ip };
 }
 
-/**
- * Users page: both super_admin and standard_admin can view,
- * but only super_admin sees action buttons (enforced in the template).
- */
+// Render the users table.
 const page = asyncHandler(async (req, res) => {
   const users = await userService.list();
   res.render("admin/users", { title: "Users", users, roleLabels: ROLE_LABELS });
 });
 
 const createFromForm = asyncHandler(async (req, res) => {
-  const payload = validateCreate(req.body);
-  const user = await userService.create(payload, ctxOf(req));
+  const user = await userService.create(validateCreate(req.body), ctxOf(req));
   req.flash("success", `Admin "${user.email}" created.`);
   res.redirect("/admin/users");
 });
@@ -38,7 +39,7 @@ const removeFromForm = asyncHandler(async (req, res) => {
 
 const toggleActiveFromForm = asyncHandler(async (req, res) => {
   const user = await userService.toggleActive(req.params.id, ctxOf(req));
-  req.flash("success", `User ${user.active ? 'activated' : 'deactivated'}.`);
+  req.flash("success", `User ${user.active ? "activated" : "deactivated"}.`);
   res.redirect("/admin/users");
 });
 
@@ -48,7 +49,7 @@ const resetPasswordFromForm = asyncHandler(async (req, res) => {
   res.redirect("/admin/users");
 });
 
-// ---- JSON API ----
+//-- JSON API ---------------------------------------------------//
 const listApi = asyncHandler(async (req, res) => {
   ok(res, await userService.list());
 });

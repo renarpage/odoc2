@@ -1,6 +1,7 @@
-/**
- * Shared enums and constants. Single source of truth for magic strings.
- */
+//==============================================================//
+//  CONSTANTS — Shared enums (single source of truth)           //
+//==============================================================//
+
 const ROLES = Object.freeze({
   SUPER_ADMIN: "super_admin",
   STANDARD_ADMIN: "standard_admin",
@@ -47,10 +48,9 @@ const COOKIES = Object.freeze({
   FLASH: "odoc_flash",
 });
 
-// Browsers report inconsistent MIME types (e.g. Windows Chrome sends
-// "application/x-zip-compressed" for .zip). We therefore validate primarily by
-// file EXTENSION and treat MIME as a secondary signal. Keep both lists in sync
-// with the client-side check in public/js/admin.js.
+// Validate uploads primarily by EXTENSION; browsers report inconsistent MIME
+// types (e.g. Windows Chrome sends "application/x-zip-compressed" for .zip).
+// Keep both lists in sync with the client-side check in public/js/admin.js.
 const ALLOWED_UPLOAD_EXT = Object.freeze([
   // images
   "jpg", "jpeg", "png", "webp", "gif", "bmp", "svg", "heic", "heif",
