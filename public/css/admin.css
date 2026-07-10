@@ -1,22 +1,16 @@
-/* ============================================================
-   ODOC ADMIN PANEL STYLES
-   Neumorphic theme built on the shared tokens in style.css
-   (--odoc-*, --radius-*, --secondary-shadow-hover).
+/*==============================================================*/
+/*  ODOC ADMIN PANEL                                            */
+/*  Neumorphic theme built on tokens from style.css            */
+/*  (--odoc-*, --radius-*, --secondary-shadow-hover)           */
+/*                                                              */
+/*  1 Layout shell   2 Panels    3 Tables    4 Widgets         */
+/*  5 Forms          6 Toggles   7 Buttons   8 Modal           */
+/*  9 Utilities     10 Responsive                              */
+/*==============================================================*/
 
-   Sections:
-     1. Layout shell (sidebar, topbar, content)
-     2. Panels & stat cards
-     3. Tables
-     4. Dashboard widgets (logs, uploads)
-     5. Activity wizard & forms
-     6. Toggles & progress
-     7. Buttons (outline, icon)
-     8. Modal
-     9. Utilities
-    10. Responsive
-   ============================================================ */
-
-/* ============ 1. LAYOUT SHELL ============ */
+/*==============================================================*/
+/*  1 · LAYOUT SHELL                                            */
+/*==============================================================*/
 .admin-body {
   background: var(--odoc-bg);
 }
@@ -209,8 +203,14 @@
   background: #e4f5ec;
   color: #17784f;
 }
+.odoc-alert-danger {
+  background: #fdecec;
+  color: #b3261e;
+}
 
-/* ============ 2. PANELS & STAT CARDS ============ */
+/*==============================================================*/
+/*  2 · PANELS & STAT CARDS                                     */
+/*==============================================================*/
 .stat-card {
   border-radius: var(--radius-lg);
   padding: 22px;
@@ -263,7 +263,9 @@
   color: var(--odoc-primary);
 }
 
-/* ============ 3. TABLES ============ */
+/*==============================================================*/
+/*  3 · TABLES                                                  */
+/*==============================================================*/
 .table-odoc thead th {
   color: var(--odoc-muted);
   font-size: 0.78rem;
@@ -299,7 +301,9 @@
   cursor: pointer;
 }
 
-/* ============ 4. DASHBOARD WIDGETS ============ */
+/*==============================================================*/
+/*  4 · DASHBOARD WIDGETS                                       */
+/*==============================================================*/
 .log-item {
   display: flex;
   gap: 12px;
@@ -390,7 +394,9 @@
   flex: 1;
 }
 
-/* ============ 5. WIZARD & FORMS ============ */
+/*==============================================================*/
+/*  5 · WIZARD & FORMS                                          */
+/*==============================================================*/
 .wizard-steps {
   display: flex;
   align-items: center;
@@ -510,7 +516,9 @@
   text-align: center;
 }
 
-/* ============ 6. TOGGLES & PROGRESS ============ */
+/*==============================================================*/
+/*  6 · TOGGLES & PROGRESS                                      */
+/*==============================================================*/
 .form-switch {
   padding-left: 0;
 }
@@ -621,7 +629,9 @@
   letter-spacing: 0.5px;
 }
 
-/* ============ 7. BUTTONS ============ */
+/*==============================================================*/
+/*  7 · BUTTONS                                                 */
+/*==============================================================*/
 /* Neumorphic outline button (Cancel, secondary actions) */
 .btn-outline-neu {
   background: var(--odoc-bg);
@@ -690,7 +700,9 @@
     inset -2px -2px 5px rgba(255, 255, 255, 0.6);
 }
 
-/* ============ 8. MODAL ============ */
+/*==============================================================*/
+/*  8 · MODAL                                                   */
+/*==============================================================*/
 .neu-modal {
   background: var(--odoc-bg) !important;
   border: none !important;
@@ -700,8 +712,10 @@
     -4px -4px 12px rgba(255, 255, 255, 0.8) !important;
 }
 
-/* ============ 9. UTILITIES ============ */
-/* Circular user initial avatar (background color set inline per-user). */
+/*==============================================================*/
+/*  9 · UTILITIES                                               */
+/*==============================================================*/
+/* Circular user-initial avatar (bg colour set inline per user) */
 .user-avatar {
   width: 36px;
   height: 36px;
@@ -714,12 +728,10 @@
   font-size: 0.82rem;
   flex-shrink: 0;
 }
-/* Muted table cell text */
 .cell-muted {
   color: var(--odoc-muted);
   font-size: 0.88rem;
 }
-/* Status text */
 .text-active {
   color: var(--odoc-success);
   font-weight: 600;
@@ -730,7 +742,6 @@
   font-weight: 600;
   font-size: 0.88rem;
 }
-/* Inset info box (e.g. notifications hint) */
 .neu-info-box {
   padding: 10px 12px;
   border-radius: var(--radius-sm);
@@ -741,22 +752,21 @@
     inset 2px 2px 7px rgba(178, 184, 192, 0.52),
     inset -2px -2px 7px rgba(255, 255, 255, 0.68);
 }
-/* Danger variant for status-chip (from style.css) */
 .status-chip.chip-danger {
   background: #fdecec;
   color: var(--odoc-danger);
 }
-/* Soft horizontal rule */
 .hr-soft {
   border-color: var(--odoc-border);
 }
-/* Positioning helper for overflow-visible dropdown stacking */
 .pos-relative-z {
   position: relative;
   z-index: 10;
 }
 
-/* ============ 10. RESPONSIVE ============ */
+/*==============================================================*/
+/*  10 · RESPONSIVE                                             */
+/*==============================================================*/
 @media (max-width: 991px) {
   .admin-sidebar {
     position: fixed;

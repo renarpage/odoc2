@@ -1,12 +1,11 @@
-/**
- * System Settings page behavior.
- * - Toggles the maintenance message field with the maintenance switch.
- * - Tests SMTP connectivity via /admin/settings/test-smtp without saving.
- */
+/*==============================================================*/
+/*  SYSTEM SETTINGS                                             */
+/*  Maintenance-message toggle + SMTP connection test          */
+/*==============================================================*/
 (function () {
   "use strict";
 
-  // Show/hide the maintenance message textarea based on the toggle.
+  // Show/hide the maintenance message field with the toggle.
   var maintToggle = document.getElementById("maintenanceMode");
   var maintWrap = document.getElementById("maintenanceMessageWrap");
   if (maintToggle && maintWrap) {
@@ -15,7 +14,7 @@
     });
   }
 
-  // Test SMTP connection.
+  // Verify SMTP connectivity without saving settings.
   var testBtn = document.getElementById("btnTestSmtp");
   var resultEl = document.getElementById("smtpTestResult");
   if (testBtn && resultEl) {

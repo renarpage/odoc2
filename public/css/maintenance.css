@@ -1,7 +1,7 @@
-/* ============================================================
-   MAINTENANCE PAGE
-   Standalone full-page styles (rendered without admin/guest layout).
-   ============================================================ */
+/*==============================================================*/
+/*  MAINTENANCE PAGE                                            */
+/*  Standalone full-page styles (no admin/guest layout)        */
+/*==============================================================*/
 :root {
   --maint-primary: #3155e7;
   --maint-bg: #f4f6fb;

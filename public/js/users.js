@@ -1,7 +1,7 @@
-/**
- * Users page behavior.
- * Populates the Edit User modal from the clicked row's data-* attributes.
- */
+/*==============================================================*/
+/*  USERS                                                       */
+/*  Fill the Edit User modal from the clicked row's data-*      */
+/*==============================================================*/
 (function () {
   "use strict";
 
