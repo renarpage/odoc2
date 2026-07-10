@@ -36,6 +36,15 @@
   transform: translateY(-2px);
 }
 
+/* Archive section: align content to the top so changing the filter (which
+   changes how many cards show) does not vertically re-center and shift the
+   "Sort by" bar + grid up or down. Overrides the global centered `section`. */
+#archive {
+  justify-content: flex-start;
+  padding-top: 40px;
+  padding-bottom: 60px;
+}
+
 /* ============ FILTER PILLS ============ */
 .filter-pill-group {
   margin-left: 8px;
