@@ -68,7 +68,7 @@ const getForgot = (req, res) => {
 
 const postForgot = asyncHandler(async (req, res) => {
   const { email } = validateEmail(req.body);
-  // Only actually issue a code when the account exists + is active, but respond
+  // Only issue a code when the account exists + is active, but respond
   // identically either way to avoid revealing which emails are registered.
   const user = await userRepository.findByEmail(email);
   if (user && user.active) {
@@ -77,8 +77,7 @@ const postForgot = asyncHandler(async (req, res) => {
   }
   req.flash("success", "If that account exists, a 6-digit code has been sent. Check the server console.");
   res.redirect("/reset-password?email=" + encodeURIComponent(email));
-};
-const postForgotWrapped = asyncHandler(postForgot);
+});
 
 const getReset = (req, res) => {
   if (req.user) return res.redirect("/admin");
@@ -116,7 +115,7 @@ module.exports = {
   postChangePassword,
   me,
   getForgot,
-  postForgot: postForgotWrapped,
+  postForgot,
   getReset,
   postReset,
 };
