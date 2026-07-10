@@ -29,4 +29,10 @@ function toDriveDownload(u) {
   return id ? `https://drive.google.com/uc?export=download&id=${id}` : u;
 }
 
-module.exports = { extractDriveId, toDriveImage, toDriveDownload };
+// Embeddable preview URL (plays video / renders docs inline via an <iframe>).
+function toDrivePreview(u) {
+  const id = extractDriveId(u);
+  return id ? `https://drive.google.com/file/d/${id}/preview` : u;
+}
+
+module.exports = { extractDriveId, toDriveImage, toDriveDownload, toDrivePreview };

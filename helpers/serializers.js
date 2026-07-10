@@ -3,7 +3,7 @@
  * existing EJS views already consume, so templates render identically.
  */
 const { ROLE_LABELS } = require("../constants");
-const { toDriveImage, toDriveDownload, extractDriveId } = require("./driveUrl");
+const { toDriveImage, toDriveDownload, toDrivePreview, extractDriveId } = require("./driveUrl");
 
 function activityToView(doc) {
   if (!doc) return null;
@@ -27,11 +27,13 @@ function activityToView(doc) {
       id: extractDriveId(g),
       thumb: toDriveImage(g, 500),
       view: toDriveImage(g, 2000),
+      preview: toDrivePreview(g),
       download: toDriveDownload(g),
       index: i,
       // Enriched later (getBySlug) from the Gallery collection when available.
       name: "Media " + (i + 1),
       typeLabel: "IMAGE",
+      isVideo: false,
       sizeLabel: "",
       bytes: 0,
     })),
