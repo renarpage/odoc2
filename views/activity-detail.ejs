@@ -37,12 +37,21 @@
   .gallery-grid img { width: 100% !important; height: 100% !important; object-fit: cover; display: block; }
   .gallery-thumb { opacity: 0; transition: opacity .4s ease; cursor: pointer; }
   .gallery-thumb.loaded { opacity: 1; }
-  /* Play badge overlay for video items (grid + modal strip) */
   .gallery-skeleton.is-video::before, .mm-thumb.is-video::before {
     content: "\F4F4"; font-family: "bootstrap-icons"; position: absolute; inset: 0; z-index: 3;
     display: flex; align-items: center; justify-content: center; color: #fff; font-size: 2rem;
     text-shadow: 0 2px 10px rgba(0,0,0,.6); pointer-events: none;
   }
+  /* "+N more" overlay on the last visible tile */
+  .gallery-skeleton .more-overlay {
+    position: absolute; inset: 0; z-index: 5; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    background: rgba(20,24,40,.6); color: #fff; text-decoration: none;
+    transition: background .2s ease;
+  }
+  .gallery-skeleton .more-overlay:hover { background: rgba(20,24,40,.72); }
+  .gallery-skeleton .more-overlay .more-num { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+  .gallery-skeleton .more-overlay .more-lbl { font-size: .8rem; font-weight: 600; opacity: .9; }
   @keyframes neuShimmer { 100% { transform: translateX(100%); } }
 
   /* ===== Media details modal ===== */
@@ -153,6 +162,17 @@
   }
 </style>
 
+<%
+  // Cap the on-page Media Archive to ~4 rows of a 2-column grid. When the
+  // first item is rendered wide (odd count) it occupies a full row, so the
+  // capacity differs. Overflow is surfaced via a "+N more" tile -> View Details.
+  var totalMedia = activity.galleryItems.length;
+  var firstWide = (totalMedia % 2 === 1);
+  var gridCap = firstWide ? 7 : 8; // 1 wide + 3 rows*2  OR  4 rows*2
+  var visibleMedia = Math.min(totalMedia, gridCap);
+  var hiddenMedia = totalMedia - visibleMedia;
+%>
+
 <div class="container py-4">
   <a href="/" class="back-link"><i class="bi bi-arrow-left me-2"></i>Back to Archive</a>
 
@@ -195,18 +215,24 @@
         </div>
       </div>
 
-      <% if (activity.galleryItems.length) { %>
+      <% if (totalMedia) { %>
         <div class="section-card card hover-none">
           <div class="section-heading d-flex justify-content-between align-items-center">
             <div><i class="me-2 bi bi-images"></i>Media Archive</div>
             <a href="#" id="mediaViewDetails" class="me-2 view-details-link">View Details <i class="ms-2 bi bi-arrow-right"></i></a>
           </div>
           <div class="gallery-grid">
-            <% activity.galleryItems.forEach(function(img, i) { %>
-              <div class="gallery-skeleton<%= (activity.galleryItems.length % 2 === 1 && i === 0) ? ' wide' : '' %><%= img.isVideo ? ' is-video' : '' %>">
+            <% for (var i = 0; i < visibleMedia; i++) { var img = activity.galleryItems[i]; %>
+              <div class="gallery-skeleton<%= (firstWide && i === 0) ? ' wide' : '' %><%= img.isVideo ? ' is-video' : '' %>">
                 <img class="gallery-thumb" src="<%= img.thumb %>" data-gallery-index="<%= i %>" alt="Gallery item <%= i + 1 %>" referrerpolicy="no-referrer" loading="lazy" decoding="async">
+                <% if (hiddenMedia > 0 && i === visibleMedia - 1) { %>
+                  <a href="#" class="more-overlay" id="mediaMore">
+                    <span class="more-num">+<%= hiddenMedia %></span>
+                    <span class="more-lbl">View all <%= totalMedia %></span>
+                  </a>
+                <% } %>
               </div>
-            <% }); %>
+            <% } %>
           </div>
         </div>
       <% } %>
@@ -356,7 +382,6 @@
     strip.querySelectorAll('.mm-thumb').forEach(function (t, idx) { t.classList.toggle('active', idx === i); });
     heroSpin.classList.remove('hidden');
     if (it.isVideo) {
-      // Play video inline via Google Drive's embeddable preview player.
       heroImg.style.display = 'none';
       heroImg.removeAttribute('src');
       heroVideo.style.display = 'block';
@@ -414,16 +439,18 @@
     updateFooter();
   }
 
-  function open() { build(); modal.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function open(startIndex) { build(); if (typeof startIndex === 'number') setHero(startIndex); modal.classList.add('open'); document.body.style.overflow = 'hidden'; }
   function close() {
     modal.classList.remove('open'); document.body.style.overflow = '';
-    heroVideo.removeAttribute('src'); // stop playback
+    heroVideo.removeAttribute('src');
   }
 
   var vd = document.getElementById('mediaViewDetails');
-  if (vd) vd.addEventListener('click', function (e) { e.preventDefault(); open(); });
+  if (vd) vd.addEventListener('click', function (e) { e.preventDefault(); open(0); });
+  var more = document.getElementById('mediaMore');
+  if (more) more.addEventListener('click', function (e) { e.preventDefault(); open(0); });
   document.querySelectorAll('[data-gallery-index]').forEach(function (el) {
-    el.addEventListener('click', function () { open(); setHero(parseInt(el.dataset.galleryIndex, 10)); });
+    el.addEventListener('click', function () { open(parseInt(el.dataset.galleryIndex, 10)); });
   });
   modal.querySelectorAll('[data-mm-close]').forEach(function (b) { b.addEventListener('click', close); });
   modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
