@@ -5,7 +5,7 @@
     <h2 class="fw-bold mb-1">System Settings</h2>
     <p class="text-muted mb-0">Configure core platform behavior and integrations.</p>
   </div>
-  <button type="submit" form="settingsForm" class="btn btn-primary">
+  <button type="submit" form="settingsForm" class="btn btn-primary px-4 py-2">
     <i class="bi bi-check2-square"></i> Save All Changes
   </button>
 </div>
@@ -19,110 +19,104 @@
     <div class="col-lg-6">
 
       <!-- General Configuration -->
-      <div class="card neu-card mb-4" style="overflow: visible;">
-        <div class="card-body">
-          <h5 class="fw-semibold mb-3"><i class="bi bi-sliders text-primary"></i> General Configuration</h5>
+      <div class="card odoc-panel mb-4" style="overflow: visible;">
+        <h5 class="panel-title mb-3"><i class="bi bi-sliders"></i> General Configuration</h5>
 
-          <div class="mb-3">
-            <label class="form-label">Platform Name</label>
-            <input type="text" name="platformName" class="form-control" value="<%= s.platformName || '' %>">
-          </div>
+        <div class="mb-3">
+          <label class="form-label-odoc">Platform Name</label>
+          <input type="text" name="platformName" class="form-control form-control-odoc" value="<%= s.platformName || '' %>">
+        </div>
 
-          <div class="mb-3 d-flex justify-content-between align-items-center">
-            <div>
-              <label class="form-label mb-0">Maintenance Mode</label>
-              <small class="d-block text-muted">Disable public access for scheduled updates</small>
-            </div>
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" name="maintenanceMode" id="maintenanceMode" <%= s.maintenanceMode ? 'checked' : '' %>>
-            </div>
+        <div class="mb-3 d-flex justify-content-between align-items-center">
+          <div>
+            <label class="form-label-odoc mb-0">Maintenance Mode</label>
+            <small class="d-block text-muted">Disable public access for scheduled updates</small>
           </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" name="maintenanceMode" id="maintenanceMode" <%= s.maintenanceMode ? 'checked' : '' %>>
+          </div>
+        </div>
 
-          <div class="mb-3" id="maintenanceMessageWrap" style="<%= s.maintenanceMode ? '' : 'display:none;' %>">
-            <label class="form-label">Maintenance Message</label>
-            <textarea name="maintenanceMessage" class="form-control" rows="2" placeholder="We are performing scheduled maintenance..."><%= s.maintenanceMessage || '' %></textarea>
-          </div>
+        <div class="mb-3" id="maintenanceMessageWrap" style="<%= s.maintenanceMode ? '' : 'display:none;' %>">
+          <label class="form-label-odoc">Maintenance Message</label>
+          <textarea name="maintenanceMessage" class="form-control form-control-odoc" rows="2" placeholder="We are performing scheduled maintenance..."><%= s.maintenanceMessage || '' %></textarea>
+        </div>
 
-          <div class="mb-3" style="position: relative; z-index: 10;">
-            <label class="form-label">Default Timezone</label>
-            <select name="timezone" class="form-select">
-              <option value="(GMT+07:00) Western Indonesia Time" <%= s.timezone && s.timezone.includes('+07:00') ? 'selected' : '' %>>(GMT+07:00) Western Indonesia Time</option>
-              <option value="(GMT+08:00) Central Indonesia Time" <%= s.timezone && s.timezone.includes('+08:00') ? 'selected' : '' %>>(GMT+08:00) Central Indonesia Time</option>
-              <option value="(GMT+09:00) Eastern Indonesia Time" <%= s.timezone && s.timezone.includes('+09:00') ? 'selected' : '' %>>(GMT+09:00) Eastern Indonesia Time</option>
-              <option value="(GMT+00:00) UTC" <%= s.timezone && s.timezone.includes('+00:00') ? 'selected' : '' %>>(GMT+00:00) UTC</option>
-              <option value="(GMT+05:30) India Standard Time" <%= s.timezone && s.timezone.includes('+05:30') ? 'selected' : '' %>>(GMT+05:30) India Standard Time</option>
-              <option value="(GMT+09:00) Japan Standard Time" <%= s.timezone && s.timezone.includes('Japan') ? 'selected' : '' %>>(GMT+09:00) Japan Standard Time</option>
-              <option value="(GMT-05:00) Eastern Time (US)" <%= s.timezone && s.timezone.includes('-05:00') ? 'selected' : '' %>>(GMT-05:00) Eastern Time (US)</option>
-              <option value="(GMT-08:00) Pacific Time (US)" <%= s.timezone && s.timezone.includes('-08:00') ? 'selected' : '' %>>(GMT-08:00) Pacific Time (US)</option>
-              <option value="(GMT+01:00) Central European Time" <%= s.timezone && s.timezone.includes('+01:00') ? 'selected' : '' %>>(GMT+01:00) Central European Time</option>
-            </select>
-          </div>
+        <div class="mb-3" style="position: relative; z-index: 10;">
+          <label class="form-label-odoc">Default Timezone</label>
+          <select name="timezone" class="form-select form-select-odoc">
+            <option value="(GMT+07:00) Western Indonesia Time" <%= s.timezone && s.timezone.includes('+07:00') ? 'selected' : '' %>>(GMT+07:00) Western Indonesia Time</option>
+            <option value="(GMT+08:00) Central Indonesia Time" <%= s.timezone && s.timezone.includes('+08:00') ? 'selected' : '' %>>(GMT+08:00) Central Indonesia Time</option>
+            <option value="(GMT+09:00) Eastern Indonesia Time" <%= s.timezone && s.timezone.includes('+09:00') ? 'selected' : '' %>>(GMT+09:00) Eastern Indonesia Time</option>
+            <option value="(GMT+00:00) UTC" <%= s.timezone && s.timezone.includes('+00:00') ? 'selected' : '' %>>(GMT+00:00) UTC</option>
+            <option value="(GMT+05:30) India Standard Time" <%= s.timezone && s.timezone.includes('+05:30') ? 'selected' : '' %>>(GMT+05:30) India Standard Time</option>
+            <option value="(GMT+09:00) Japan Standard Time" <%= s.timezone && s.timezone.includes('Japan') ? 'selected' : '' %>>(GMT+09:00) Japan Standard Time</option>
+            <option value="(GMT-05:00) Eastern Time (US)" <%= s.timezone && s.timezone.includes('-05:00') ? 'selected' : '' %>>(GMT-05:00) Eastern Time (US)</option>
+            <option value="(GMT-08:00) Pacific Time (US)" <%= s.timezone && s.timezone.includes('-08:00') ? 'selected' : '' %>>(GMT-08:00) Pacific Time (US)</option>
+            <option value="(GMT+01:00) Central European Time" <%= s.timezone && s.timezone.includes('+01:00') ? 'selected' : '' %>>(GMT+01:00) Central European Time</option>
+          </select>
+        </div>
 
-          <div class="mb-0">
-            <label class="form-label">Default Language</label>
-            <select name="language" class="form-select">
-              <option value="id" <%= s.language === 'id' ? 'selected' : '' %>>Bahasa Indonesia</option>
-              <option value="en" <%= s.language === 'en' ? 'selected' : '' %>>English</option>
-            </select>
-          </div>
+        <div class="mb-0">
+          <label class="form-label-odoc">Default Language</label>
+          <select name="language" class="form-select form-select-odoc">
+            <option value="id" <%= s.language === 'id' ? 'selected' : '' %>>Bahasa Indonesia</option>
+            <option value="en" <%= s.language === 'en' ? 'selected' : '' %>>English</option>
+          </select>
         </div>
       </div>
 
       <!-- SEO & Meta -->
-      <div class="card neu-card mb-4">
-        <div class="card-body">
-          <h5 class="fw-semibold mb-3"><i class="bi bi-search text-primary"></i> SEO & Meta</h5>
+      <div class="card odoc-panel mb-4">
+        <h5 class="panel-title mb-3"><i class="bi bi-search"></i> SEO & Meta</h5>
 
-          <div class="mb-3">
-            <label class="form-label">Meta Description</label>
-            <textarea name="metaDescription" class="form-control" rows="2" placeholder="Short description for search engines"><%= s.metaDescription || '' %></textarea>
-          </div>
+        <div class="mb-3">
+          <label class="form-label-odoc">Meta Description</label>
+          <textarea name="metaDescription" class="form-control form-control-odoc" rows="2" placeholder="Short description for search engines"><%= s.metaDescription || '' %></textarea>
+        </div>
 
-          <div class="mb-3">
-            <label class="form-label">Meta Keywords</label>
-            <input type="text" name="metaKeywords" class="form-control" placeholder="archive, osis, school, activities" value="<%= s.metaKeywords || '' %>">
-          </div>
+        <div class="mb-3">
+          <label class="form-label-odoc">Meta Keywords</label>
+          <input type="text" name="metaKeywords" class="form-control form-control-odoc" placeholder="archive, osis, school, activities" value="<%= s.metaKeywords || '' %>">
+        </div>
 
-          <div class="mb-3">
-            <label class="form-label">Favicon URL</label>
-            <input type="url" name="faviconUrl" class="form-control" placeholder="https://..." value="<%= s.faviconUrl || '' %>">
-          </div>
+        <div class="mb-3">
+          <label class="form-label-odoc">Favicon URL</label>
+          <input type="url" name="faviconUrl" class="form-control form-control-odoc" placeholder="https://..." value="<%= s.faviconUrl || '' %>">
+        </div>
 
-          <div class="mb-0">
-            <label class="form-label">OG Image URL</label>
-            <input type="url" name="ogImageUrl" class="form-control" placeholder="https://..." value="<%= s.ogImageUrl || '' %>">
-          </div>
+        <div class="mb-0">
+          <label class="form-label-odoc">OG Image URL</label>
+          <input type="url" name="ogImageUrl" class="form-control form-control-odoc" placeholder="https://..." value="<%= s.ogImageUrl || '' %>">
         </div>
       </div>
 
       <!-- Content Settings -->
-      <div class="card neu-card mb-4">
-        <div class="card-body">
-          <h5 class="fw-semibold mb-3"><i class="bi bi-layout-text-sidebar text-primary"></i> Content Settings</h5>
+      <div class="card odoc-panel mb-4">
+        <h5 class="panel-title mb-3"><i class="bi bi-layout-text-sidebar"></i> Content Settings</h5>
 
-          <div class="mb-3">
-            <label class="form-label">Activities Per Page (Guest)</label>
-            <input type="number" name="itemsPerPage" class="form-control" min="3" max="50" value="<%= s.itemsPerPage || 9 %>">
+        <div class="mb-3">
+          <label class="form-label-odoc">Activities Per Page (Guest)</label>
+          <input type="number" name="itemsPerPage" class="form-control form-control-odoc" min="3" max="50" value="<%= s.itemsPerPage || 9 %>">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label-odoc">Max Files Per Upload</label>
+          <input type="number" name="maxFilesPerRequest" class="form-control form-control-odoc" min="1" max="500" value="<%= s.maxFilesPerRequest || 200 %>">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label-odoc">Max Upload Size (MB)</label>
+          <input type="number" name="maxUploadMB" class="form-control form-control-odoc" min="1" max="500" value="<%= s.maxUploadMB || 50 %>">
+        </div>
+
+        <div class="mb-0 d-flex justify-content-between align-items-center">
+          <div>
+            <label class="form-label-odoc mb-0">Allow Video Uploads</label>
+            <small class="d-block text-muted">mp4, webm, mov, mkv</small>
           </div>
-
-          <div class="mb-3">
-            <label class="form-label">Max Files Per Upload</label>
-            <input type="number" name="maxFilesPerRequest" class="form-control" min="1" max="500" value="<%= s.maxFilesPerRequest || 200 %>">
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Max Upload Size (MB)</label>
-            <input type="number" name="maxUploadMB" class="form-control" min="1" max="500" value="<%= s.maxUploadMB || 50 %>">
-          </div>
-
-          <div class="mb-0 d-flex justify-content-between align-items-center">
-            <div>
-              <label class="form-label mb-0">Allow Video Uploads</label>
-              <small class="d-block text-muted">mp4, webm, mov, mkv</small>
-            </div>
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" name="allowVideoUpload" <%= s.allowVideoUpload !== false ? 'checked' : '' %>>
-            </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" name="allowVideoUpload" <%= s.allowVideoUpload !== false ? 'checked' : '' %>>
           </div>
         </div>
       </div>
@@ -133,116 +127,110 @@
     <div class="col-lg-6">
 
       <!-- Notifications -->
-      <div class="card neu-card mb-4">
-        <div class="card-body">
-          <h5 class="fw-semibold mb-3"><i class="bi bi-bell text-primary"></i> Notifications</h5>
+      <div class="card odoc-panel mb-4">
+        <h5 class="panel-title mb-3"><i class="bi bi-bell"></i> Notifications</h5>
 
-          <div class="mb-3 d-flex justify-content-between align-items-center">
-            <span>Email Alerts</span>
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" name="emailAlerts" <%= s.emailAlerts ? 'checked' : '' %>>
-            </div>
+        <div class="mb-3 d-flex justify-content-between align-items-center">
+          <span class="fw-medium">Email Alerts</span>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" name="emailAlerts" <%= s.emailAlerts ? 'checked' : '' %>>
           </div>
-          <div class="mb-3 d-flex justify-content-between align-items-center">
-            <span>System Logs</span>
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" name="systemLogsNotif" <%= s.systemLogsNotif ? 'checked' : '' %>>
-            </div>
+        </div>
+        <div class="mb-3 d-flex justify-content-between align-items-center">
+          <span class="fw-medium">System Logs</span>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" name="systemLogsNotif" <%= s.systemLogsNotif ? 'checked' : '' %>>
           </div>
-          <div class="mb-0 d-flex justify-content-between align-items-center">
-            <span>Error Reporting</span>
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" name="errorReporting" <%= s.errorReporting ? 'checked' : '' %>>
-            </div>
+        </div>
+        <div class="mb-3 d-flex justify-content-between align-items-center">
+          <span class="fw-medium">Error Reporting</span>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" name="errorReporting" <%= s.errorReporting ? 'checked' : '' %>>
           </div>
+        </div>
 
-          <div class="mt-3 p-2 bg-light rounded small text-muted">
-            <i class="bi bi-info-circle"></i> Critical alerts bypass these settings.
-          </div>
+        <div class="p-2 rounded small text-muted" style="background:var(--odoc-bg);box-shadow:inset 2px 2px 7px rgba(178,184,192,.52),inset -2px -2px 7px rgba(255,255,255,.68);">
+          <i class="bi bi-info-circle"></i> Critical alerts bypass these settings.
         </div>
       </div>
 
       <!-- API & Integrations -->
-      <div class="card neu-card mb-4">
-        <div class="card-body">
-          <h5 class="fw-semibold mb-3"><i class="bi bi-plug text-primary"></i> API & Integrations</h5>
+      <div class="card odoc-panel mb-4">
+        <h5 class="panel-title mb-3"><i class="bi bi-plug"></i> API & Integrations</h5>
 
-          <div class="mb-3 d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-2">
-              <i class="bi bi-google text-primary"></i>
-              <span>Google Drive API</span>
-            </div>
-            <% if (s.gdriveConnected) { %>
-              <span class="badge bg-success">Connected</span>
-            <% } else { %>
-              <span class="badge bg-secondary">Disconnected</span>
-            <% } %>
+        <div class="mb-3 d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-google text-primary"></i>
+            <span class="fw-medium">Google Drive API</span>
           </div>
+          <% if (s.gdriveConnected) { %>
+            <span class="status-chip" style="background:#e7f7ef;color:var(--odoc-success);">Connected</span>
+          <% } else { %>
+            <span class="status-chip" style="background:#fdecec;color:var(--odoc-danger);">Disconnected</span>
+          <% } %>
+        </div>
 
-          <hr>
+        <hr style="border-color:var(--odoc-border);">
 
-          <h6 class="fw-semibold">SMTP Server Configuration</h6>
-          <div class="row g-2 mb-2">
-            <div class="col-8">
-              <input type="text" name="smtpHost" class="form-control" placeholder="smtp.gmail.com" value="<%= s.smtpHost || '' %>">
-            </div>
-            <div class="col-4">
-              <input type="number" name="smtpPort" class="form-control" placeholder="587" value="<%= s.smtpPort || 587 %>">
-            </div>
+        <h6 class="fw-semibold mb-2">SMTP Server Configuration</h6>
+        <div class="row g-2 mb-2">
+          <div class="col-8">
+            <input type="text" name="smtpHost" class="form-control form-control-odoc" placeholder="smtp.gmail.com" value="<%= s.smtpHost || '' %>">
           </div>
-          <div class="mb-2">
-            <input type="text" name="smtpUser" class="form-control" placeholder="SMTP Username / Email" value="<%= s.smtpUser || '' %>">
+          <div class="col-4">
+            <input type="number" name="smtpPort" class="form-control form-control-odoc" placeholder="587" value="<%= s.smtpPort || 587 %>">
           </div>
-          <div class="mb-2">
-            <input type="password" name="smtpPass" class="form-control" placeholder="SMTP Password (App Password)" value="<%= s.smtpPass || '' %>">
-          </div>
-          <div class="mb-3">
-            <input type="email" name="systemEmail" class="form-control" placeholder="no-reply@odoc.archive" value="<%= s.systemEmail || '' %>">
-          </div>
-          <button type="button" class="btn btn-outline-primary btn-sm" id="btnTestSmtp">
-            <i class="bi bi-envelope-check"></i> Test SMTP Connection
-          </button>
-          <span id="smtpTestResult" class="ms-2 small"></span>
+        </div>
+        <div class="mb-2">
+          <input type="text" name="smtpUser" class="form-control form-control-odoc" placeholder="SMTP Username / Email" value="<%= s.smtpUser || '' %>">
+        </div>
+        <div class="mb-2">
+          <input type="password" name="smtpPass" class="form-control form-control-odoc" placeholder="SMTP Password (App Password)" value="<%= s.smtpPass || '' %>">
+        </div>
+        <div class="mb-3">
+          <input type="email" name="systemEmail" class="form-control form-control-odoc" placeholder="no-reply@odoc.archive" value="<%= s.systemEmail || '' %>">
+        </div>
+        <button type="button" class="btn btn-secondary" id="btnTestSmtp" style="width:auto;height:auto;border-radius:var(--radius-sm);padding:8px 16px;font-size:.85rem;">
+          <i class="bi bi-envelope-check"></i> Test SMTP Connection
+        </button>
+        <span id="smtpTestResult" class="ms-2 small"></span>
 
-          <hr>
+        <hr style="border-color:var(--odoc-border);">
 
-          <h6 class="fw-semibold">Webhook URL</h6>
-          <div class="mb-0">
-            <input type="url" name="webhookUrl" class="form-control" placeholder="https://hooks.example.com/odoc" value="<%= s.webhookUrl || '' %>">
-            <small class="text-muted">Receives POST on activity create/update/delete events</small>
-          </div>
+        <h6 class="fw-semibold mb-2">Webhook URL</h6>
+        <div class="mb-0">
+          <input type="url" name="webhookUrl" class="form-control form-control-odoc" placeholder="https://hooks.example.com/odoc" value="<%= s.webhookUrl || '' %>">
+          <small class="text-muted">Receives POST on activity create/update/delete events</small>
         </div>
       </div>
 
       <!-- Backup & Data -->
-      <div class="card neu-card mb-4">
-        <div class="card-body">
-          <h5 class="fw-semibold mb-3"><i class="bi bi-cloud-arrow-up text-primary"></i> Backup & Data</h5>
+      <div class="card odoc-panel mb-4">
+        <h5 class="panel-title mb-3"><i class="bi bi-cloud-arrow-up"></i> Backup & Data</h5>
 
-          <div class="mb-3 d-flex justify-content-between align-items-center">
-            <div>
-              <label class="form-label mb-0">Auto Backup</label>
-              <small class="d-block text-muted">Backup database to Drive periodically</small>
-            </div>
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" name="autoBackup" <%= s.autoBackup ? 'checked' : '' %>>
-            </div>
+        <div class="mb-3 d-flex justify-content-between align-items-center">
+          <div>
+            <label class="form-label-odoc mb-0">Auto Backup</label>
+            <small class="d-block text-muted">Backup database to Drive periodically</small>
           </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" name="autoBackup" <%= s.autoBackup ? 'checked' : '' %>>
+          </div>
+        </div>
 
-          <div class="mb-3">
-            <label class="form-label">Backup Frequency</label>
-            <select name="backupFrequency" class="form-select">
-              <option value="daily" <%= s.backupFrequency === 'daily' ? 'selected' : '' %>>Daily</option>
-              <option value="weekly" <%= s.backupFrequency === 'weekly' || !s.backupFrequency ? 'selected' : '' %>>Weekly</option>
-              <option value="monthly" <%= s.backupFrequency === 'monthly' ? 'selected' : '' %>>Monthly</option>
-            </select>
-          </div>
+        <div class="mb-3">
+          <label class="form-label-odoc">Backup Frequency</label>
+          <select name="backupFrequency" class="form-select form-select-odoc">
+            <option value="daily" <%= s.backupFrequency === 'daily' ? 'selected' : '' %>>Daily</option>
+            <option value="weekly" <%= s.backupFrequency === 'weekly' || !s.backupFrequency ? 'selected' : '' %>>Weekly</option>
+            <option value="monthly" <%= s.backupFrequency === 'monthly' ? 'selected' : '' %>>Monthly</option>
+          </select>
+        </div>
 
-          <div class="mb-0">
-            <label class="form-label">Data Retention (days)</label>
-            <input type="number" name="dataRetentionDays" class="form-control" min="30" max="3650" value="<%= s.dataRetentionDays || 365 %>">
-            <small class="text-muted">Logs older than this are auto-purged</small>
-          </div>
+        <div class="mb-0">
+          <label class="form-label-odoc">Data Retention (days)</label>
+          <input type="number" name="dataRetentionDays" class="form-control form-control-odoc" min="30" max="3650" value="<%= s.dataRetentionDays || 365 %>">
+          <small class="text-muted">Logs older than this are auto-purged</small>
         </div>
       </div>
 
