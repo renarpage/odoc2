@@ -14,6 +14,7 @@ const locals = require("./middlewares/locals");
 const maintenance = require("./middlewares/maintenance");
 const { applySecurity } = require("./middlewares/security");
 const { apiLimiter } = require("./middlewares/rateLimiter");
+const { csrfProtection } = require("./middlewares/csrf");
 const { flashMiddleware } = require("./helpers/flash");
 const errorHandler = require("./middlewares/errorHandler");
 const notFound = require("./middlewares/notFound");
@@ -51,6 +52,9 @@ app.use(flashMiddleware);
 
 // Auth: silently attach user if token present
 app.use(authenticate);
+
+// CSRF protection (sets res.locals.csrfToken for views)
+app.use(csrfProtection);
 
 // Populate view locals (currentUser, currentPath, flash, settings)
 app.use(locals);

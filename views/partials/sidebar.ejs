@@ -1,31 +1,31 @@
 <aside class="admin-sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <div class="sidebar-logo">
-      <i class="bi bi-archive-fill"></i>
+  <div class="sidebar-brand">
+    <i class="bi bi-archive-fill" style="font-size:1.4rem;color:var(--odoc-primary)"></i>
+    <div>
+      <div class="fw-bold" style="font-size:1rem;">ODOC Admin</div>
+      <div class="brand-sub">Digital Archive Platform</div>
     </div>
-    <span class="sidebar-title">ODOC Admin</span>
-    <small class="sidebar-subtitle">Digital Archive Platform</small>
   </div>
 
   <nav class="sidebar-nav">
-    <a href="/admin" class="sidebar-link <%= currentPath === '/admin' ? 'active' : '' %>">
+    <a href="/admin" class="side-link <%= currentPath === '/admin' ? 'active' : '' %>">
       <i class="bi bi-grid-1x2"></i> Dashboard
     </a>
-    <a href="/admin/activities" class="sidebar-link <%= currentPath.startsWith('/admin/activities') ? 'active' : '' %>">
+    <a href="/admin/activities" class="side-link <%= currentPath.startsWith('/admin/activities') ? 'active' : '' %>">
       <i class="bi bi-calendar-event"></i> Activities
     </a>
-    <a href="/admin/storage" class="sidebar-link <%= currentPath === '/admin/storage' ? 'active' : '' %>">
+    <a href="/admin/storage" class="side-link <%= currentPath === '/admin/storage' ? 'active' : '' %>">
       <i class="bi bi-hdd-stack"></i> Storage
     </a>
-    <a href="/admin/users" class="sidebar-link <%= currentPath === '/admin/users' ? 'active' : '' %>">
+    <a href="/admin/users" class="side-link <%= currentPath === '/admin/users' ? 'active' : '' %>">
       <i class="bi bi-people"></i> Users
     </a>
-    <a href="/admin/settings" class="sidebar-link <%= currentPath === '/admin/settings' ? 'active' : '' %>">
+    <a href="/admin/settings" class="side-link <%= currentPath === '/admin/settings' ? 'active' : '' %>">
       <i class="bi bi-gear"></i> Settings
     </a>
   </nav>
 
   <div class="sidebar-footer">
-    <a href="/logout" class="sidebar-link text-danger"><i class="bi bi-box-arrow-left"></i> Logout</a>
+    <a href="/logout" class="side-link muted text-danger"><i class="bi bi-box-arrow-left"></i> Logout</a>
   </div>
 </aside>

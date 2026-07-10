@@ -12,13 +12,6 @@ const ApiError = require("../core/ApiError");
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
-// Legacy server-rendered forms that do not yet carry a CSRF token.
-// (Branding + Settings are same-site POSTs guarded by SameSite=Lax cookies.)
-const IGNORE_PATHS = [
-  "/admin/branding",
-  "/admin/settings",
-];
-
 function ensureToken(req, res) {
   let token = req.cookies ? req.cookies[COOKIES.CSRF] : null;
   if (!token) {
@@ -37,7 +30,9 @@ function ensureToken(req, res) {
 function csrfProtection(req, res, next) {
   const token = ensureToken(req, res);
   if (SAFE_METHODS.has(req.method)) return next();
-  if (IGNORE_PATHS.includes(req.path)) return next();
+
+  // API routes use JWT auth, not CSRF cookies
+  if (req.originalUrl.startsWith("/api/")) return next();
 
   const submitted =
     req.get("x-csrf-token") ||
