@@ -102,7 +102,7 @@
 <!-- Create User Modal -->
 <div class="modal fade" id="createUserModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
-    <form method="POST" action="/admin/users" class="modal-content" style="background:var(--odoc-bg);border:none;border-radius:var(--radius-lg);box-shadow:8px 8px 24px rgba(159,168,182,.5),-8px -8px 24px rgba(255,255,255,.92);">
+    <form method="POST" action="/admin/users" class="modal-content neu-modal">
       <%- include('../partials/csrf') %>
       <div class="modal-header border-0 pb-0 px-4 pt-4">
         <h5 class="modal-title fw-bold">Add New Admin</h5>
@@ -141,7 +141,7 @@
 <!-- Edit User Modal -->
 <div class="modal fade" id="editUserModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
-    <form method="POST" action="#" class="modal-content" id="editUserForm" style="background:var(--odoc-bg);border:none;border-radius:var(--radius-lg);box-shadow:8px 8px 24px rgba(159,168,182,.5),-8px -8px 24px rgba(255,255,255,.92);">
+    <form method="POST" action="#" class="modal-content neu-modal" id="editUserForm">
       <%- include('../partials/csrf') %>
       <div class="modal-header border-0 pb-0 px-4 pt-4">
         <h5 class="modal-title fw-bold">Edit User</h5>

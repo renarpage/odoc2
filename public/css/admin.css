@@ -679,6 +679,16 @@
     inset -2px -2px 5px rgba(255, 255, 255, 0.6);
 }
 
+/* ============ NEUMORPHIC MODAL ============ */
+.neu-modal {
+  background: var(--odoc-bg) !important;
+  border: none !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow:
+    4px 4px 12px rgba(159, 168, 182, 0.35),
+    -4px -4px 12px rgba(255, 255, 255, 0.8) !important;
+}
+
 @media (max-width: 991px) {
   .admin-sidebar {
     position: fixed;
