@@ -1,9 +1,10 @@
-/**
- * JWT authentication with transparent refresh-token rotation.
- * - authenticate: best-effort; attaches req.user + res.locals.currentUser.
- * - requireAuth: blocks unauthenticated access (redirect for web, 401 for API).
- * - requireRole: role-based authorization.
- */
+//==============================================================//
+//  MIDDLEWARE — Authentication & RBAC                          //
+//  JWT access + transparent refresh-token rotation.            //
+//    authenticate   best-effort; attaches req.user             //
+//    requireAuth    blocks anonymous (redirect web / 401 API)  //
+//    requireRole    role-based authorization                   //
+//==============================================================//
 const tokenService = require("../services/tokenService");
 const authService = require("../services/authService");
 const userRepository = require("../repositories/userRepository");
@@ -22,6 +23,7 @@ async function loadUser(userId) {
   return user && user.active ? user : null;
 }
 
+// Best-effort auth: verify access token, else try refresh rotation.
 async function authenticate(req, res, next) {
   try {
     const accessToken = req.cookies[COOKIES.ACCESS];
@@ -35,7 +37,7 @@ async function authenticate(req, res, next) {
           return next();
         }
       } catch (_) {
-        /* access expired/invalid -> fall through to refresh */
+        // Access token expired/invalid -> fall through to refresh.
       }
     }
 

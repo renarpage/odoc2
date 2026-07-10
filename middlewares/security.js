@@ -1,13 +1,13 @@
-/**
- * Baseline security headers + NoSQL injection sanitization.
- */
+//==============================================================//
+//  MIDDLEWARE — Security headers + NoSQL sanitization          //
+//  helmet CSP tuned for the CDNs the frontend loads.           //
+//==============================================================//
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 
-// The frontend loads Bootstrap + Bootstrap Icons + GSAP + flatpickr from
-// cdn.jsdelivr.net / cdnjs.cloudflare.com, fonts from Google Fonts, and images
-// from Google Drive / lh3 / Unsplash. connect-src includes the CDNs so their
-// sourcemap (.map) fetches don't throw console errors.
+// CSP: Bootstrap/Icons/GSAP/flatpickr from jsdelivr + cdnjs, fonts from
+// Google Fonts, images from Google Drive / lh3 / Unsplash. CDNs are in
+// connect-src so their sourcemap fetches don't throw console errors.
 const contentSecurityPolicy = {
   useDefaults: true,
   directives: {

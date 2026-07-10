@@ -1,8 +1,8 @@
-/**
- * Cookie-backed flash messages, replacing connect-flash/express-session.
- * Messages set during a request survive exactly one redirect, then clear.
- * Views keep using res.locals.success / res.locals.error (arrays), unchanged.
- */
+//==============================================================//
+//  HELPER — Cookie-backed flash messages                      //
+//  Messages set during a request survive exactly one redirect. //
+//  Views keep using res.locals.success / res.locals.error.     //
+//==============================================================//
 const { COOKIES } = require("../constants");
 const env = require("./../config/env");
 
@@ -14,7 +14,7 @@ const COOKIE_OPTS = {
 };
 
 function flashMiddleware(req, res, next) {
-  // Read incoming flash payload (set by the previous request).
+  // Read the flash payload set by the previous request.
   let incoming = { success: [], error: [] };
   const raw = req.cookies ? req.cookies[COOKIES.FLASH] : null;
   if (raw) {
@@ -25,7 +25,7 @@ function flashMiddleware(req, res, next) {
         error: Array.isArray(parsed.error) ? parsed.error : [],
       };
     } catch (_) {
-      /* ignore malformed flash */
+      // Ignore malformed flash cookie.
     }
     res.clearCookie(COOKIES.FLASH, COOKIE_OPTS);
   }
@@ -41,7 +41,7 @@ function flashMiddleware(req, res, next) {
     return req._flash[bucket];
   };
 
-  // Persist pending flash into a cookie right before redirecting.
+  // Persist pending flash into a cookie just before redirecting.
   const originalRedirect = res.redirect.bind(res);
   res.redirect = (...args) => {
     if (req._flash.success.length || req._flash.error.length) {

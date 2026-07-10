@@ -1,3 +1,6 @@
+//==============================================================//
+//  REPOSITORY — Setting                                        //
+//==============================================================//
 const Setting = require("../models/Setting");
 
 class SettingRepository {
@@ -18,6 +21,7 @@ class SettingRepository {
     );
   }
 
+  // Shallow-merge a patch into the existing data blob.
   async merge(key, patch) {
     const current = await this.getData(key, {});
     const next = { ...current, ...patch };

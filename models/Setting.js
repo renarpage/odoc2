@@ -1,6 +1,9 @@
+//==============================================================//
+//  MODEL — Setting (key/value singletons)                      //
+//  e.g. key="system", key="branding".                          //
+//==============================================================//
 const mongoose = require("mongoose");
 
-// Key/value singletons: e.g. key="branding", key="system".
 const settingSchema = new mongoose.Schema(
   {
     key: { type: String, required: true, unique: true, index: true },

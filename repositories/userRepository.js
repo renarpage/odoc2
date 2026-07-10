@@ -1,3 +1,6 @@
+//==============================================================//
+//  REPOSITORY — User                                          //
+//==============================================================//
 const BaseRepository = require("./baseRepository");
 const User = require("../models/User");
 

@@ -1,7 +1,8 @@
-/**
- * JSON API surface. Guest endpoints are public; everything under /admin
- * requires authentication, and user management requires Super Admin.
- */
+//==============================================================//
+//  ROUTES — JSON API                                          //
+//  Guest endpoints are public; /admin requires auth, and user  //
+//  management requires super admin.                            //
+//==============================================================//
 const express = require("express");
 const router = express.Router();
 
@@ -19,18 +20,18 @@ const mediaController = require("../controllers/mediaController");
 const settingsController = require("../controllers/settingsController");
 const userController = require("../controllers/userController");
 
-// ---- Public ----
+//-- Public -----------------------------------------------------//
 router.get("/activities/search", guestController.search);
 router.get("/activities/:slug/media.zip", mediaController.zipGallery);
 router.get("/documents/:id/download", documentController.download);
 
-// ---- Auth ----
+//-- Auth -------------------------------------------------------//
 router.post("/auth/login", authLimiter, authController.postLogin);
 router.post("/auth/logout", authController.postLogout);
 router.get("/auth/me", requireAuth, authController.me);
 router.post("/auth/change-password", requireAuth, authController.postChangePassword);
 
-// ---- Admin (authenticated) ----
+//-- Admin (authenticated) --------------------------------------//
 router.use("/admin", requireAuth);
 
 router.get("/admin/dashboard/stats", dashboardController.statsApi);

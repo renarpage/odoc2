@@ -1,3 +1,6 @@
+//==============================================================//
+//  MODEL — User (admin accounts)                               //
+//==============================================================//
 const mongoose = require("mongoose");
 const { ROLES } = require("../constants");
 
@@ -16,6 +19,7 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Never expose the password hash; normalize _id -> id in JSON.
 userSchema.set("toJSON", {
   virtuals: true,
   transform: (_doc, ret) => {

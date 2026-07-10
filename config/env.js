@@ -1,7 +1,7 @@
-/**
- * Centralized, validated environment configuration.
- * Nothing else in the app should read process.env directly.
- */
+//==============================================================//
+//  CONFIG — Environment                                        //
+//  Centralized, validated. Nothing else reads process.env.     //
+//==============================================================//
 require("dotenv").config();
 
 function required(key, fallback) {
@@ -46,12 +46,12 @@ const env = {
 
   BCRYPT_ROUNDS: parseInt(optional("BCRYPT_ROUNDS", "12"), 10),
 
-  // ---- Google Drive via OAuth (recommended: real personal Drive) ----
+  // Google Drive via OAuth (recommended: real personal Drive).
   GOOGLE_OAUTH_CLIENT_ID: optional("GOOGLE_OAUTH_CLIENT_ID", undefined),
   GOOGLE_OAUTH_CLIENT_SECRET: optional("GOOGLE_OAUTH_CLIENT_SECRET", undefined),
   GOOGLE_OAUTH_REDIRECT_URI: optional("GOOGLE_OAUTH_REDIRECT_URI", `${APP_URL}/admin/integrations/google/callback`),
 
-  // ---- Google Drive via service account (fallback, headless) ----
+  // Google Drive via service account (fallback, headless).
   GOOGLE_DRIVE_ENABLED: bool("GOOGLE_DRIVE_ENABLED", false),
   GOOGLE_CLIENT_EMAIL: optional("GOOGLE_CLIENT_EMAIL", undefined),
   GOOGLE_PRIVATE_KEY: optional("GOOGLE_PRIVATE_KEY", undefined),
