@@ -13,24 +13,24 @@
 </div>
 
 <!-- Users Table -->
-<div class="card odoc-panel p-0" style="padding:0 !important;">
+<div class="card odoc-panel">
   <div class="table-responsive">
-    <table class="table table-odoc align-middle mb-0">
+    <table class="table table-odoc table-borderless align-middle mb-0">
       <thead>
-        <tr>
-          <th class="ps-4">User</th>
+        <tr style="border-bottom:1px solid var(--odoc-border);">
+          <th>User</th>
           <th>Email</th>
           <th>Role</th>
           <th>Status</th>
           <th>Last Login</th>
-          <% if (isSuperAdmin) { %><th class="text-end pe-4">Actions</th><% } %>
+          <% if (isSuperAdmin) { %><th class="text-end">Actions</th><% } %>
         </tr>
       </thead>
       <tbody>
         <% if (users && users.length) { %>
           <% users.forEach(function(u) { %>
           <tr>
-            <td class="ps-4">
+            <td>
               <div class="d-flex align-items-center gap-3">
                 <div style="width:36px;height:36px;border-radius:50%;background:<%= u.avatarColor || '#3155E7' %>;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.82rem;flex-shrink:0;">
                   <%= u.name ? u.name.charAt(0).toUpperCase() : '?' %>
@@ -40,7 +40,7 @@
             </td>
             <td class="text-muted"><%= u.email %></td>
             <td>
-              <span class="text-muted fw-medium" style="font-size:.88rem;"><%= u.roleLabel %></span>
+              <span class="text-muted" style="font-size:.88rem;"><%= u.roleLabel %></span>
             </td>
             <td>
               <% if (u.active) { %>
@@ -59,28 +59,28 @@
               </span>
             </td>
             <% if (isSuperAdmin) { %>
-            <td class="text-end pe-4">
+            <td class="text-end">
               <div class="d-flex gap-2 justify-content-end align-items-center">
-                <button class="btn btn-secondary" title="Edit" data-bs-toggle="modal" data-bs-target="#editUserModal"
+                <button class="btn-icon-neu" title="Edit" data-bs-toggle="modal" data-bs-target="#editUserModal"
                   data-id="<%= u.id %>" data-name="<%= u.name %>" data-email="<%= u.email %>" data-role="<%= u.role %>" data-active="<%= u.active %>">
                   <i class="bi bi-pencil"></i>
                 </button>
                 <% if (u.id !== currentUser.id) { %>
                 <form method="POST" action="/admin/users/<%= u.id %>/toggle" class="d-inline">
                   <%- include('../partials/csrf') %>
-                  <button class="btn btn-secondary" title="<%= u.active ? 'Deactivate' : 'Activate' %>">
+                  <button class="btn-icon-neu" title="<%= u.active ? 'Deactivate' : 'Activate' %>">
                     <i class="bi bi-<%= u.active ? 'pause-circle' : 'play-circle' %>"></i>
                   </button>
                 </form>
                 <form method="POST" action="/admin/users/<%= u.id %>/reset-password" class="d-inline">
                   <%- include('../partials/csrf') %>
-                  <button class="btn btn-secondary" title="Reset Password">
+                  <button class="btn-icon-neu" title="Reset Password">
                     <i class="bi bi-key"></i>
                   </button>
                 </form>
                 <form method="POST" action="/admin/users/<%= u.id %>/delete" class="d-inline" onsubmit="return confirm('Delete this user permanently?')">
                   <%- include('../partials/csrf') %>
-                  <button class="btn btn-secondary" title="Delete">
+                  <button class="btn-icon-neu" title="Delete">
                     <i class="bi bi-trash"></i>
                   </button>
                 </form>
