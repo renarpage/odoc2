@@ -13,10 +13,11 @@ const authController = require("../controllers/authController");
 const integrationsController = require("../controllers/integrationsController");
 
 // Multipart handler for the activity form (cover + gallery + documents).
+// Gallery/documents allow large batches; total is capped in the upload mw.
 const activityUpload = upload.fields([
   { name: "cover", maxCount: 1 },
-  { name: "gallery", maxCount: 20 },
-  { name: "documents", maxCount: 20 },
+  { name: "gallery", maxCount: 150 },
+  { name: "documents", maxCount: 100 },
 ]);
 
 // All admin pages require authentication and use the admin layout.

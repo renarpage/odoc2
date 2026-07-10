@@ -26,10 +26,18 @@ function fileFilter(req, file, cb) {
   return cb(ApiError.badRequest(`Unsupported file type: .${ext || file.mimetype}`));
 }
 
+// Max files accepted in a single create/edit submit. Admins upload large
+// batches (whole event galleries), so keep this generous.
+const MAX_FILES_PER_REQUEST = parseInt(env.MAX_FILES_PER_REQUEST || "200", 10);
+
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: env.MAX_UPLOAD_BYTES, files: 20 },
+  limits: {
+    fileSize: env.MAX_UPLOAD_BYTES,
+    files: MAX_FILES_PER_REQUEST,
+  },
 });
 
 module.exports = upload;
+module.exports.MAX_FILES_PER_REQUEST = MAX_FILES_PER_REQUEST;
