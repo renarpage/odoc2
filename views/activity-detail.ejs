@@ -13,7 +13,6 @@
   }
   .doc-row:hover .bi-download { color: var(--odoc-primary) !important; }
 
-  /* Hero meta chips (organizer / division) + tags */
   .detail-facts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
   .detail-fact {
     display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px;
@@ -38,6 +37,12 @@
   .gallery-grid img { width: 100% !important; height: 100% !important; object-fit: cover; display: block; }
   .gallery-thumb { opacity: 0; transition: opacity .4s ease; cursor: pointer; }
   .gallery-thumb.loaded { opacity: 1; }
+  /* Play badge overlay for video items (grid + modal strip) */
+  .gallery-skeleton.is-video::before, .mm-thumb.is-video::before {
+    content: "\F4F4"; font-family: "bootstrap-icons"; position: absolute; inset: 0; z-index: 3;
+    display: flex; align-items: center; justify-content: center; color: #fff; font-size: 2rem;
+    text-shadow: 0 2px 10px rgba(0,0,0,.6); pointer-events: none;
+  }
   @keyframes neuShimmer { 100% { transform: translateX(100%); } }
 
   /* ===== Media details modal ===== */
@@ -67,7 +72,8 @@
   .mm-body { overflow-y: auto; padding: 0 22px 8px; }
 
   .mm-hero { position: relative; border-radius: var(--radius-md); overflow: hidden; background: #0d1020; aspect-ratio: 16 / 9; }
-  .mm-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .mm-hero img, .mm-hero iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .mm-hero img { object-fit: cover; }
   .mm-hero .mm-hero-spin {
     position: absolute; inset: 0; margin: auto; width: 40px; height: 40px;
     border: 3px solid rgba(255,255,255,.25); border-top-color: #fff; border-radius: 50%; animation: neuSpin .8s linear infinite;
@@ -76,8 +82,9 @@
   @keyframes neuSpin { to { transform: rotate(360deg); } }
   .mm-hero .mm-hero-meta {
     position: absolute; left: 0; right: 0; bottom: 0; padding: 30px 18px 14px; color: #fff;
-    background: linear-gradient(to top, rgba(0,0,0,.7), transparent);
+    background: linear-gradient(to top, rgba(0,0,0,.7), transparent); pointer-events: none;
   }
+  .mm-hero.playing .mm-hero-meta, .mm-hero.playing .mm-fs { display: none; }
   .mm-hero .mm-hero-name { font-weight: 700; font-size: 1rem; }
   .mm-hero .mm-hero-sub { font-size: .8rem; opacity: .85; margin-top: 2px; }
   .mm-hero .mm-fs {
@@ -101,20 +108,20 @@
   .mm-thumb .mm-check {
     position: absolute; top: 8px; left: 8px; width: 26px; height: 26px; border-radius: 50%;
     background: rgba(255,255,255,.85); color: transparent; display: inline-flex; align-items: center; justify-content: center;
-    font-size: .8rem; transition: all .15s ease; box-shadow: 0 1px 4px rgba(0,0,0,.2);
+    font-size: .8rem; transition: all .15s ease; box-shadow: 0 1px 4px rgba(0,0,0,.2); z-index: 4;
   }
   .mm-thumb.selected { box-shadow: none; }
-  .mm-thumb.selected::after { content: ""; position: absolute; inset: 0; background: rgba(49,85,231,.28); }
-  .mm-thumb.selected .mm-check { background: var(--odoc-primary); color: #fff; z-index: 2; }
+  .mm-thumb.selected::after { content: ""; position: absolute; inset: 0; background: rgba(49,85,231,.28); z-index: 2; }
+  .mm-thumb.selected .mm-check { background: var(--odoc-primary); color: #fff; z-index: 4; }
   .mm-thumb .mm-tdl {
-    position: absolute; bottom: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; z-index: 2;
+    position: absolute; bottom: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; z-index: 4;
     background: rgba(255,255,255,.92); color: var(--odoc-text); display: inline-flex; align-items: center; justify-content: center;
     font-size: .8rem; box-shadow: 0 1px 4px rgba(0,0,0,.2); transition: all .15s ease;
   }
   .mm-thumb .mm-tdl:hover { color: var(--odoc-primary); }
   .mm-thumb .mm-cap {
     position: absolute; left: 0; right: 0; bottom: 0; padding: 16px 8px 6px; color: #fff; font-size: .68rem; font-weight: 600;
-    background: linear-gradient(to top, rgba(0,0,0,.65), transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    background: linear-gradient(to top, rgba(0,0,0,.65), transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; z-index: 3;
   }
 
   .mm-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 22px; border-top: 1px solid var(--odoc-border); flex-wrap: wrap; }
@@ -196,8 +203,8 @@
           </div>
           <div class="gallery-grid">
             <% activity.galleryItems.forEach(function(img, i) { %>
-              <div class="gallery-skeleton<%= (activity.galleryItems.length % 2 === 1 && i === 0) ? ' wide' : '' %>">
-                <img class="gallery-thumb" src="<%= img.thumb %>" data-gallery-index="<%= i %>" alt="Gallery image <%= i + 1 %>" referrerpolicy="no-referrer" loading="lazy" decoding="async">
+              <div class="gallery-skeleton<%= (activity.galleryItems.length % 2 === 1 && i === 0) ? ' wide' : '' %><%= img.isVideo ? ' is-video' : '' %>">
+                <img class="gallery-thumb" src="<%= img.thumb %>" data-gallery-index="<%= i %>" alt="Gallery item <%= i + 1 %>" referrerpolicy="no-referrer" loading="lazy" decoding="async">
               </div>
             <% }); %>
           </div>
@@ -267,10 +274,11 @@
       <button class="mm-close" data-mm-close aria-label="Close"><i class="bi bi-x-lg"></i></button>
     </div>
     <div class="mm-body">
-      <div class="mm-hero">
+      <div class="mm-hero" id="mmHero">
         <div class="mm-hero-spin" id="mmHeroSpin"></div>
         <button type="button" class="mm-fs" id="mmFs" title="Fullscreen"><i class="bi bi-arrows-fullscreen"></i></button>
         <img id="mmHeroImg" src="" alt="" referrerpolicy="no-referrer">
+        <iframe id="mmHeroVideo" allow="autoplay; fullscreen" allowfullscreen style="display:none;"></iframe>
         <div class="mm-hero-meta">
           <div class="mm-hero-name" id="mmHeroName"></div>
           <div class="mm-hero-sub" id="mmHeroSub"></div>
@@ -318,7 +326,9 @@
     return (n/Math.pow(1024,i)).toFixed(i===0?0:1) + ' ' + u[i];
   }
 
+  var hero = document.getElementById('mmHero');
   var heroImg = document.getElementById('mmHeroImg');
+  var heroVideo = document.getElementById('mmHeroVideo');
   var heroSpin = document.getElementById('mmHeroSpin');
   var heroName = document.getElementById('mmHeroName');
   var heroSub = document.getElementById('mmHeroSub');
@@ -336,14 +346,29 @@
 
   heroImg.addEventListener('load', function () { heroSpin.classList.add('hidden'); });
   heroImg.addEventListener('error', function () { heroSpin.classList.add('hidden'); });
+  heroVideo.addEventListener('load', function () { heroSpin.classList.add('hidden'); });
 
   function setHero(i) {
     active = i;
-    heroSpin.classList.remove('hidden');
-    heroImg.src = items[i].view;
-    heroName.textContent = items[i].name || ('Media ' + (i + 1));
-    heroSub.textContent = [items[i].typeLabel, items[i].sizeLabel].filter(Boolean).join('  \u2022  ');
+    var it = items[i];
+    heroName.textContent = it.name || ('Media ' + (i + 1));
+    heroSub.textContent = [it.typeLabel, it.sizeLabel].filter(Boolean).join('  \u2022  ');
     strip.querySelectorAll('.mm-thumb').forEach(function (t, idx) { t.classList.toggle('active', idx === i); });
+    heroSpin.classList.remove('hidden');
+    if (it.isVideo) {
+      // Play video inline via Google Drive's embeddable preview player.
+      heroImg.style.display = 'none';
+      heroImg.removeAttribute('src');
+      heroVideo.style.display = 'block';
+      heroVideo.src = it.preview;
+      hero.classList.add('playing');
+    } else {
+      heroVideo.style.display = 'none';
+      heroVideo.removeAttribute('src');
+      heroImg.style.display = 'block';
+      heroImg.src = it.view;
+      hero.classList.remove('playing');
+    }
   }
 
   function updateFooter() {
@@ -370,7 +395,7 @@
     if (built) return; built = true;
     strip.innerHTML = items.map(function (it, i) {
       var cap = (it.name || ('Media ' + (i + 1)));
-      return '<div class="mm-thumb" data-i="' + i + '">' +
+      return '<div class="mm-thumb' + (it.isVideo ? ' is-video' : '') + '" data-i="' + i + '">' +
         '<span class="mm-check"><i class="bi bi-check-lg"></i></span>' +
         '<a class="mm-tdl" href="' + it.download + '" target="_blank" rel="noopener" title="Download"><i class="bi bi-download"></i></a>' +
         '<img src="' + it.thumb + '" alt="' + cap + '" referrerpolicy="no-referrer" loading="lazy">' +
@@ -390,7 +415,10 @@
   }
 
   function open() { build(); modal.classList.add('open'); document.body.style.overflow = 'hidden'; }
-  function close() { modal.classList.remove('open'); document.body.style.overflow = ''; }
+  function close() {
+    modal.classList.remove('open'); document.body.style.overflow = '';
+    heroVideo.removeAttribute('src'); // stop playback
+  }
 
   var vd = document.getElementById('mediaViewDetails');
   if (vd) vd.addEventListener('click', function (e) { e.preventDefault(); open(); });
