@@ -13,6 +13,21 @@
   }
   .doc-row:hover .bi-download { color: var(--odoc-primary) !important; }
 
+  /* Hero meta chips (organizer / division) + tags */
+  .detail-facts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  .detail-fact {
+    display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px;
+    background: var(--odoc-bg); font-size: .84rem; color: var(--odoc-text);
+    box-shadow: inset 1px 1px 3px rgba(178,184,192,.45), inset -1px -1px 3px rgba(255,255,255,.7);
+  }
+  .detail-fact i { color: var(--odoc-primary); }
+  .detail-fact .df-label { color: var(--odoc-muted); font-weight: 600; }
+  .detail-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .detail-tag {
+    font-size: .78rem; font-weight: 600; padding: 5px 12px; border-radius: 999px;
+    background: #e9eefc; color: var(--odoc-primary);
+  }
+
   .gallery-grid .gallery-skeleton { position: relative; height: 180px; border-radius: var(--radius-md); overflow: hidden; background: #e6eaf3; }
   .gallery-grid .gallery-skeleton.wide { grid-column: span 2; height: 260px; }
   .gallery-grid .gallery-skeleton::after {
@@ -75,7 +90,6 @@
   .mm-strip-head { display: flex; align-items: center; justify-content: space-between; margin: 18px 0 12px; }
   .mm-strip-head .mm-strip-title { font-weight: 700; font-size: .95rem; }
   .mm-strip-head .mm-total { color: var(--odoc-muted); font-size: .8rem; }
-  /* Vertical grid so items stack down and wrap (mobile-friendly). */
   .mm-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px; padding: 2px 2px 12px; }
   .mm-thumb {
     position: relative; aspect-ratio: 1 / 1; border-radius: 16px; overflow: hidden;
@@ -146,6 +160,22 @@
       <%= new Date(activity.date).toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' }) %>
       &nbsp;|&nbsp; <i class="bi bi-geo-alt me-1"></i><%= activity.location %>
     </div>
+
+    <div class="detail-facts">
+      <% if (activity.organizer) { %>
+        <span class="detail-fact"><i class="bi bi-people"></i><span class="df-label">Organizer:</span> <%= activity.organizer %></span>
+      <% } %>
+      <% if (activity.division) { %>
+        <span class="detail-fact"><i class="bi bi-diagram-3"></i><span class="df-label">Division:</span> <%= activity.division %></span>
+      <% } %>
+    </div>
+
+    <% if (activity.tags && activity.tags.length) { %>
+      <div class="detail-tags">
+        <% activity.tags.forEach(function(t) { %><span class="detail-tag">#<%= t %></span><% }); %>
+      </div>
+    <% } %>
+
     <% if (activity.summary) { %><p class="detail-summary mt-3 mb-0"><%= activity.summary %></p><% } %>
   </div>
 
