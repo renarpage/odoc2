@@ -1,7 +1,12 @@
-/*==============================================================*/
-/*  DASHBOARD                                                   */
-/*  Live background upload-progress panel (dashboard.ejs)       */
-/*==============================================================*/
+/* ============================================================ */
+/* DASHBOARD — LIVE UPLOAD PROGRESS PANEL                        */
+/* Depends on tokens from style.css (--odoc-*, --radius-*).      */
+/* ============================================================ */
+
+/* Hidden until the poller finds active jobs (JS toggles display). */
+#uploadProgress {
+  display: none;
+}
 
 .up-item {
   background: var(--odoc-bg);
@@ -55,5 +60,7 @@
   animation: upspin 0.7s linear infinite;
 }
 @keyframes upspin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }

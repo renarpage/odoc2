@@ -1,7 +1,7 @@
-/*==============================================================*/
-/*  DASHBOARD                                                   */
-/*  Poll /api/admin/upload-jobs and render the progress panel   */
-/*==============================================================*/
+//============================================================//
+// DASHBOARD — UPLOAD PROGRESS POLLING                        //
+// Polls /api/admin/upload-jobs and renders the live panel.   //
+//============================================================//
 (function () {
   "use strict";
 
@@ -11,13 +11,14 @@
   var list = document.getElementById("uploadProgressList");
   var countBadge = document.getElementById("uploadProgressCount");
 
-  // Escape user-supplied text before inserting as HTML.
+  // Escape user-provided strings before injecting into innerHTML.
   function esc(s) {
     var d = document.createElement("div");
     d.textContent = s == null ? "" : s;
     return d.innerHTML;
   }
 
+  // Status pill markup for a single job.
   function stateChip(job) {
     if (job.status === "uploading")
       return '<span class="up-state uploading"><span class="up-spin"></span> Uploading ' + job.done + "/" + job.total + "</span>";
@@ -28,13 +29,16 @@
     return '<span class="up-state error"><i class="bi bi-x-octagon-fill"></i> Failed</span>';
   }
 
+  // Paint the whole panel from the job list.
   function render(jobs) {
     if (!jobs.length) {
       panel.style.display = "none";
       return;
     }
     panel.style.display = "";
-    var activeCount = jobs.filter(function (j) { return j.status === "uploading"; }).length;
+    var activeCount = jobs.filter(function (j) {
+      return j.status === "uploading";
+    }).length;
     countBadge.textContent = activeCount ? activeCount + " in progress" : "Done";
     list.innerHTML = jobs
       .map(function (j) {
@@ -55,7 +59,7 @@
       .join("");
   }
 
-  // Poll faster while uploads are active, slower once idle.
+  // Adaptive poll: fast while uploading, slow when idle.
   var timer = null;
   async function poll() {
     try {
@@ -63,7 +67,9 @@
       var j = await r.json();
       var jobs = (j && j.data) || [];
       render(jobs);
-      var active = jobs.some(function (x) { return x.status === "uploading"; });
+      var active = jobs.some(function (x) {
+        return x.status === "uploading";
+      });
       clearTimeout(timer);
       timer = setTimeout(poll, jobs.length ? (active ? 1500 : 5000) : 8000);
     } catch (e) {
@@ -71,5 +77,6 @@
       timer = setTimeout(poll, 8000);
     }
   }
+
   poll();
 })();
