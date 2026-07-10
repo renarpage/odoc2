@@ -15,9 +15,9 @@
 <!-- Users Table -->
 <div class="card odoc-panel">
   <div class="table-responsive">
-    <table class="table table-odoc table-borderless align-middle mb-0">
+    <table class="table table-odoc table-borderless table-head-divider align-middle mb-0">
       <thead>
-        <tr style="border-bottom:1px solid var(--odoc-border);">
+        <tr>
           <th>User</th>
           <th>Email</th>
           <th>Role</th>
@@ -32,31 +32,27 @@
           <tr>
             <td>
               <div class="d-flex align-items-center gap-3">
-                <div style="width:36px;height:36px;border-radius:50%;background:<%= u.avatarColor || '#3155E7' %>;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.82rem;flex-shrink:0;">
+                <div class="user-avatar" style="background: <%= u.avatarColor || '#3155E7' %>;">
                   <%= u.name ? u.name.charAt(0).toUpperCase() : '?' %>
                 </div>
                 <span class="fw-semibold"><%= u.name %></span>
               </div>
             </td>
-            <td class="text-muted"><%= u.email %></td>
-            <td>
-              <span class="text-muted" style="font-size:.88rem;"><%= u.roleLabel %></span>
-            </td>
+            <td class="cell-muted"><%= u.email %></td>
+            <td class="cell-muted"><%= u.roleLabel %></td>
             <td>
               <% if (u.active) { %>
-                <span style="color:var(--odoc-success);font-weight:600;font-size:.88rem;">Active</span>
+                <span class="text-active">Active</span>
               <% } else { %>
-                <span style="color:var(--odoc-danger);font-weight:600;font-size:.88rem;">Inactive</span>
+                <span class="text-inactive">Inactive</span>
               <% } %>
             </td>
-            <td>
-              <span class="text-muted" style="font-size:.88rem;">
-                <% if (u.lastLoginAt) { %>
-                  <%= new Date(u.lastLoginAt).toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' }) %>
-                <% } else { %>
-                  Never
-                <% } %>
-              </span>
+            <td class="cell-muted">
+              <% if (u.lastLoginAt) { %>
+                <%= new Date(u.lastLoginAt).toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' }) %>
+              <% } else { %>
+                Never
+              <% } %>
             </td>
             <% if (isSuperAdmin) { %>
             <td class="text-end">
@@ -154,7 +150,7 @@
         </div>
         <div class="mb-3">
           <label class="form-label-odoc">Email</label>
-          <input type="email" class="form-control form-control-odoc" id="editEmail" disabled style="opacity:.5;cursor:not-allowed;">
+          <input type="email" class="form-control form-control-odoc email-readonly" id="editEmail" disabled>
         </div>
         <div class="mb-0">
           <label class="form-label-odoc">Role</label>
@@ -171,20 +167,6 @@
     </form>
   </div>
 </div>
-
-<script>
-(function() {
-  var editModal = document.getElementById('editUserModal');
-  if (editModal) {
-    editModal.addEventListener('show.bs.modal', function(event) {
-      var btn = event.relatedTarget;
-      var form = document.getElementById('editUserForm');
-      form.action = '/admin/users/' + btn.getAttribute('data-id') + '/update';
-      document.getElementById('editName').value = btn.getAttribute('data-name');
-      document.getElementById('editEmail').value = btn.getAttribute('data-email');
-      document.getElementById('editRole').value = btn.getAttribute('data-role');
-    });
-  }
-})();
-</script>
 <% } %>
+
+<script src="/js/users.js"></script>

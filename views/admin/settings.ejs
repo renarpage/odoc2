@@ -42,7 +42,7 @@
           <textarea name="maintenanceMessage" class="form-control form-control-odoc" rows="2" placeholder="We are performing scheduled maintenance..."><%= s.maintenanceMessage || '' %></textarea>
         </div>
 
-        <div class="mb-3" style="position: relative; z-index: 10;">
+        <div class="mb-3 pos-relative-z">
           <label class="form-label-odoc">Default Timezone</label>
           <select name="timezone" class="form-select form-select-odoc">
             <option value="(GMT+07:00) Western Indonesia Time" <%= s.timezone && s.timezone.includes('+07:00') ? 'selected' : '' %>>(GMT+07:00) Western Indonesia Time</option>
@@ -149,7 +149,7 @@
           </div>
         </div>
 
-        <div class="p-2 rounded small text-muted" style="background:var(--odoc-bg);box-shadow:inset 2px 2px 7px rgba(178,184,192,.52),inset -2px -2px 7px rgba(255,255,255,.68);">
+        <div class="neu-info-box">
           <i class="bi bi-info-circle"></i> Critical alerts bypass these settings.
         </div>
       </div>
@@ -164,13 +164,13 @@
             <span class="fw-medium">Google Drive API</span>
           </div>
           <% if (s.gdriveConnected) { %>
-            <span class="status-chip" style="background:#e7f7ef;color:var(--odoc-success);">Connected</span>
+            <span class="status-chip completed">Connected</span>
           <% } else { %>
-            <span class="status-chip" style="background:#fdecec;color:var(--odoc-danger);">Disconnected</span>
+            <span class="status-chip chip-danger">Disconnected</span>
           <% } %>
         </div>
 
-        <hr style="border-color:var(--odoc-border);">
+        <hr class="hr-soft">
 
         <h6 class="fw-semibold mb-2">SMTP Server Configuration</h6>
         <div class="row g-2 mb-2">
@@ -195,7 +195,7 @@
         </button>
         <span id="smtpTestResult" class="ms-2 small"></span>
 
-        <hr style="border-color:var(--odoc-border);">
+        <hr class="hr-soft">
 
         <h6 class="fw-semibold mb-2">Webhook URL</h6>
         <div class="mb-0">
@@ -238,50 +238,4 @@
   </div>
 </form>
 
-<script>
-(function() {
-  // Toggle maintenance message visibility
-  var mmToggle = document.getElementById('maintenanceMode');
-  var mmWrap = document.getElementById('maintenanceMessageWrap');
-  if (mmToggle && mmWrap) {
-    mmToggle.addEventListener('change', function() {
-      mmWrap.style.display = this.checked ? '' : 'none';
-    });
-  }
-
-  // Test SMTP
-  var btnTest = document.getElementById('btnTestSmtp');
-  var resultEl = document.getElementById('smtpTestResult');
-  if (btnTest) {
-    btnTest.addEventListener('click', function() {
-      resultEl.textContent = 'Testing...';
-      resultEl.className = 'ms-2 small text-muted';
-      fetch('/admin/settings/test-smtp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          smtpHost: document.querySelector('[name=smtpHost]').value,
-          smtpPort: document.querySelector('[name=smtpPort]').value,
-          smtpUser: document.querySelector('[name=smtpUser]').value,
-          smtpPass: document.querySelector('[name=smtpPass]').value,
-          systemEmail: document.querySelector('[name=systemEmail]').value,
-        })
-      })
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        if (data.success) {
-          resultEl.textContent = 'Connection successful!';
-          resultEl.className = 'ms-2 small text-success';
-        } else {
-          resultEl.textContent = data.message || 'Connection failed';
-          resultEl.className = 'ms-2 small text-danger';
-        }
-      })
-      .catch(function() {
-        resultEl.textContent = 'Network error';
-        resultEl.className = 'ms-2 small text-danger';
-      });
-    });
-  }
-})();
-</script>
+<script src="/js/settings.js"></script>

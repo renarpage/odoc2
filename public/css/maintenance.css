@@ -1,0 +1,78 @@
+/* ============================================================
+   MAINTENANCE PAGE
+   Standalone full-page styles (rendered without admin/guest layout).
+   ============================================================ */
+:root {
+  --maint-primary: #3155e7;
+  --maint-bg: #f4f6fb;
+}
+
+.maint-body {
+  background: var(--maint-bg);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  margin: 0;
+}
+
+.maint-card {
+  background: var(--maint-bg);
+  border-radius: 24px;
+  box-shadow:
+    8px 8px 24px rgba(159, 168, 182, 0.45),
+    -8px -8px 24px rgba(255, 255, 255, 0.9);
+  padding: 3rem;
+  text-align: center;
+  max-width: 520px;
+  width: 90%;
+}
+
+.maint-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, var(--maint-primary), #6b7cff);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  box-shadow:
+    6px 6px 16px rgba(49, 85, 231, 0.25),
+    -4px -4px 12px rgba(255, 255, 255, 0.7);
+}
+
+.maint-icon i {
+  font-size: 2rem;
+  color: #fff;
+}
+
+.maint-card h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1b2030;
+  margin-bottom: 0.75rem;
+}
+
+.maint-card p {
+  color: #7c86a3;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 0;
+}
+
+.maint-brand {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: #adb5bd;
+}
+
+.maint-pulse {
+  animation: maintPulse 2s ease-in-out infinite;
+}
+
+@keyframes maintPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}

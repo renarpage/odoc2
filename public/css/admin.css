@@ -1,4 +1,22 @@
-/* ============ ADMIN SHELL ============ */
+/* ============================================================
+   ODOC ADMIN PANEL STYLES
+   Neumorphic theme built on the shared tokens in style.css
+   (--odoc-*, --radius-*, --secondary-shadow-hover).
+
+   Sections:
+     1. Layout shell (sidebar, topbar, content)
+     2. Panels & stat cards
+     3. Tables
+     4. Dashboard widgets (logs, uploads)
+     5. Activity wizard & forms
+     6. Toggles & progress
+     7. Buttons (outline, icon)
+     8. Modal
+     9. Utilities
+    10. Responsive
+   ============================================================ */
+
+/* ============ 1. LAYOUT SHELL ============ */
 .admin-body {
   background: var(--odoc-bg);
 }
@@ -122,7 +140,6 @@
   cursor: text;
   scale: 1.02;
 }
-
 .admin-search:hover i,
 .admin-search:hover input::placeholder,
 .admin-search input:focus::placeholder,
@@ -183,11 +200,9 @@
 .tiny {
   font-size: 0.72rem;
 }
-
 .admin-page {
   padding: 28px 30px 60px;
 }
-
 .odoc-alert {
   border-radius: var(--radius-md);
   border: none;
@@ -195,7 +210,7 @@
   color: #17784f;
 }
 
-/* stat cards */
+/* ============ 2. PANELS & STAT CARDS ============ */
 .stat-card {
   border-radius: var(--radius-lg);
   padding: 22px;
@@ -237,7 +252,6 @@
   scale: none;
   cursor: auto;
 }
-
 .panel-title {
   font-weight: 700;
   font-size: 1.15rem;
@@ -249,6 +263,7 @@
   color: var(--odoc-primary);
 }
 
+/* ============ 3. TABLES ============ */
 .table-odoc thead th {
   color: var(--odoc-muted);
   font-size: 0.78rem;
@@ -266,6 +281,10 @@
 .table-odoc > :not(caption) > * > * {
   background-color: transparent !important;
 }
+/* Divider under the header only (rows stay borderless). */
+.table-head-divider thead tr {
+  border-bottom: 1px solid var(--odoc-border);
+}
 .activity-thumb {
   width: 48px;
   height: 48px;
@@ -280,6 +299,7 @@
   cursor: pointer;
 }
 
+/* ============ 4. DASHBOARD WIDGETS ============ */
 .log-item {
   display: flex;
   gap: 12px;
@@ -299,7 +319,6 @@
 .log-item:hover .details {
   opacity: 1;
 }
-
 .log-icon {
   width: 36px;
   height: 36px;
@@ -323,21 +342,17 @@
 }
 
 .upload-drop {
-  border-radius: var(--radius-md);
-  border: 2px dashed transparent;
-  padding: 30px;
   text-align: center;
   color: var(--odoc-muted);
   background: transparent;
+  border: 2px dashed transparent;
   border-radius: var(--radius-sm);
   box-shadow:
     inset 2px 2px 7px rgba(178, 184, 192, 0.52),
     inset -2px -2px 7px rgba(255, 255, 255, 0.68);
   padding: 12px 16px;
   cursor: pointer;
-  transition:
-    border-color 0.3s ease,
-    background 0.3s ease;
+  transition: border-color 0.3s ease, background 0.3s ease;
 }
 .upload-drop:hover {
   border: 2px dashed var(--odoc-primary);
@@ -365,19 +380,17 @@
 .file-progress-row:hover .text-muted {
   opacity: 1;
 }
-
 .file-progress-row:hover {
   box-shadow: var(--secondary-shadow-hover);
   cursor: pointer;
   transform: translateY(-2px);
 }
-
 .file-progress-row .progress {
   height: 6px;
   flex: 1;
 }
 
-/* wizard */
+/* ============ 5. WIZARD & FORMS ============ */
 .wizard-steps {
   display: flex;
   align-items: center;
@@ -436,6 +449,12 @@
 .wizard-step.done .wizard-line {
   background: var(--odoc-primary);
 }
+.wizard-pane {
+  display: none;
+}
+.wizard-pane.active {
+  display: block;
+}
 
 .form-label-odoc {
   font-weight: 600;
@@ -463,12 +482,9 @@
   background-color: transparent;
   color: var(--odoc-primary);
 }
-
-.wizard-pane {
-  display: none;
-}
-.wizard-pane.active {
-  display: block;
+.email-readonly {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .color-swatch {
@@ -478,7 +494,6 @@
   border: 1px solid var(--odoc-border);
   flex-shrink: 0;
 }
-
 .preview-frame {
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -495,50 +510,7 @@
   text-align: center;
 }
 
-.form-switch .form-check-input {
-  width: 42px;
-  height: 24px;
-}
-
-.progress-odoc {
-  height: 8px;
-  border-radius: 999px;
-  background: var(--odoc-border);
-  overflow: hidden;
-}
-.progress-odoc .bar {
-  height: 100%;
-  background: var(--odoc-primary);
-  border-radius: 999px;
-}
-
-.donut-wrap {
-  position: relative;
-  width: 140px;
-  height: 140px;
-  margin: 0 auto;
-}
-.donut-wrap svg {
-  transform: rotate(-90deg);
-}
-.donut-label {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-.donut-label .pct {
-  font-size: 1.5rem;
-  font-weight: 800;
-}
-.donut-label .cap {
-  font-size: 0.7rem;
-  color: var(--odoc-muted);
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
+/* ============ 6. TOGGLES & PROGRESS ============ */
 .form-switch {
   padding-left: 0;
 }
@@ -580,8 +552,7 @@
 .form-switch .form-check-input:focus {
   outline: none;
   border: none;
-  box-shadow:
-    0 0 0 3px rgba(37, 99, 235, 0.08);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
 }
 .form-switch .form-check-input:checked {
   background: var(--odoc-primary);
@@ -611,7 +582,47 @@
     inset -2px -2px 7px rgba(255, 255, 255, 0.68);
 }
 
-/* ============ NEUMORPHIC OUTLINE BUTTON ============ */
+.progress-odoc {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--odoc-border);
+  overflow: hidden;
+}
+.progress-odoc .bar {
+  height: 100%;
+  background: var(--odoc-primary);
+  border-radius: 999px;
+}
+.donut-wrap {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin: 0 auto;
+}
+.donut-wrap svg {
+  transform: rotate(-90deg);
+}
+.donut-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.donut-label .pct {
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+.donut-label .cap {
+  font-size: 0.7rem;
+  color: var(--odoc-muted);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* ============ 7. BUTTONS ============ */
+/* Neumorphic outline button (Cancel, secondary actions) */
 .btn-outline-neu {
   background: var(--odoc-bg);
   color: var(--odoc-text);
@@ -643,7 +654,7 @@
     inset -2px -2px 5px rgba(255, 255, 255, 0.6);
 }
 
-/* ============ ICON BUTTON (small neumorphic circle) ============ */
+/* Small circular icon button (table row actions) */
 .btn-icon-neu {
   width: 34px;
   height: 34px;
@@ -679,7 +690,7 @@
     inset -2px -2px 5px rgba(255, 255, 255, 0.6);
 }
 
-/* ============ NEUMORPHIC MODAL ============ */
+/* ============ 8. MODAL ============ */
 .neu-modal {
   background: var(--odoc-bg) !important;
   border: none !important;
@@ -689,6 +700,63 @@
     -4px -4px 12px rgba(255, 255, 255, 0.8) !important;
 }
 
+/* ============ 9. UTILITIES ============ */
+/* Circular user initial avatar (background color set inline per-user). */
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.82rem;
+  flex-shrink: 0;
+}
+/* Muted table cell text */
+.cell-muted {
+  color: var(--odoc-muted);
+  font-size: 0.88rem;
+}
+/* Status text */
+.text-active {
+  color: var(--odoc-success);
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+.text-inactive {
+  color: var(--odoc-danger);
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+/* Inset info box (e.g. notifications hint) */
+.neu-info-box {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  color: var(--odoc-muted);
+  background: var(--odoc-bg);
+  box-shadow:
+    inset 2px 2px 7px rgba(178, 184, 192, 0.52),
+    inset -2px -2px 7px rgba(255, 255, 255, 0.68);
+}
+/* Danger variant for status-chip (from style.css) */
+.status-chip.chip-danger {
+  background: #fdecec;
+  color: var(--odoc-danger);
+}
+/* Soft horizontal rule */
+.hr-soft {
+  border-color: var(--odoc-border);
+}
+/* Positioning helper for overflow-visible dropdown stacking */
+.pos-relative-z {
+  position: relative;
+  z-index: 10;
+}
+
+/* ============ 10. RESPONSIVE ============ */
 @media (max-width: 991px) {
   .admin-sidebar {
     position: fixed;
