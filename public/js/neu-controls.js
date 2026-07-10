@@ -84,6 +84,9 @@
         dateFormat: "Y-m-d",
         allowInput: true,
         disableMobile: true,
+        // Render month as plain text + arrows instead of a native <select>,
+        // which cannot be themed and looked out of place.
+        monthSelectorType: "static",
         defaultDate: val || null,
       });
     });
@@ -97,6 +100,5 @@
   document.addEventListener("click", function () { closeAllSelects(null); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeAllSelects(null); });
   document.addEventListener("DOMContentLoaded", function () { run(document); });
-  // Expose for dynamically injected markup if ever needed.
   window.NeuControls = { run: run };
 })();

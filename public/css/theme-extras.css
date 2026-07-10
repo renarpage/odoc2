@@ -1,5 +1,4 @@
 /* ============ CUSTOM NEUMORPHIC SELECT ============ */
-/* Native option lists can't be themed, so selects are enhanced into these. */
 .neu-native-hidden {
   position: absolute !important;
   width: 1px; height: 1px;
@@ -8,157 +7,128 @@
 }
 .neu-select { position: relative; }
 .neu-select-trigger {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  width: 100%;
-  text-align: left;
-  background: var(--odoc-bg);
-  border: none;
-  color: var(--odoc-text);
-  font-weight: 500;
-  font-size: 0.92rem;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  width: 100%; text-align: left; background: var(--odoc-bg); border: none;
+  color: var(--odoc-text); font-weight: 500; font-size: 0.92rem;
 }
 .neu-select-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .neu-select-caret { color: var(--odoc-muted); transition: transform 0.25s ease; flex-shrink: 0; }
 .neu-select.open .neu-select-caret { transform: rotate(180deg); color: var(--odoc-primary); }
 .neu-select-menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0; right: 0;
-  z-index: 70;
-  background: var(--odoc-bg);
-  border-radius: var(--radius-md);
-  padding: 8px;
-  display: none;
-  max-height: 280px;
-  overflow-y: auto;
-  box-shadow:
-    6px 6px 16px rgba(159, 168, 182, 0.5),
-    -6px -6px 16px rgba(255, 255, 255, 0.92);
+  position: absolute; top: calc(100% + 8px); left: 0; right: 0; z-index: 70;
+  background: var(--odoc-bg); border-radius: var(--radius-md); padding: 8px;
+  display: none; max-height: 280px; overflow-y: auto;
+  box-shadow: 6px 6px 16px rgba(159, 168, 182, 0.5), -6px -6px 16px rgba(255, 255, 255, 0.92);
 }
 .neu-select.open .neu-select-menu { display: block; animation: neuFade 0.15s ease; }
 @keyframes neuFade { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 .neu-select-option {
-  padding: 10px 12px;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  color: var(--odoc-text);
-  transition: all 0.15s ease;
+  padding: 10px 12px; border-radius: 10px; font-size: 0.9rem; cursor: pointer;
+  color: var(--odoc-text); transition: all 0.15s ease;
 }
 .neu-select-option:hover { background: #e9eefc; color: var(--odoc-primary); }
-.neu-select-option.active {
-  background: var(--odoc-primary);
-  color: #fff;
-  box-shadow: inset 1px 1px 3px rgba(0,0,0,.18);
-}
+.neu-select-option.active { background: var(--odoc-primary); color: #fff; box-shadow: inset 1px 1px 3px rgba(0,0,0,.18); }
 
 /* ============ FLATPICKR (neumorphic) ============ */
 .flatpickr-calendar {
   background: var(--odoc-bg) !important;
   border: none !important;
   border-radius: var(--radius-md) !important;
-  box-shadow:
-    8px 8px 20px rgba(159, 168, 182, 0.5),
-    -8px -8px 20px rgba(255, 255, 255, 0.92) !important;
-  padding: 6px;
+  box-shadow: 8px 8px 20px rgba(159, 168, 182, 0.5), -8px -8px 20px rgba(255, 255, 255, 0.92) !important;
+  padding: 10px;
+  width: 320px !important;
 }
 .flatpickr-calendar::before, .flatpickr-calendar::after { display: none !important; }
-.flatpickr-months, .flatpickr-month { background: transparent !important; color: var(--odoc-text) !important; }
+.flatpickr-days, .dayContainer { width: 300px !important; min-width: 300px !important; max-width: 300px !important; }
+.dayContainer { padding: 0; }
+
+.flatpickr-months { align-items: center; padding: 4px 4px 10px; }
+.flatpickr-months .flatpickr-month { height: 42px; }
+.flatpickr-current-month { padding-top: 6px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+/* Static month text (monthSelectorType: static) */
 .flatpickr-current-month .flatpickr-monthDropdown-months,
-.flatpickr-current-month input.cur-year { color: var(--odoc-text) !important; font-weight: 700; }
-.flatpickr-weekday { color: var(--odoc-muted) !important; font-weight: 600; }
+.flatpickr-current-month span.cur-month {
+  font-weight: 700 !important; color: var(--odoc-text) !important; font-size: 1rem;
+  background: transparent !important; appearance: none; border: none;
+}
+.flatpickr-current-month span.cur-month:hover { background: transparent !important; }
+/* Year with neumorphic pill + spinner arrows */
+.flatpickr-current-month .numInputWrapper {
+  background: var(--odoc-bg); border-radius: 10px; padding: 2px 6px;
+  box-shadow: inset 2px 2px 5px rgba(178,184,192,.5), inset -2px -2px 5px rgba(255,255,255,.7);
+}
+.flatpickr-current-month input.cur-year {
+  font-weight: 700 !important; color: var(--odoc-text) !important; background: transparent !important;
+}
+.numInputWrapper span { border: none !important; }
+.numInputWrapper span.arrowUp:after { border-bottom-color: var(--odoc-muted) !important; }
+.numInputWrapper span.arrowDown:after { border-top-color: var(--odoc-muted) !important; }
+.numInputWrapper:hover span.arrowUp:after { border-bottom-color: var(--odoc-primary) !important; }
+.numInputWrapper:hover span.arrowDown:after { border-top-color: var(--odoc-primary) !important; }
+
+/* Prev / next month as round neumorphic buttons */
+.flatpickr-months .flatpickr-prev-month,
+.flatpickr-months .flatpickr-next-month {
+  width: 34px; height: 34px; border-radius: 50%; top: 6px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--odoc-bg);
+  box-shadow: 2px 2px 6px rgba(159,168,182,.42), -2px -2px 6px rgba(247,248,250,.68);
+  transition: all .2s ease;
+}
+.flatpickr-months .flatpickr-prev-month { left: 8px; }
+.flatpickr-months .flatpickr-next-month { right: 8px; }
+.flatpickr-months .flatpickr-prev-month:hover,
+.flatpickr-months .flatpickr-next-month:hover { transform: translateY(-1px); }
 .flatpickr-months .flatpickr-prev-month svg,
-.flatpickr-months .flatpickr-next-month svg { fill: var(--odoc-muted) !important; }
+.flatpickr-months .flatpickr-next-month svg { width: 12px; height: 12px; fill: var(--odoc-muted) !important; }
 .flatpickr-months .flatpickr-prev-month:hover svg,
 .flatpickr-months .flatpickr-next-month:hover svg { fill: var(--odoc-primary) !important; }
+
+.flatpickr-weekday { color: var(--odoc-muted) !important; font-weight: 600; font-size: .8rem; }
 .flatpickr-day {
-  color: var(--odoc-text);
-  border-radius: 10px !important;
-  border: none !important;
+  color: var(--odoc-text); border-radius: 10px !important; border: none !important;
+  max-width: 40px; height: 38px; line-height: 38px; margin: 1px 0;
 }
 .flatpickr-day:hover { background: #e9eefc !important; color: var(--odoc-primary) !important; }
 .flatpickr-day.selected, .flatpickr-day.selected:hover {
-  background: var(--odoc-primary) !important;
-  color: #fff !important;
-  box-shadow:
-    inset 1px 1px 2px rgba(0,0,0,.2),
-    2px 2px 6px rgba(46,82,228,.4);
+  background: var(--odoc-primary) !important; color: #fff !important;
+  box-shadow: inset 1px 1px 2px rgba(0,0,0,.2), 2px 2px 6px rgba(46,82,228,.4);
 }
 .flatpickr-day.today { border: 1px solid var(--odoc-primary) !important; }
-.flatpickr-day.flatpickr-disabled, .flatpickr-day.prevMonthDay, .flatpickr-day.nextMonthDay { color: var(--odoc-muted); opacity: 0.5; }
+.flatpickr-day.today:hover { background: #e9eefc !important; color: var(--odoc-primary) !important; }
+.flatpickr-day.flatpickr-disabled, .flatpickr-day.prevMonthDay, .flatpickr-day.nextMonthDay { color: var(--odoc-muted); opacity: 0.45; }
 
 /* ============ TOPBAR NOTIFICATION MENU ============ */
 .notif-menu {
-  width: 320px;
-  max-width: 88vw;
-  border: none;
-  border-radius: var(--radius-md);
+  width: 320px; max-width: 88vw; border: none; border-radius: var(--radius-md);
   background: var(--odoc-bg);
-  box-shadow:
-    8px 8px 20px rgba(159, 168, 182, 0.5),
-    -8px -8px 20px rgba(255, 255, 255, 0.92);
+  box-shadow: 8px 8px 20px rgba(159, 168, 182, 0.5), -8px -8px 20px rgba(255, 255, 255, 0.92);
   overflow: hidden;
 }
-.notif-head {
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--odoc-border);
-}
+.notif-head { padding: 14px 16px; border-bottom: 1px solid var(--odoc-border); }
 .notif-list { max-height: 340px; overflow-y: auto; }
 .notif-item {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--odoc-border);
-  transition: background 0.2s ease;
+  display: flex; gap: 12px; align-items: flex-start; padding: 12px 16px;
+  border-bottom: 1px solid var(--odoc-border); transition: background 0.2s ease;
 }
 .notif-item:last-child { border-bottom: none; }
 .notif-item:hover { background: #eef1f8; }
-.notif-ico {
-  width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
-  display: inline-flex; align-items: center; justify-content: center;
-}
-.notif-ico.warning { background: #fdecec; color: var(--odoc-danger); }
-.notif-ico.error { background: #fdecec; color: var(--odoc-danger); }
+.notif-ico { width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
+.notif-ico.warning, .notif-ico.error { background: #fdecec; color: var(--odoc-danger); }
 .notif-ico.info { background: #e9eefc; color: var(--odoc-primary); }
-.notif-ico.user { background: #e4f5ec; color: var(--odoc-success); }
-.notif-ico.success { background: #e4f5ec; color: var(--odoc-success); }
+.notif-ico.user, .notif-ico.success { background: #e4f5ec; color: var(--odoc-success); }
 .notif-empty { padding: 26px 16px; text-align: center; color: var(--odoc-muted); }
 
-/* ============ MEDIA SKELETON + LIGHTBOX SPINNER ============ */
-.gallery-thumb {
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
+/* ============ MEDIA SKELETON ============ */
+.gallery-thumb { opacity: 0; transition: opacity 0.4s ease; }
 .gallery-thumb.loaded { opacity: 1; }
-.gallery-skeleton {
-  position: relative;
-  overflow: hidden;
-  background: #e6eaf3;
-}
+.gallery-skeleton { position: relative; overflow: hidden; background: #e6eaf3; }
 .gallery-skeleton::after {
-  content: "";
-  position: absolute; inset: 0;
-  transform: translateX(-100%);
+  content: ""; position: absolute; inset: 0; transform: translateX(-100%);
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
   animation: neuShimmer 1.3s infinite;
 }
 .gallery-skeleton.loaded::after { display: none; animation: none; }
 @keyframes neuShimmer { 100% { transform: translateX(100%); } }
 
-.lb-spinner {
-  position: absolute;
-  width: 44px; height: 44px;
-  border: 3px solid rgba(255,255,255,0.25);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: neuSpin 0.8s linear infinite;
-}
-.lb-spinner.hidden { display: none; }
-@keyframes neuSpin { to { transform: rotate(360deg); } }
-
-/* Upcoming status text colour used across admin tables. */
 .text-purple { color: #7c4fd8 !important; }
