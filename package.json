@@ -1,16 +1,32 @@
 {
   "name": "odoc-digital-archive",
-  "version": "2.0.0",
-  "description": "ODOC Digital Archive - production backend (Express + MongoDB + JWT + Google Drive) integrated with the existing EJS/Bootstrap/GSAP frontend",
+  "version": "1.0.0",
+  "description": "ODOC (One Door One Click) Digital Archive — public activity archive with a secure admin panel. Express + EJS + MongoDB + Google Drive.",
   "main": "server.js",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
     "seed": "node seeders/seed.js",
-    "sync": "browser-sync start --proxy localhost:3000 --files views/**/*.ejs, public/**/*.css"
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix",
+    "format": "prettier --write \"**/*.{js,css,json,md}\"",
+    "format:check": "prettier --check \"**/*.{js,css,json,md}\""
   },
+  "keywords": [
+    "archive",
+    "express",
+    "ejs",
+    "mongodb",
+    "google-drive",
+    "admin-panel",
+    "neumorphism"
+  ],
+  "license": "MIT",
   "dependencies": {
-    "archiver": "^7.0.1",
+    "archiver": "^6.0.1",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.4.5",
@@ -18,19 +34,21 @@
     "express": "^4.19.2",
     "express-ejs-layouts": "^2.5.1",
     "express-mongo-sanitize": "^2.2.0",
-    "express-rate-limit": "^7.4.0",
-    "googleapis": "^140.0.1",
+    "express-rate-limit": "^7.2.0",
+    "googleapis": "^133.0.0",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "method-override": "^3.0.0",
-    "mongoose": "^8.5.1",
-    "morgan": "^1.10.0",
+    "mongoose": "^8.3.2",
     "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.9.13",
     "uuid": "^9.0.1",
-    "winston": "^3.13.1"
+    "winston": "^3.13.0"
   },
   "devDependencies": {
-    "browser-sync": "^3.0.4",
-    "nodemon": "^3.1.0"
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "nodemon": "^3.1.0",
+    "prettier": "^3.2.5"
   }
 }

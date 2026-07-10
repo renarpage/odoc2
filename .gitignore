@@ -1,8 +1,29 @@
+# Dependencies
 node_modules/
+
+# Environment
 .env
 .env.local
+.env.*.local
+
+# Logs
 logs/
 *.log
-.DS_Store
-coverage/
+npm-debug.log*
+
+# Runtime / temp
 tmp/
+coverage/
+uploads/
+
+# Archives (should not be version-controlled)
+*.rar
+*.zip
+*.7z
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

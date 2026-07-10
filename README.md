@@ -1,90 +1,144 @@
 # ODOC Digital Archive
 
-Full-stack recreation of the ODOC platform — a public activity archive with an
-admin panel — built with **Node.js, Express, EJS, Bootstrap 5, and GSAP**.
+**ODOC (One Door One Click)** is a public digital archive for OSIS SMAVO school
+activities, backed by a secure admin panel. The public site lets anyone browse
+and download activity media; the admin panel manages everything behind JWT auth.
 
-## Stack
+Built with **Node.js, Express, EJS, MongoDB (Mongoose), and Google Drive** for
+media storage, styled with a custom **neumorphic** design system on top of
+Bootstrap 5.
 
-- **Node.js + Express** — server & routing
-- **EJS + express-ejs-layouts** — templating, with two layouts:
-  - `views/layouts/guest.ejs` → navbar + footer (public site)
-  - `views/layouts/admin.ejs` → sidebar + topbar (admin panel)
-- **Bootstrap 5** (CDN) + custom `public/css/style.css` design system
-- **GSAP** (CDN) — hero/page-load and scroll-reveal animations
-- **Bootstrap Icons** (CDN)
-- In-memory mock data store (`data/store.js`) — swap this out for a real
-  database (MongoDB/Postgres/etc.) later; every route already reads/writes
-  through this single module so it's a clean seam to replace.
+---
+
+## Features
+
+- **Public archive** — filterable, paginated activity gallery + rich detail pages
+  with a media viewer (image/video), fullscreen overlay, and ZIP download.
+- **JWT auth** — access + rotated refresh tokens (HttpOnly cookies), bcrypt
+  hashing, RBAC (`super_admin`, `standard_admin`), forced first-login password
+  change, and OTP-based password reset.
+- **Activity management** — full CRUD, draft/publish, duplicate, and background
+  media uploads with a live progress panel.
+- **Google Drive storage** — OAuth (personal Drive) or service-account fallback,
+  with automatic "anyone with link" sharing and inline image/video rendering.
+- **System settings** — general config, SEO/meta, content limits, notifications,
+  SMTP + webhooks, backup, and a site-wide **maintenance mode**.
+- **User management** — super admins manage all accounts; standard admins are
+  read-only.
+
+---
+
+## Tech stack
+
+| Layer      | Technology                                                        |
+| ---------- | ----------------------------------------------------------------- |
+| Runtime    | Node.js 18+ / Express                                             |
+| Views      | EJS + express-ejs-layouts                                         |
+| Database   | MongoDB via Mongoose                                              |
+| Auth       | JWT (jsonwebtoken) + bcryptjs                                     |
+| Storage    | Google Drive (googleapis)                                         |
+| Security   | helmet, express-rate-limit, express-mongo-sanitize, CSRF tokens   |
+| Email      | nodemailer                                                        |
+| Media      | multer (upload), archiver (ZIP)                                   |
+| Logging    | winston                                                           |
+| Styling    | Bootstrap 5 (CDN) + custom neumorphic CSS                         |
+
+---
 
 ## Project structure
 
 ```
-odoc-archive/
-├── server.js                 # App entry point
-├── routes/
-│   ├── guest.js               # "/", "/activity/:id"
-│   └── admin.js                # "/admin/*"
-├── data/
-│   └── store.js               # Mock in-memory data + helpers
-├── views/
-│   ├── layouts/
-│   │   ├── guest.ejs           # navbar + footer wrapper
-│   │   └── admin.ejs           # sidebar + topbar wrapper
-│   ├── partials/
-│   │   ├── navbar.ejs
-│   │   ├── footer.ejs
-│   │   ├── sidebar.ejs
-│   │   └── admin-topbar.ejs
-│   ├── home.ejs                 # public landing / archive listing
-│   ├── activity-detail.ejs      # public activity detail
-│   ├── 404.ejs
-│   └── admin/
-│       ├── dashboard.ejs
-│       ├── activities.ejs       # activity manager (table + filters)
-│       ├── activity-form.ejs    # 4-step "Create Activity" wizard
-│       ├── storage.ejs
-│       ├── branding.ejs
-│       ├── settings.ejs
-│       └── users.ejs
-└── public/
-    ├── css/style.css
-    └── js/
-        ├── main.js              # GSAP reveal + guest theme toggle
-        └── admin.js             # sidebar toggle, wizard logic, uploads
+odoc2/
+├─ server.js               # App entry: middleware chain + route mounting
+├─ config/                 # env, db, drive, logger
+├─ constants/              # Shared enums (roles, statuses, cookies, upload rules)
+├─ core/                   # ApiError, asyncHandler
+├─ helpers/                # serializers, driveUrl, capacity, cookies, flash, ...
+├─ models/                 # Mongoose schemas (User, Activity, Setting, ...)
+├─ repositories/           # Data-access layer (Repository Pattern)
+├─ services/               # Business logic (auth, activity, settings, user, ...)
+├─ middlewares/            # auth, security, csrf, maintenance, upload, ...
+├─ validators/             # Request validation
+├─ controllers/            # HTTP handlers (thin; delegate to services)
+├─ routes/                 # guest, auth, admin, api
+├─ seeders/                # seed.js (admins + settings + sample activities)
+├─ views/                  # EJS templates (layouts, partials, admin, guest)
+└─ public/                 # css/, js/ static assets
 ```
 
-## Running it
+**Layered flow:** `routes → controllers → services → repositories → models`.
+Controllers stay thin; business logic lives in services; all DB access goes
+through repositories. `helpers/serializers.js` maps Mongo documents to the exact
+shapes the EJS views expect.
+
+---
+
+## Getting started
+
+### Prerequisites
+
+- Node.js 18+
+- A running MongoDB instance (local or Atlas)
+- (Optional) Google OAuth credentials for Drive storage
+
+### Setup
 
 ```bash
 npm install
-npm start          # http://localhost:3000
-# or, for auto-reload during development:
+cp .env.example .env      # fill in MONGO_URI, JWT secrets, Google OAuth creds
+npm run seed              # seed admins, settings, and 8 sample activities
+npm start                 # http://localhost:3000
+```
+
+For development with auto-reload:
+
+```bash
 npm run dev
 ```
 
-## Pages
+### Default seeded logins
 
-**Guest (navbar + footer):**
-- `/` — landing hero + filterable activity gallery
-- `/activity/:id` — activity detail (overview, visual archive, documents,
-  committee, milestones)
+| Role        | Email                      | Password             |
+| ----------- | -------------------------- | -------------------- |
+| Super Admin | `superadmin@odoc.archive`  | `ChangeMe!Super123`  |
+| Admin       | `admin@odoc.archive`       | `ChangeMe!Admin123`  |
 
-**Admin (sidebar + topbar):**
-- `/admin` — dashboard (stats, recent activities, quick upload, system logs)
-- `/admin/activities` — activity manager table with filters & pagination
-- `/admin/activities/new` — 4-step activity creation wizard (Basic Info →
-  Documentation → Committee → Review), posts to the mock store
-- `/admin/storage` — Google Drive-style storage analytics
-- `/admin/branding` — color palette / messaging editor with live preview
-- `/admin/settings` — general, security, notifications, API & integrations
-- `/admin/users` — placeholder
+> Both accounts are forced to change their password on first login.
 
-## Notes
+---
 
-- File uploads in the UI are cosmetic (drag/drop styling only) — no files are
-  actually persisted. Wire up `multer` (already installed) if you want real
-  uploads.
-- All data resets on server restart since it's stored in memory.
-- Colors/typography match the original ODOC screenshots (primary `#3155E7`),
-  centralized as CSS variables in `public/css/style.css` for easy re-theming
-  — the Branding page's color fields are meant to eventually drive these.
+## Environment variables
+
+See [`.env.example`](.env.example) for the full list. Key ones:
+
+| Variable                     | Description                                  |
+| ---------------------------- | -------------------------------------------- |
+| `MONGO_URI`                  | MongoDB connection string                    |
+| `JWT_ACCESS_SECRET`          | Secret for signing access tokens             |
+| `JWT_REFRESH_SECRET`         | Secret for signing refresh tokens            |
+| `GOOGLE_OAUTH_CLIENT_ID`     | Google OAuth client ID (Drive storage)       |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | Google OAuth client secret                   |
+| `STORAGE_CAPACITY_GB`        | Displayed storage cap when Drive reports none |
+
+---
+
+## Scripts
+
+| Command             | Description                          |
+| ------------------- | ------------------------------------ |
+| `npm start`         | Start the production server          |
+| `npm run dev`       | Start with nodemon auto-reload       |
+| `npm run seed`      | Seed the database                    |
+| `npm run lint`      | Lint all JS with ESLint              |
+| `npm run lint:fix`  | Lint and auto-fix                    |
+| `npm run format`    | Format with Prettier                 |
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for coding conventions and workflow.
+
+## License
+
+[MIT](LICENSE)
