@@ -25,6 +25,17 @@ document.addEventListener("DOMContentLoaded", () => {
     return d.toLocaleDateString("en-US", { month: "long", day: "2-digit", year: "numeric" });
   }
 
+  // Allowed upload extensions (kept in sync with constants/index.js server-side).
+  var ALLOWED_EXT = [
+    "jpg", "jpeg", "png", "webp", "gif", "bmp", "svg", "heic", "heif",
+    "mp4", "webm", "mov", "mkv", "avi",
+    "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "csv", "rtf", "odt", "ods", "odp",
+    "zip", "rar", "7z",
+  ];
+  var MAX_BYTES = 50 * 1024 * 1024;
+  function extOf(name) { var m = String(name || "").toLowerCase().match(/\.([a-z0-9]+)$/); return m ? m[1] : ""; }
+  function isAllowed(file) { return ALLOWED_EXT.indexOf(extOf(file.name)) !== -1; }
+
   // ===== Multi-step Activity Wizard =====
   const wizard = document.getElementById("activityWizard");
   if (wizard) {
@@ -49,14 +60,44 @@ document.addEventListener("DOMContentLoaded", () => {
     renderStep();
   }
 
-  // ===== File fields with per-file unattach =====
+  // ===== File fields with per-file unattach + instant validation =====
   document.querySelectorAll(".upload-drop").forEach((drop) => {
     const input = drop.querySelector("input[type=file]");
-    if (!input) return;
+    if (!input) return; // link-style dropzones (dashboard quick upload)
     const kind = drop.getAttribute("data-upload");
     const multiple = input.multiple;
     const chips = kind ? document.querySelector('[data-chips="' + kind + '"]') : null;
     let store = [];
+
+    // Inline error banner sits right after the dropzone.
+    let errBox = drop.parentNode.querySelector('[data-upload-error="' + kind + '"]');
+    if (!errBox) {
+      errBox = document.createElement("div");
+      errBox.setAttribute("data-upload-error", kind || "");
+      errBox.className = "alert alert-danger py-2 px-3 mt-2 mb-0";
+      errBox.style.cssText = "border-radius:var(--radius-sm);font-size:.82rem;display:none;";
+      drop.insertAdjacentElement("afterend", errBox);
+    }
+    function showError(msg) {
+      errBox.innerHTML = '<i class="bi bi-exclamation-triangle me-2"></i>' + esc(msg);
+      errBox.style.display = "block";
+    }
+    function clearError() { errBox.style.display = "none"; errBox.textContent = ""; }
+
+    // Split incoming files into accepted vs rejected, warn immediately.
+    function accept(files) {
+      var okList = [], bad = [], tooBig = [];
+      files.forEach(function (f) {
+        if (!isAllowed(f)) { bad.push(f.name); return; }
+        if (f.size > MAX_BYTES) { tooBig.push(f.name); return; }
+        okList.push(f);
+      });
+      var msgs = [];
+      if (bad.length) msgs.push("Unsupported file" + (bad.length > 1 ? "s" : "") + ": " + bad.join(", ") + ". Allowed: images, video, PDF, Office docs, TXT/CSV, ZIP/RAR/7z.");
+      if (tooBig.length) msgs.push("Too large (max 50MB): " + tooBig.join(", ") + ".");
+      if (msgs.length) showError(msgs.join(" ")); else clearError();
+      return okList;
+    }
 
     function commit() {
       const dt = new DataTransfer();
@@ -100,13 +141,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }));
     drop.addEventListener("drop", (e) => {
       if (e.dataTransfer && e.dataTransfer.files.length) {
-        const dropped = Array.from(e.dataTransfer.files);
-        store = multiple ? store.concat(dropped) : [dropped[0]];
+        const dropped = accept(Array.from(e.dataTransfer.files));
+        store = multiple ? store.concat(dropped) : (dropped[0] ? [dropped[0]] : store);
         commit();
       }
     });
     input.addEventListener("change", () => {
-      const picked = Array.from(input.files);
+      const picked = accept(Array.from(input.files));
       store = multiple ? store.concat(picked) : (picked[0] ? [picked[0]] : []);
       commit();
     });
@@ -120,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const clearCover = document.querySelector("[data-clear-cover]");
     if (kind === "cover" && clearCover) {
-      clearCover.addEventListener("click", () => { store = []; commit(); });
+      clearCover.addEventListener("click", () => { store = []; clearError(); commit(); });
     }
   });
 
@@ -172,7 +213,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Remove any dynamic row (committee or milestone)
   document.addEventListener("click", (e) => {
     const x = e.target.closest("[data-remove-row]");
     if (x) { const row = x.closest("[data-row]"); if (row) row.remove(); }
