@@ -23,4 +23,25 @@ function validateChangePassword(body) {
   return { currentPassword, newPassword };
 }
 
-module.exports = { validateLogin, validateChangePassword };
+function validateEmail(body) {
+  const email = String(body.email || "").trim().toLowerCase();
+  if (!EMAIL_RE.test(email)) throw ApiError.badRequest("A valid email is required");
+  return { email };
+}
+
+function validateReset(body) {
+  const email = String(body.email || "").trim().toLowerCase();
+  const code = String(body.code || "").trim();
+  const newPassword = String(body.newPassword || "");
+  const confirmPassword = String(body.confirmPassword || "");
+  if (!EMAIL_RE.test(email)) throw ApiError.badRequest("A valid email is required");
+  if (!/^\d{6}$/.test(code)) throw ApiError.badRequest("Enter the 6-digit code");
+  if (newPassword.length < 8) throw ApiError.badRequest("New password must be at least 8 characters");
+  if (!/[0-9]/.test(newPassword) || !/[a-zA-Z]/.test(newPassword)) {
+    throw ApiError.badRequest("Password must contain letters and numbers");
+  }
+  if (newPassword !== confirmPassword) throw ApiError.badRequest("Password confirmation does not match");
+  return { email, code, newPassword };
+}
+
+module.exports = { validateLogin, validateChangePassword, validateEmail, validateReset };
