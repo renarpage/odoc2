@@ -12,8 +12,8 @@ const logger = require("./config/logger");
 const { authenticate } = require("./middlewares/auth");
 const locals = require("./middlewares/locals");
 const maintenance = require("./middlewares/maintenance");
-const { securityMiddleware } = require("./middlewares/security");
-const { globalLimiter } = require("./middlewares/rateLimiter");
+const { applySecurity } = require("./middlewares/security");
+const { apiLimiter } = require("./middlewares/rateLimiter");
 const { flashMiddleware } = require("./helpers/flash");
 const errorHandler = require("./middlewares/errorHandler");
 const notFound = require("./middlewares/notFound");
@@ -40,9 +40,11 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(methodOverride("_method"));
 
-// Security & rate limiting
-app.use(securityMiddleware);
-app.use(globalLimiter);
+// Security (helmet + mongo sanitize)
+applySecurity(app);
+
+// Rate limiting
+app.use(apiLimiter);
 
 // Flash messages (cookie-based)
 app.use(flashMiddleware);
