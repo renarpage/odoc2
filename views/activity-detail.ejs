@@ -13,13 +13,11 @@
   }
   .doc-row:hover .bi-download { color: var(--odoc-primary) !important; }
 
-  /* Progressive grid thumbnails */
   .gallery-grid .gallery-skeleton { position: relative; height: 180px; border-radius: var(--radius-md); overflow: hidden; background: #e6eaf3; }
   .gallery-grid .gallery-skeleton.wide { grid-column: span 2; height: 260px; }
   .gallery-grid .gallery-skeleton::after {
     content: ""; position: absolute; inset: 0; transform: translateX(-100%);
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent);
-    animation: neuShimmer 1.3s infinite;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent); animation: neuShimmer 1.3s infinite;
   }
   .gallery-grid .gallery-skeleton.loaded::after { display: none; animation: none; }
   .gallery-grid img { width: 100% !important; height: 100% !important; object-fit: cover; display: block; }
@@ -27,61 +25,103 @@
   .gallery-thumb.loaded { opacity: 1; }
   @keyframes neuShimmer { 100% { transform: translateX(100%); } }
 
-  /* ===== Media card modal ===== */
+  /* ===== Media details modal ===== */
   .media-modal {
     position: fixed; inset: 0; z-index: 2000; display: none;
-    align-items: center; justify-content: center; padding: 30px 16px;
+    align-items: center; justify-content: center; padding: 26px 16px;
     background: rgba(20,24,40,.55); backdrop-filter: blur(4px);
   }
   .media-modal.open { display: flex; }
   .media-card {
-    width: 100%; max-width: 760px; max-height: 88vh;
-    display: flex; flex-direction: column;
+    width: 100%; max-width: 720px; max-height: 90vh; display: flex; flex-direction: column;
     background: var(--odoc-bg); border-radius: var(--radius-lg); overflow: hidden;
-    box-shadow: 10px 10px 30px rgba(30,42,90,.35), -6px -6px 20px rgba(255,255,255,.6);
+    box-shadow: 12px 12px 34px rgba(30,42,90,.4), -6px -6px 20px rgba(255,255,255,.6);
   }
-  .media-card-head {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 18px 22px; border-bottom: 1px solid var(--odoc-border);
+  .mm-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 22px; }
+  .mm-head .mm-title { font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
+  .mm-head .mm-title .mm-badge {
+    width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;
+    background: #e9eefc; color: var(--odoc-primary);
   }
-  .media-card-head .mm-title { font-weight: 700; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; }
-  .media-card-head .mm-title i { color: var(--odoc-primary); }
   .mm-close {
-    border: none; background: var(--odoc-bg); width: 40px; height: 40px; border-radius: 50%;
+    border: none; background: var(--odoc-bg); width: 38px; height: 38px; border-radius: 50%;
     display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--odoc-text);
     box-shadow: 2px 2px 6px rgba(159,168,182,.42), -2px -2px 6px rgba(247,248,250,.68); transition: all .2s ease;
   }
   .mm-close:hover { color: var(--odoc-primary); transform: translateY(-1px); }
-  .media-card-toolbar {
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    padding: 14px 22px; border-bottom: 1px solid var(--odoc-border); flex-wrap: wrap;
+  .mm-body { overflow-y: auto; padding: 0 22px 8px; }
+
+  .mm-hero { position: relative; border-radius: var(--radius-md); overflow: hidden; background: #0d1020; aspect-ratio: 16 / 9; }
+  .mm-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .mm-hero .mm-hero-spin {
+    position: absolute; inset: 0; margin: auto; width: 40px; height: 40px;
+    border: 3px solid rgba(255,255,255,.25); border-top-color: #fff; border-radius: 50%; animation: neuSpin .8s linear infinite;
   }
-  .mm-selectall { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; font-size: .9rem; cursor: pointer; user-select: none; }
-  .mm-cb, .mm-selectall input {
-    appearance: none; -webkit-appearance: none; width: 22px; height: 22px; border-radius: 7px; cursor: pointer;
-    background: var(--odoc-bg); flex-shrink: 0; position: relative;
-    box-shadow: inset 2px 2px 5px rgba(178,184,192,.5), inset -2px -2px 5px rgba(255,255,255,.7); transition: all .2s ease;
+  .mm-hero .mm-hero-spin.hidden { display: none; }
+  @keyframes neuSpin { to { transform: rotate(360deg); } }
+  .mm-hero .mm-hero-meta {
+    position: absolute; left: 0; right: 0; bottom: 0; padding: 30px 18px 14px; color: #fff;
+    background: linear-gradient(to top, rgba(0,0,0,.7), transparent);
   }
-  .mm-cb:checked, .mm-selectall input:checked { background: var(--odoc-primary); box-shadow: inset 1px 1px 3px rgba(0,0,0,.25); }
-  .mm-cb:checked::after, .mm-selectall input:checked::after {
-    content: "\2713"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    color: #fff; font-size: .8rem; font-weight: 700;
+  .mm-hero .mm-hero-name { font-weight: 700; font-size: 1rem; }
+  .mm-hero .mm-hero-sub { font-size: .8rem; opacity: .85; margin-top: 2px; }
+  .mm-hero .mm-fs {
+    position: absolute; top: 14px; right: 14px; z-index: 2; width: 40px; height: 40px; border-radius: 50%;
+    border: none; cursor: pointer; color: #fff; background: rgba(255,255,255,.18);
+    display: inline-flex; align-items: center; justify-content: center; transition: all .2s ease;
   }
-  .media-card-body { overflow-y: auto; padding: 18px 22px; display: flex; flex-direction: column; gap: 16px; }
-  .mm-item { position: relative; border-radius: var(--radius-md); overflow: hidden; background: #e6eaf3; box-shadow: 2px 2px 10px rgba(152,161,174,.4); }
-  .mm-item img { width: 100%; display: block; }
-  .mm-item .mm-corner {
-    position: absolute; top: 12px; left: 12px; z-index: 2;
-    background: rgba(255,255,255,.9); border-radius: 8px; padding: 6px; display: inline-flex;
-    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  .mm-hero .mm-fs:hover { background: rgba(255,255,255,.32); transform: scale(1.06); }
+
+  .mm-strip-head { display: flex; align-items: center; justify-content: space-between; margin: 18px 0 10px; }
+  .mm-strip-head .mm-strip-title { font-weight: 700; font-size: .95rem; }
+  .mm-strip-head .mm-total { color: var(--odoc-muted); font-size: .8rem; }
+  .mm-strip { display: flex; gap: 12px; overflow-x: auto; padding: 4px 2px 12px; }
+  .mm-thumb {
+    position: relative; flex: 0 0 96px; width: 96px; height: 96px; border-radius: 14px; overflow: hidden;
+    cursor: pointer; background: #e6eaf3; transition: all .2s ease;
+    box-shadow: inset 1px 1px 3px rgba(178,184,192,.5), inset -1px -1px 3px rgba(255,255,255,.7);
   }
-  .mm-item .mm-dl {
-    position: absolute; top: 12px; right: 12px; z-index: 2;
-    background: rgba(255,255,255,.92); border-radius: 999px; padding: 8px 12px; font-size: .8rem; font-weight: 600;
-    color: var(--odoc-text); display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,.15);
-    transition: all .2s ease;
+  .mm-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .mm-thumb.active { outline: 3px solid var(--odoc-primary); outline-offset: -3px; }
+  .mm-thumb .mm-check {
+    position: absolute; top: 6px; left: 6px; width: 22px; height: 22px; border-radius: 50%;
+    background: rgba(255,255,255,.85); color: transparent; display: inline-flex; align-items: center; justify-content: center;
+    font-size: .7rem; transition: all .15s ease; box-shadow: 0 1px 4px rgba(0,0,0,.2);
   }
-  .mm-item .mm-dl:hover { color: var(--odoc-primary); }
+  .mm-thumb.selected { box-shadow: none; }
+  .mm-thumb.selected::after { content: ""; position: absolute; inset: 0; background: rgba(49,85,231,.28); }
+  .mm-thumb.selected .mm-check { background: var(--odoc-primary); color: #fff; z-index: 2; }
+  .mm-thumb .mm-tdl {
+    position: absolute; bottom: 6px; right: 6px; width: 22px; height: 22px; border-radius: 50%; z-index: 2;
+    background: rgba(255,255,255,.9); color: var(--odoc-text); display: inline-flex; align-items: center; justify-content: center;
+    font-size: .7rem; box-shadow: 0 1px 4px rgba(0,0,0,.2); transition: all .15s ease;
+  }
+  .mm-thumb .mm-tdl:hover { color: var(--odoc-primary); }
+
+  .mm-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 22px; border-top: 1px solid var(--odoc-border); flex-wrap: wrap; }
+  .mm-foot-left { display: flex; align-items: center; gap: 14px; }
+  .mm-selectall { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; font-size: .88rem; cursor: pointer; user-select: none; color: var(--odoc-text); }
+  .mm-switch { position: relative; width: 46px; height: 26px; flex-shrink: 0; }
+  .mm-switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .mm-switch .mm-slider {
+    position: absolute; inset: 0; border-radius: 999px; background: var(--odoc-bg); transition: all .25s ease;
+    box-shadow: inset 2px 2px 5px rgba(178,184,192,.55), inset -2px -2px 5px rgba(255,255,255,.75);
+  }
+  .mm-switch .mm-slider::before {
+    content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
+    background: #fff; transition: all .25s cubic-bezier(.4,0,.2,1); box-shadow: 1px 1px 5px rgba(160,170,185,.5);
+  }
+  .mm-switch input:checked + .mm-slider { background: var(--odoc-primary); }
+  .mm-switch input:checked + .mm-slider::before { transform: translateX(20px); }
+  .mm-selinfo { color: var(--odoc-muted); font-size: .82rem; }
+  .mm-foot-actions { display: flex; align-items: center; gap: 10px; }
+  .mm-cancel {
+    border: none; background: var(--odoc-bg); color: var(--odoc-text); font-weight: 600; border-radius: 999px; padding: 10px 22px; cursor: pointer;
+    box-shadow: 2px 2px 6px rgba(159,168,182,.42), -2px -2px 6px rgba(247,248,250,.68); transition: all .2s ease;
+  }
+  .mm-cancel:hover { color: var(--odoc-primary); transform: translateY(-1px); }
+  .mm-dlbtn:disabled { opacity: .5; cursor: not-allowed; }
+  @media (max-width: 520px) { .mm-foot { justify-content: center; } }
 </style>
 
 <div class="container py-4">
@@ -184,21 +224,45 @@
 
 <div class="media-modal" id="mediaModal" aria-hidden="true">
   <div class="media-card">
-    <div class="media-card-head">
-      <div class="mm-title"><i class="bi bi-images"></i> Media Archive <span class="text-muted tiny fw-normal" id="mmCount"></span></div>
+    <div class="mm-head">
+      <div class="mm-title"><span class="mm-badge"><i class="bi bi-images"></i></span> Media Archive Details</div>
       <button class="mm-close" data-mm-close aria-label="Close"><i class="bi bi-x-lg"></i></button>
     </div>
-    <div class="media-card-toolbar">
-      <label class="mm-selectall"><input type="checkbox" id="mmSelectAll"> Select all</label>
-      <button type="button" class="btn btn-primary rounded-pill px-4" id="mmDownload"><i class="bi bi-file-earmark-zip me-2"></i><span id="mmDlLabel">Download ZIP</span></button>
+    <div class="mm-body">
+      <div class="mm-hero">
+        <div class="mm-hero-spin" id="mmHeroSpin"></div>
+        <button type="button" class="mm-fs" id="mmFs" title="Fullscreen"><i class="bi bi-arrows-fullscreen"></i></button>
+        <img id="mmHeroImg" src="" alt="" referrerpolicy="no-referrer">
+        <div class="mm-hero-meta">
+          <div class="mm-hero-name" id="mmHeroName"></div>
+          <div class="mm-hero-sub" id="mmHeroSub"></div>
+        </div>
+      </div>
+
+      <div class="mm-strip-head">
+        <div class="mm-strip-title">Gallery Items</div>
+        <div class="mm-total" id="mmTotal"></div>
+      </div>
+      <div class="mm-strip" id="mmStrip"></div>
     </div>
-    <div class="media-card-body" id="mmBody"></div>
+    <div class="mm-foot">
+      <div class="mm-foot-left">
+        <label class="mm-selectall">
+          <span class="mm-switch"><input type="checkbox" id="mmSelectAll"><span class="mm-slider"></span></span>
+          Select All
+        </label>
+        <span class="mm-selinfo" id="mmSelInfo">0 files selected</span>
+      </div>
+      <div class="mm-foot-actions">
+        <button type="button" class="mm-cancel" data-mm-close>Cancel</button>
+        <button type="button" class="btn btn-primary rounded-pill px-4 mm-dlbtn" id="mmDownload" disabled><i class="bi bi-folder-symlink me-2"></i>Download Selected (ZIP)</button>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
 (function () {
-  // Reveal grid thumbnails once loaded (CSP-safe; no inline handlers).
   document.querySelectorAll('.gallery-thumb').forEach(function (im) {
     function done() { im.classList.add('loaded'); if (im.parentNode) im.parentNode.classList.add('loaded'); }
     if (im.complete && im.naturalWidth > 0) done();
@@ -208,78 +272,124 @@
   var items = <%- JSON.stringify(activity.galleryItems || []) %>;
   var slug = <%- JSON.stringify(activity.id) %>;
   var modal = document.getElementById('mediaModal');
+  if (!modal || !items.length) { wireShare(); return; }
 
-  function idFromDownload(url) {
-    var m = String(url || '').match(/[?&]id=([A-Za-z0-9_-]+)/);
-    return m ? m[1] : null;
+  function fmtBytes(n) {
+    if (!n) return '';
+    var u = ['B','KB','MB','GB']; var i = Math.min(Math.floor(Math.log(n)/Math.log(1024)), u.length-1);
+    return (n/Math.pow(1024,i)).toFixed(i===0?0:1) + ' ' + u[i];
   }
 
-  if (modal && items.length) {
-    var body = document.getElementById('mmBody');
-    var selectAll = document.getElementById('mmSelectAll');
-    var dlLabel = document.getElementById('mmDlLabel');
-    var countLbl = document.getElementById('mmCount');
-    var dlBtn = document.getElementById('mmDownload');
-    var built = false;
+  var heroImg = document.getElementById('mmHeroImg');
+  var heroSpin = document.getElementById('mmHeroSpin');
+  var heroName = document.getElementById('mmHeroName');
+  var heroSub = document.getElementById('mmHeroSub');
+  var strip = document.getElementById('mmStrip');
+  var totalLbl = document.getElementById('mmTotal');
+  var selInfo = document.getElementById('mmSelInfo');
+  var selectAll = document.getElementById('mmSelectAll');
+  var dlBtn = document.getElementById('mmDownload');
+  var fsBtn = document.getElementById('mmFs');
+  var selected = {};
+  var active = 0;
+  var built = false;
 
-    countLbl.textContent = '(' + items.length + ')';
+  totalLbl.textContent = items.length + ' items total';
 
-    function build() {
-      if (built) return;
-      built = true;
-      body.innerHTML = items.map(function (it, i) {
-        return '<div class="mm-item">' +
-          '<label class="mm-corner"><input type="checkbox" class="mm-cb" data-index="' + i + '"></label>' +
-          '<a class="mm-dl" href="' + it.download + '" target="_blank" rel="noopener"><i class="bi bi-download"></i> Save</a>' +
-          '<img src="' + it.view + '" alt="Media ' + (i + 1) + '" referrerpolicy="no-referrer" loading="lazy">' +
-          '</div>';
-      }).join('');
-      body.querySelectorAll('.mm-cb').forEach(function (cb) { cb.addEventListener('change', updateCount); });
-    }
-    function checked() { return Array.prototype.slice.call(body.querySelectorAll('.mm-cb:checked')); }
-    function updateCount() {
-      var n = checked().length;
-      var all = body.querySelectorAll('.mm-cb').length;
-      dlLabel.textContent = n > 0 ? ('Download ZIP (' + n + ')') : 'Download all (ZIP)';
-      selectAll.checked = n > 0 && n === all;
-      selectAll.indeterminate = n > 0 && n < all;
-    }
-    function open() { build(); modal.classList.add('open'); document.body.style.overflow = 'hidden'; updateCount(); }
-    function close() { modal.classList.remove('open'); document.body.style.overflow = ''; }
+  heroImg.addEventListener('load', function () { heroSpin.classList.add('hidden'); });
+  heroImg.addEventListener('error', function () { heroSpin.classList.add('hidden'); });
 
-    var viewDetails = document.getElementById('mediaViewDetails');
-    if (viewDetails) viewDetails.addEventListener('click', function (e) { e.preventDefault(); open(); });
-    document.querySelectorAll('[data-gallery-index]').forEach(function (el) {
-      el.addEventListener('click', function () {
-        open();
-        var target = body.querySelectorAll('.mm-item')[parseInt(el.dataset.galleryIndex, 10)];
-        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  function setHero(i) {
+    active = i;
+    heroSpin.classList.remove('hidden');
+    heroImg.src = items[i].view;
+    heroName.textContent = items[i].name || ('Media ' + (i + 1));
+    heroSub.textContent = [items[i].typeLabel, items[i].sizeLabel].filter(Boolean).join('  \u2022  ');
+    strip.querySelectorAll('.mm-thumb').forEach(function (t, idx) { t.classList.toggle('active', idx === i); });
+  }
+
+  function updateFooter() {
+    var ids = Object.keys(selected).filter(function (k) { return selected[k]; });
+    var count = ids.length;
+    var bytes = 0;
+    ids.forEach(function (k) { bytes += (items[k] && items[k].bytes) || 0; });
+    var sizeTxt = bytes ? ('  \u2022  ' + fmtBytes(bytes)) : '';
+    selInfo.textContent = count === 0 ? 'No files selected'
+      : (count + ' file' + (count > 1 ? 's' : '') + ' selected' + sizeTxt);
+    dlBtn.disabled = count === 0;
+    selectAll.checked = count === items.length;
+    selectAll.indeterminate = count > 0 && count < items.length;
+  }
+
+  function toggle(i, on) {
+    selected[i] = (on === undefined) ? !selected[i] : on;
+    var t = strip.querySelectorAll('.mm-thumb')[i];
+    if (t) t.classList.toggle('selected', !!selected[i]);
+    updateFooter();
+  }
+
+  function build() {
+    if (built) return; built = true;
+    strip.innerHTML = items.map(function (it, i) {
+      return '<div class="mm-thumb" data-i="' + i + '">' +
+        '<span class="mm-check"><i class="bi bi-check-lg"></i></span>' +
+        '<a class="mm-tdl" href="' + it.download + '" target="_blank" rel="noopener" title="Download"><i class="bi bi-download"></i></a>' +
+        '<img src="' + it.thumb + '" alt="' + (it.name || ('Media ' + (i + 1))) + '" referrerpolicy="no-referrer" loading="lazy">' +
+        '</div>';
+    }).join('');
+    strip.querySelectorAll('.mm-thumb').forEach(function (t) {
+      var i = parseInt(t.dataset.i, 10);
+      t.addEventListener('click', function (e) {
+        if (e.target.closest('.mm-tdl')) return;      // download icon
+        if (e.target.closest('.mm-check')) { toggle(i); return; } // checkmark toggles select
+        setHero(i);                                    // body sets hero preview
       });
     });
-    modal.querySelector('[data-mm-close]').addEventListener('click', close);
-    modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('open')) close(); });
-
-    selectAll.addEventListener('change', function () {
-      body.querySelectorAll('.mm-cb').forEach(function (cb) { cb.checked = selectAll.checked; });
-      updateCount();
-    });
-
-    // Build the ZIP endpoint URL and let the browser download one file.
-    dlBtn.addEventListener('click', function () {
-      var url = '/api/activities/' + encodeURIComponent(slug) + '/media.zip';
-      var sel = checked().map(function (cb) { return idFromDownload(items[parseInt(cb.dataset.index, 10)].download); }).filter(Boolean);
-      if (sel.length && sel.length < items.length) url += '?ids=' + encodeURIComponent(sel.join(','));
-      var prev = dlLabel.textContent;
-      dlLabel.textContent = 'Preparing\u2026';
-      dlBtn.disabled = true;
-      window.location.href = url;
-      setTimeout(function () { dlLabel.textContent = prev; dlBtn.disabled = false; }, 4000);
-    });
+    setHero(0);
+    updateFooter();
   }
 
-  var share = document.getElementById('shareBtn');
-  if (share) {
+  function open() { build(); modal.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function close() { modal.classList.remove('open'); document.body.style.overflow = ''; }
+
+  var vd = document.getElementById('mediaViewDetails');
+  if (vd) vd.addEventListener('click', function (e) { e.preventDefault(); open(); });
+  document.querySelectorAll('[data-gallery-index]').forEach(function (el) {
+    el.addEventListener('click', function () { open(); setHero(parseInt(el.dataset.galleryIndex, 10)); });
+  });
+  modal.querySelectorAll('[data-mm-close]').forEach(function (b) { b.addEventListener('click', close); });
+  modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('open')) close(); });
+
+  selectAll.addEventListener('change', function () {
+    var on = selectAll.checked;
+    items.forEach(function (_, i) { toggle(i, on); });
+  });
+
+  fsBtn.addEventListener('click', function () {
+    var el = heroImg;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  });
+
+  function idFromDownload(url) { var m = String(url || '').match(/[?&]id=([A-Za-z0-9_-]+)/); return m ? m[1] : null; }
+  dlBtn.addEventListener('click', function () {
+    var ids = Object.keys(selected).filter(function (k) { return selected[k]; })
+      .map(function (k) { return idFromDownload(items[k].download); }).filter(Boolean);
+    if (!ids.length) return;
+    var url = '/api/activities/' + encodeURIComponent(slug) + '/media.zip';
+    if (ids.length < items.length) url += '?ids=' + encodeURIComponent(ids.join(','));
+    var label = dlBtn.innerHTML;
+    dlBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Preparing\u2026';
+    dlBtn.disabled = true;
+    window.location.href = url;
+    setTimeout(function () { dlBtn.innerHTML = label; updateFooter(); }, 4000);
+  });
+
+  wireShare();
+  function wireShare() {
+    var share = document.getElementById('shareBtn');
+    if (!share) return;
     share.addEventListener('click', async function () {
       var url = window.location.href; var title = document.title;
       try {
