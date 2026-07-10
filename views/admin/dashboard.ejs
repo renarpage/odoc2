@@ -7,6 +7,15 @@
   <a href="/admin/activities/new" class="btn btn-primary rounded-pill px-4"><i class="bi bi-plus-circle me-2"></i>New Activity</a>
 </div>
 
+<!-- Live background upload progress (populated via polling; hidden when idle) -->
+<div id="uploadProgress" class="odoc-panel card mb-4" style="display:none;">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="panel-title"><i class="bi bi-cloud-arrow-up"></i> Uploading Media</div>
+    <span class="badge rounded-pill text-bg-light text-primary fw-semibold" id="uploadProgressCount"></span>
+  </div>
+  <div id="uploadProgressList" class="d-flex flex-column gap-3"></div>
+</div>
+
 <div class="row g-3 mb-4">
   <div class="col-6 col-lg-4">
     <a class="stat-card card" href="/admin/activities">
@@ -70,7 +79,7 @@
       <a href="/admin/activities/new" class="upload-drop mb-0 d-block text-decoration-none text-reset">
         <i class="bi bi-cloud-arrow-up d-block mb-2"></i>
         <div class="fw-semibold text-dark">Upload to a new activity</div>
-        <div class="tiny">Attach images, video &amp; documents while creating</div>
+        <div class="tiny">Attach images, video & documents while creating</div>
       </a>
     </div>
 
@@ -94,3 +103,71 @@
     </div>
   </div>
 </div>
+
+<style>
+  .up-item { background: var(--odoc-bg); border-radius: var(--radius-md); padding: 14px 16px;
+    box-shadow: inset 1px 1px 4px rgba(178,184,192,.4), inset -1px -1px 4px rgba(255,255,255,.7); }
+  .up-item .up-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+  .up-item .up-name { font-weight: 700; font-size: .92rem; }
+  .up-item .up-sub { color: var(--odoc-muted); font-size: .78rem; }
+  .up-item .up-state { font-size: .78rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+  .up-item .up-state.done { color: var(--odoc-success); }
+  .up-item .up-state.error { color: var(--odoc-danger); }
+  .up-item .up-state.partial { color: var(--odoc-warning); }
+  .up-item .up-state.uploading { color: var(--odoc-primary); }
+  .up-spin { width: 14px; height: 14px; border: 2px solid rgba(49,85,231,.25); border-top-color: var(--odoc-primary);
+    border-radius: 50%; animation: upspin .7s linear infinite; }
+  @keyframes upspin { to { transform: rotate(360deg); } }
+</style>
+
+<script>
+(function () {
+  var panel = document.getElementById('uploadProgress');
+  if (!panel) return;
+  var list = document.getElementById('uploadProgressList');
+  var countBadge = document.getElementById('uploadProgressCount');
+  var esc = function (s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; };
+
+  function stateChip(job) {
+    if (job.status === 'uploading') return '<span class="up-state uploading"><span class="up-spin"></span> Uploading ' + job.done + '/' + job.total + '</span>';
+    if (job.status === 'done') return '<span class="up-state done"><i class="bi bi-check-circle-fill"></i> Completed</span>';
+    if (job.status === 'partial') return '<span class="up-state partial"><i class="bi bi-exclamation-triangle-fill"></i> ' + job.failed + ' failed</span>';
+    return '<span class="up-state error"><i class="bi bi-x-octagon-fill"></i> Failed</span>';
+  }
+
+  function render(jobs) {
+    if (!jobs.length) { panel.style.display = 'none'; return; }
+    panel.style.display = '';
+    var activeCount = jobs.filter(function (j) { return j.status === 'uploading'; }).length;
+    countBadge.textContent = activeCount ? (activeCount + ' in progress') : 'Done';
+    list.innerHTML = jobs.map(function (j) {
+      var sub = j.status === 'uploading' && j.current ? ('Current: ' + esc(j.current)) : (j.total + ' file' + (j.total > 1 ? 's' : ''));
+      return '<div class="up-item">' +
+        '<div class="up-top">' +
+          '<div><div class="up-name">' + esc(j.title) + '</div><div class="up-sub">' + sub + '</div></div>' +
+          stateChip(j) +
+        '</div>' +
+        '<div class="progress-odoc"><div class="bar" style="width:' + j.percent + '%"></div></div>' +
+      '</div>';
+    }).join('');
+  }
+
+  var timer = null;
+  async function poll() {
+    try {
+      var r = await fetch('/api/admin/upload-jobs', { headers: { Accept: 'application/json' } });
+      var j = await r.json();
+      var jobs = (j && j.data) || [];
+      render(jobs);
+      // Slow down when everything is finished; stop when nothing is left.
+      var active = jobs.some(function (x) { return x.status === 'uploading'; });
+      clearTimeout(timer);
+      if (jobs.length) timer = setTimeout(poll, active ? 1500 : 5000);
+      else timer = setTimeout(poll, 8000);
+    } catch (e) {
+      clearTimeout(timer); timer = setTimeout(poll, 8000);
+    }
+  }
+  poll();
+})();
+</script>
