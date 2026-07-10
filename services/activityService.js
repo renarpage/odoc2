@@ -9,6 +9,7 @@ const driveService = require("./driveService");
 const logService = require("./logService");
 const ApiError = require("../core/ApiError");
 const { activityToView } = require("../helpers/serializers");
+const { formatBytes } = require("../helpers/bytes");
 const { parsePagination, buildMeta } = require("../helpers/pagination");
 const { ACTIVITY_STATUS, VISIBILITY, LOG_TYPES, LOG_ACTIONS } = require("../constants");
 
@@ -18,12 +19,23 @@ const STATUS_BY_FILTER = {
   completed: ACTIVITY_STATUS.COMPLETED,
 };
 
+function mimeToLabel(mime) {
+  const m = String(mime || "").toLowerCase();
+  if (m.includes("png")) return "PNG";
+  if (m.includes("webp")) return "WEBP";
+  if (m.includes("gif")) return "GIF";
+  if (m.includes("mp4")) return "MP4";
+  if (m.includes("webm")) return "WEBM";
+  if (m.includes("jpeg") || m.includes("jpg")) return "JPG";
+  if (m.startsWith("video/")) return "VIDEO";
+  return "IMAGE";
+}
+
 function toArray(v) {
   if (v === undefined || v === null || v === "") return [];
   return Array.isArray(v) ? v : [v];
 }
 
-// Committee + milestones arrive as parallel arrays of form fields.
 function parseCommittee(payload) {
   const names = toArray(payload.committeeName);
   const roles = toArray(payload.committeeRole);
@@ -98,11 +110,35 @@ async function listAdmin({ status, category, search, query = {} } = {}) {
   return { activities: docs.map(activityToView), meta: buildMeta({ page, limit, total }) };
 }
 
+// Merge real per-file metadata (name/size/type) from the Gallery collection
+// into the view's galleryItems, matched by Drive file id.
+async function enrichGallery(view, activityDocId) {
+  if (!view.galleryItems || !view.galleryItems.length) return view;
+  const gdocs = await galleryRepository.byActivity(activityDocId);
+  const byId = {};
+  gdocs.forEach((g) => { if (g.driveId) byId[g.driveId] = g; });
+  view.galleryItems = view.galleryItems.map((it, i) => {
+    const g = it.id ? byId[it.id] : null;
+    const bytes = g && g.bytes ? g.bytes : 0;
+    return {
+      ...it,
+      name: (g && g.originalName) ? g.originalName : ("Media " + (i + 1)),
+      typeLabel: mimeToLabel(g && g.mime),
+      isVideo: !!(g && String(g.mime || "").startsWith("video/")),
+      bytes,
+      sizeLabel: bytes ? formatBytes(bytes) : "",
+    };
+  });
+  return view;
+}
+
 async function getBySlug(slug, { countView = false } = {}) {
   const doc = await activityRepository.findBySlug(slug);
   if (!doc) throw ApiError.notFound("Activity not found");
   if (countView) await activityRepository.incrementViews(doc._id);
-  return activityToView(doc);
+  const view = activityToView(doc);
+  await enrichGallery(view, doc._id);
+  return view;
 }
 
 async function getDocBySlug(slug) {
