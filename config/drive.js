@@ -1,16 +1,13 @@
-/**
- * Google Drive API client.
- *
- * Auth priority:
- *   1. OAuth (a real user's Google Drive) when an OAuth client is configured
- *      AND a refresh token has been stored via the connect flow. This is the
- *      recommended mode: real personal storage quota, no "service accounts do
- *      not have storage quota" upload errors.
- *   2. Service account (JWT) as a fallback for headless setups.
- *   3. null when nothing is configured, so callers degrade gracefully.
- *
- * getDrive() is async because the OAuth refresh token lives in the database.
- */
+//==============================================================//
+//  CONFIG — Google Drive API client                           //
+//  Auth priority:                                             //
+//    1. OAuth (real user Drive) when configured + refresh      //
+//       token stored via the connect flow (recommended).       //
+//    2. Service account (JWT) fallback for headless setups.    //
+//    3. null when nothing is configured (callers degrade).     //
+//  getDrive() / getAuthClient() are async: the OAuth refresh   //
+//  token lives in the database.                                //
+//==============================================================//
 const { google } = require("googleapis");
 const env = require("./env");
 const logger = require("./logger");
@@ -34,7 +31,7 @@ function buildOAuthClient() {
 function authUrl() {
   const client = buildOAuthClient();
   if (!client) return null;
-  // access_type=offline + prompt=consent guarantees we receive a refresh token.
+  // access_type=offline + prompt=consent guarantees a refresh token.
   return client.generateAuthUrl({
     access_type: "offline",
     prompt: "consent",
@@ -76,26 +73,31 @@ function buildServiceAccount() {
   });
 }
 
-/**
- * Returns a ready-to-use Drive client, or null.
- */
-async function getDrive() {
+// Returns the authorized auth client (OAuth2 or JWT), or null.
+// Used both to build the Drive client and to mint access tokens for the
+// resumable-upload REST endpoint (direct browser-to-Drive uploads).
+async function getAuthClient() {
   const oauthClient = buildOAuthClient();
   if (oauthClient) {
     const stored = await getStoredOAuth();
     if (stored && stored.refreshToken) {
       oauthClient.setCredentials({ refresh_token: stored.refreshToken });
-      return google.drive({ version: "v3", auth: oauthClient });
+      return oauthClient;
     }
   }
   const jwt = buildServiceAccount();
-  if (jwt) return google.drive({ version: "v3", auth: jwt });
+  if (jwt) return jwt;
   return null;
 }
 
-/**
- * Connection status for the admin UI.
- */
+// Returns a ready-to-use Drive client, or null.
+async function getDrive() {
+  const client = await getAuthClient();
+  if (!client) return null;
+  return google.drive({ version: "v3", auth: client });
+}
+
+// Connection status for the admin UI.
 async function getStatus() {
   const oauthConfigured = isOAuthConfigured();
   if (oauthConfigured) {
@@ -122,4 +124,4 @@ async function healthCheck() {
   }
 }
 
-module.exports = { getDrive, getStatus, healthCheck, isOAuthConfigured, authUrl, exchangeCode };
+module.exports = { getDrive, getAuthClient, getStatus, healthCheck, isOAuthConfigured, authUrl, exchangeCode };

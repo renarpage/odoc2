@@ -19,6 +19,7 @@ const documentController = require("../controllers/documentController");
 const mediaController = require("../controllers/mediaController");
 const settingsController = require("../controllers/settingsController");
 const userController = require("../controllers/userController");
+const directUploadController = require("../controllers/directUploadController");
 
 //-- Public -----------------------------------------------------//
 router.get("/activities/search", guestController.search);
@@ -44,6 +45,10 @@ router.post("/admin/activities", activityController.createApi);
 router.put("/admin/activities/:slug", activityController.updateApi);
 router.delete("/admin/activities/:slug", activityController.removeApi);
 router.post("/admin/activities/:slug/duplicate", activityController.duplicateApi);
+
+// Direct browser-to-Drive uploads (bypass serverless body limits).
+router.post("/admin/activities/:slug/uploads/init", directUploadController.initUpload);
+router.post("/admin/activities/:slug/uploads/complete", directUploadController.completeUpload);
 
 router.post("/admin/activities/:slug/gallery", upload.array("files", 20), galleryController.upload);
 router.delete("/admin/gallery/:id", galleryController.remove);

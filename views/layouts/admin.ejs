@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="/css/admin.css?v=7">
   <link rel="stylesheet" href="/css/theme-extras.css?v=7">
 </head>
-<body class="admin-body">
+<body class="admin-body" data-direct-upload="<%= typeof directUpload !== 'undefined' && directUpload ? 'true' : 'false' %>">
   <div class="admin-shell">
     <%- include('../partials/sidebar') %>
 
@@ -43,5 +43,6 @@
   <script src="/js/main.js?v=7"></script>
   <script src="/js/admin.js?v=7"></script>
   <script src="/js/neu-controls.js?v=7"></script>
+  <script src="/js/direct-upload.js?v=7"></script>
 </body>
 </html>

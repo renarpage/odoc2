@@ -1,10 +1,14 @@
-/**
- * Google Drive storage service. Streams uploads straight to Drive so file
- * bytes never persist on the app server. Works with either OAuth (personal
- * account) or a service account, whichever config/drive resolves.
- */
+//==============================================================//
+//  SERVICE — Google Drive storage                             //
+//  Two upload paths, same result shape + sharing:              //
+//    uploadBuffer()          server streams bytes to Drive     //
+//    createResumableSession() browser uploads straight to      //
+//                            Drive (bypasses serverless body    //
+//                            limits); finalizeFile() then shares//
+//                            + reads metadata.                  //
+//==============================================================//
 const { Readable } = require("stream");
-const { getDrive } = require("../config/drive");
+const { getDrive, getAuthClient } = require("../config/drive");
 const env = require("../config/env");
 const ApiError = require("../core/ApiError");
 const logger = require("../config/logger");
@@ -22,6 +26,14 @@ function bufferToStream(buffer) {
   stream.push(buffer);
   stream.push(null);
   return stream;
+}
+
+// Public view URL for a Drive file: lh3 host for images, webView otherwise.
+function buildViewUrl(fileId, mimeType, webViewLink) {
+  const isImage = String(mimeType || "").startsWith("image/");
+  return isImage
+    ? `https://lh3.googleusercontent.com/d/${fileId}=w1600`
+    : webViewLink || `https://drive.google.com/file/d/${fileId}/view`;
 }
 
 async function ensureFolder(name, parentId = env.GOOGLE_DRIVE_ROOT_FOLDER_ID) {
@@ -47,6 +59,31 @@ async function ensureFolder(name, parentId = env.GOOGLE_DRIVE_ROOT_FOLDER_ID) {
   return created.data.id;
 }
 
+// Share "anyone with link" + return the normalized file descriptor.
+// Used by both the server-side and direct-upload paths.
+async function finalizeFile(fileId) {
+  const drive = await requireDrive();
+  await drive.permissions.create({
+    fileId,
+    requestBody: { role: "reader", type: "anyone" },
+  });
+  const res = await drive.files.get({
+    fileId,
+    fields: "id,name,size,mimeType,webViewLink,thumbnailLink",
+  });
+  const file = res.data;
+  return {
+    id: file.id,
+    name: file.name,
+    bytes: Number(file.size) || 0,
+    mimeType: file.mimeType,
+    url: buildViewUrl(file.id, file.mimeType, file.webViewLink),
+    downloadUrl: `https://drive.google.com/uc?export=download&id=${file.id}`,
+    webViewLink: file.webViewLink || null,
+    thumbnailLink: file.thumbnailLink || null,
+  };
+}
+
 async function uploadBuffer({ buffer, mimeType, name, folderId }) {
   const drive = await requireDrive();
   const parents = [];
@@ -56,32 +93,44 @@ async function uploadBuffer({ buffer, mimeType, name, folderId }) {
   const created = await drive.files.create({
     requestBody: { name, parents: parents.length ? parents : undefined },
     media: { mimeType, body: bufferToStream(buffer) },
-    fields: "id,name,size,mimeType,webViewLink,webContentLink,thumbnailLink",
+    fields: "id",
   });
 
-  const file = created.data;
-  await drive.permissions.create({
-    fileId: file.id,
-    requestBody: { role: "reader", type: "anyone" },
+  const finalized = await finalizeFile(created.data.id);
+  logger.info("Uploaded file to Google Drive", { id: finalized.id, name: finalized.name, mimeType });
+  // Preserve the byte count from the source buffer when Drive omits size.
+  if (!finalized.bytes && buffer) finalized.bytes = buffer.length;
+  return finalized;
+}
+
+// Start a resumable upload session and return its upload URL. The browser
+// PUTs the file bytes directly to this URL, so they never touch our server.
+async function createResumableSession({ name, mimeType, folderId }) {
+  const client = await getAuthClient();
+  if (!client) throw ApiError.internal("Google Drive is not connected.");
+  const { token } = await client.getAccessToken();
+  if (!token) throw ApiError.internal("Could not obtain a Drive access token.");
+
+  const parents = [];
+  if (folderId) parents.push(folderId);
+  else if (env.GOOGLE_DRIVE_ROOT_FOLDER_ID) parents.push(env.GOOGLE_DRIVE_ROOT_FOLDER_ID);
+
+  const res = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json; charset=UTF-8",
+    },
+    body: JSON.stringify({ name, mimeType, parents: parents.length ? parents : undefined }),
   });
-
-  const isImage = String(mimeType).startsWith("image/");
-  const viewUrl = isImage
-    ? `https://lh3.googleusercontent.com/d/${file.id}=w1600`
-    : (file.webViewLink || `https://drive.google.com/file/d/${file.id}/view`);
-
-  logger.info("Uploaded file to Google Drive", { id: file.id, name: file.name, mimeType });
-
-  return {
-    id: file.id,
-    name: file.name,
-    bytes: Number(file.size) || (buffer ? buffer.length : 0),
-    mimeType,
-    url: viewUrl,
-    downloadUrl: `https://drive.google.com/uc?export=download&id=${file.id}`,
-    webViewLink: file.webViewLink || null,
-    thumbnailLink: file.thumbnailLink || null,
-  };
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    logger.error("Failed to create resumable session", { status: res.status, detail });
+    throw ApiError.internal("Failed to start the upload session.");
+  }
+  const location = res.headers.get("location");
+  if (!location) throw ApiError.internal("Drive did not return an upload session URL.");
+  return location;
 }
 
 async function deleteFile(fileId) {
@@ -121,4 +170,13 @@ async function downloadStream(fileId) {
   return res.data;
 }
 
-module.exports = { ensureFolder, uploadBuffer, deleteFile, getQuota, getMeta, downloadStream };
+module.exports = {
+  ensureFolder,
+  uploadBuffer,
+  finalizeFile,
+  createResumableSession,
+  deleteFile,
+  getQuota,
+  getMeta,
+  downloadStream,
+};
