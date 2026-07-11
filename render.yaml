@@ -1,0 +1,54 @@
+# ==============================================================
+#  RENDER BLUEPRINT — ODOC Digital Archive
+#  MongoDB is external (Atlas), so we only declare a web service.
+#  Secrets (MONGO_URI, JWT, Google OAuth) are set in the dashboard
+#  or here after `render blueprint launch` — never commit real values.
+# ==============================================================
+services:
+  - type: web
+    name: odoc-digital-archive
+    runtime: node
+    plan: free
+    region: singapore
+    branch: main
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: COOKIE_SECURE
+        value: "true"
+
+      # ---- Secrets: set these in the Render dashboard (sync:false) ----
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+
+      # ---- App URL: paste your live Render URL after first deploy ----
+      - key: APP_URL
+        sync: false
+
+      # ---- Google Drive OAuth (optional; leave unset to run without) --
+      - key: GOOGLE_OAUTH_CLIENT_ID
+        sync: false
+      - key: GOOGLE_OAUTH_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_OAUTH_REDIRECT_URI
+        sync: false
+      - key: GOOGLE_DRIVE_ROOT_FOLDER_ID
+        sync: false
+
+      # ---- Seed admin credentials (used by `npm run seed`) -----------
+      - key: SEED_SUPERADMIN_EMAIL
+        sync: false
+      - key: SEED_SUPERADMIN_PASSWORD
+        sync: false
+      - key: SEED_ADMIN_EMAIL
+        sync: false
+      - key: SEED_ADMIN_PASSWORD
+        sync: false

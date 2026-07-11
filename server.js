@@ -39,6 +39,16 @@ app.use(expressLayouts);
 app.set("layout", "layouts/guest");
 
 //==============================================================//
+//  HEALTH CHECK                                                //
+//  Public, unauthenticated, and registered before auth /       //
+//  maintenance so uptime pingers (UptimeRobot) and Render's     //
+//  health probe always get a fast 200.                          //
+//==============================================================//
+app.get("/healthz", (req, res) => {
+  res.status(200).json({ status: "ok", uptime: process.uptime() });
+});
+
+//==============================================================//
 //  CORE MIDDLEWARE                                             //
 //==============================================================//
 app.use(express.static(path.join(__dirname, "public")));
