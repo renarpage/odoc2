@@ -1,3 +1,6 @@
+//==============================================================//
+//  CONTROLLER — Auth (login, logout, change/reset password)    //
+//==============================================================//
 const asyncHandler = require("../core/asyncHandler");
 const authService = require("../services/authService");
 const passwordResetService = require("../services/passwordResetService");
@@ -8,6 +11,7 @@ const { userToView } = require("../helpers/serializers");
 const { COOKIES } = require("../constants");
 const { ok } = require("../helpers/response");
 
+// Only allow same-origin relative redirect targets.
 function safeNext(next) {
   if (typeof next === "string" && next.startsWith("/") && !next.startsWith("//")) return next;
   return "/admin";
@@ -60,7 +64,7 @@ const postChangePassword = asyncHandler(async (req, res) => {
 
 const me = (req, res) => ok(res, { user: userToView(req.user) });
 
-// ---- Forgot password (OTP via server console) ----
+//-- Forgot password (OTP via server console) ------------------//
 const getForgot = (req, res) => {
   if (req.user) return res.redirect("/admin");
   res.render("auth/forgot-password", { title: "Forgot Password", layout: "layouts/auth" });
@@ -72,7 +76,7 @@ const postForgot = asyncHandler(async (req, res) => {
   // identically either way to avoid revealing which emails are registered.
   const user = await userRepository.findByEmail(email);
   if (user && user.active) {
-    const { code } = passwordResetService.issue(email);
+    const { code } = await passwordResetService.issue(email);
     if (code) passwordResetService.deliverToConsole(email, code);
   }
   req.flash("success", "If that account exists, a 6-digit code has been sent. Check the server console.");
@@ -90,7 +94,7 @@ const getReset = (req, res) => {
 
 const postReset = asyncHandler(async (req, res) => {
   const { email, code, newPassword } = validateReset(req.body);
-  const result = passwordResetService.verify(email, code);
+  const result = await passwordResetService.verify(email, code);
   if (!result.ok) {
     const messages = {
       expired: "That code has expired. Request a new one.",
@@ -102,7 +106,7 @@ const postReset = asyncHandler(async (req, res) => {
     return res.redirect("/reset-password?email=" + encodeURIComponent(email));
   }
   await authService.resetPasswordByEmail(email, newPassword, { ip: req.ip });
-  passwordResetService.clear(email);
+  await passwordResetService.clear(email);
   req.flash("success", "Password reset successfully. Please sign in.");
   return res.redirect("/login");
 });

@@ -31,7 +31,7 @@ const notificationsApi = asyncHandler(async (req, res) => {
 
 // Live background upload jobs for the current admin.
 const uploadJobsApi = asyncHandler(async (req, res) => {
-  ok(res, uploadJobService.listForUser(req.user && req.user._id));
+  ok(res, await uploadJobService.listForUser(req.user && req.user._id));
 });
 
 module.exports = { index, healthApi, statsApi, notificationsApi, uploadJobsApi };
