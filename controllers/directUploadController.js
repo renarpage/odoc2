@@ -11,6 +11,7 @@ const galleryService = require("../services/galleryService");
 const documentService = require("../services/documentService");
 const logService = require("../services/logService");
 const ApiError = require("../core/ApiError");
+const env = require("../config/env");
 const { LOG_TYPES, LOG_ACTIONS } = require("../constants");
 const { ok } = require("../helpers/response");
 
@@ -32,10 +33,15 @@ const initUpload = asyncHandler(async (req, res) => {
     await activity.save();
   }
 
+  // The browser origin that will PUT the bytes must be declared so Google
+  // returns a CORS-enabled session URL.
+  const origin = req.get("origin") || env.APP_URL;
+
   const sessionUrl = await driveService.createResumableSession({
     name,
     mimeType,
     folderId: activity.driveFolderId,
+    origin,
   });
   ok(res, { sessionUrl });
 });

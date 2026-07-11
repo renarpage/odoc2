@@ -105,7 +105,12 @@ async function uploadBuffer({ buffer, mimeType, name, folderId }) {
 
 // Start a resumable upload session and return its upload URL. The browser
 // PUTs the file bytes directly to this URL, so they never touch our server.
-async function createResumableSession({ name, mimeType, folderId }) {
+//
+// `origin` MUST be the browser origin that will perform the PUT. Google only
+// enables CORS on the returned session URL when the initiating request carries
+// a matching Origin header; without it the browser PUT is blocked (no
+// Access-Control-Allow-Origin on the response).
+async function createResumableSession({ name, mimeType, folderId, origin }) {
   const client = await getAuthClient();
   if (!client) throw ApiError.internal("Google Drive is not connected.");
   const { token } = await client.getAccessToken();
@@ -115,12 +120,17 @@ async function createResumableSession({ name, mimeType, folderId }) {
   if (folderId) parents.push(folderId);
   else if (env.GOOGLE_DRIVE_ROOT_FOLDER_ID) parents.push(env.GOOGLE_DRIVE_ROOT_FOLDER_ID);
 
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json; charset=UTF-8",
+    "X-Upload-Content-Type": mimeType || "application/octet-stream",
+  };
+  // Declaring the Origin makes Google return a CORS-enabled session URL.
+  if (origin) headers.Origin = origin;
+
   const res = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json; charset=UTF-8",
-    },
+    headers,
     body: JSON.stringify({ name, mimeType, parents: parents.length ? parents : undefined }),
   });
   if (!res.ok) {
