@@ -27,9 +27,14 @@ const NODE_ENV = optional("NODE_ENV", "development");
 const isProd = NODE_ENV === "production";
 const APP_URL = optional("APP_URL", "http://localhost:3000");
 
+// Serverless mode: set SERVERLESS=true, or auto-detected on Vercel/Lambda.
+// Changes runtime behavior: no app.listen, no file logging, inline uploads.
+const SERVERLESS = bool("SERVERLESS", false) || !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+
 const env = {
   NODE_ENV,
   isProd,
+  SERVERLESS,
   PORT: parseInt(optional("PORT", "3000"), 10),
   APP_URL,
 

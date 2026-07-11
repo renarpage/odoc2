@@ -1,6 +1,8 @@
 //==============================================================//
 //  SERVER — Application entry point                            //
 //  Boots MongoDB, wires the middleware chain, mounts routes.   //
+//  Runs a normal listener locally; on serverless it exports    //
+//  the app and connects lazily per request.                    //
 //==============================================================//
 require("dotenv").config();
 const express = require("express");
@@ -40,7 +42,7 @@ app.set("layout", "layouts/guest");
 
 //==============================================================//
 //  HEALTH CHECK                                                //
-//  Public, unauthenticated, and registered before auth /       //
+//  Public, unauthenticated, registered before auth /           //
 //  maintenance so uptime pingers (UptimeRobot) and Render's     //
 //  health probe always get a fast 200.                          //
 //==============================================================//
@@ -56,6 +58,18 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(methodOverride("_method"));
+
+// On serverless, ensure the (cached) DB connection is ready per request.
+if (env.SERVERLESS) {
+  app.use(async (req, res, next) => {
+    try {
+      await connectDB();
+      next();
+    } catch (err) {
+      next(err);
+    }
+  });
+}
 
 // Security headers + NoSQL sanitization, then rate limiting.
 applySecurity(app);
@@ -92,6 +106,8 @@ app.use(errorHandler);
 
 //==============================================================//
 //  BOOT                                                        //
+//  Long-running host: connect then listen.                     //
+//  Serverless: skip listen; the platform imports `app`.        //
 //==============================================================//
 async function start() {
   try {
@@ -105,6 +121,8 @@ async function start() {
   }
 }
 
-start();
+if (!env.SERVERLESS) {
+  start();
+}
 
 module.exports = app;

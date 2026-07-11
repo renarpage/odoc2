@@ -1,134 +1,129 @@
 # ODOC Digital Archive: Developer Handoff
 
-**Repo:** github.com/renarpage/odoc2  
-**Branch:** all work is merged to `main`  
-**Stack:** Node.js / Express + EJS + Bootstrap 5 + GSAP, MongoDB (Mongoose), JWT auth, Google Drive storage.
+**Repo:** github.com/renarpage/odoc2
+**Branch:** all work is merged to `main`
+**Stack:** Node.js / Express + EJS + Bootstrap 5 + GSAP, MongoDB (Mongoose),
+JWT auth, Google Drive storage. Neumorphic theme, primary `#3155E7`.
+
+---
 
 ## Project
 
 ODOC (One Door One Click) is a public digital archive for OSIS SMAVO school
-activities. Guest side (landing + activity detail) is public; an admin panel
-manages everything. It began as a finished frontend backed by an in-memory
-`data/store.js`. The task was to build a production backend behind it **without
-changing the visual design** (neumorphism theme, primary `#3155E7`).
+activities. The guest side (landing + activity detail) is public; an admin
+panel manages everything behind JWT auth.
 
 ## Architecture (flat root + layered)
 
-- `config/` — env, db (mongoose), drive (OAuth + service account), logger (winston)
+```
+routes → controllers → services → repositories → models
+```
+
+- `config/` — env, db (cached mongoose), drive, logger (winston)
 - `constants/` — roles, statuses, cookies, allowed upload ext/mime
 - `core/` — ApiError, asyncHandler
-- `helpers/` — **serializers** (maps Mongo docs to the exact shapes the EJS views
-  already expect — the plug-and-play seam), driveUrl, capacity, cookies, flash,
-  bytes, pagination, response
+- `helpers/` — serializers (map Mongo docs to view shapes), driveUrl, cookies,
+  flash, pagination, response
 - `models/` — User, Activity, Gallery, Document, Notification, Setting, Visitor,
-  Log, Backup, RefreshToken
-- `repositories/` — base + per-collection data access (Repository Pattern)
+  Log, Backup, RefreshToken, **Otp**, **UploadJob**
+- `repositories/` — base + per-collection data access
 - `services/` — auth, token, passwordReset, drive, activity, gallery, document,
-  dashboard, storage, branding, settings, user, log, uploadJob
+  dashboard, storage, settings, user, log, uploadJob
 - `middlewares/` — auth (JWT + silent refresh + RBAC), security (helmet/CSP/
-  sanitize), rateLimiter, csrf, upload (multer memory), validate, locals,
+  sanitize), rateLimiter, csrf, upload (multer memory), maintenance, locals,
   visitor, errorHandler, notFound
 - `validators/`, `controllers/`, `routes/` (guest, auth, admin, api)
-- `seeders/seed.js`, `views/`
+- `views/` — EJS (layouts, partials, admin, guest); **no inline `<style>`/
+  `<script>`** — assets live in `public/css` & `public/js`
+- `seeders/seed.js`
 
-## Features implemented
+## Features
 
-### Auth
-- JWT access + rotated refresh tokens (hashed, HttpOnly cookies), bcrypt.
-- RBAC: `super_admin`, `standard_admin`. Forced password change on first login.
-- **Forgot password via 6-digit OTP printed to the server console**
-  (`services/passwordResetService.js`): in-memory, 10 min expiry, 5-attempt cap,
-  30s resend cooldown, anti user-enumeration responses. Flow: `/forgot-password`
-  -> code to console -> `/reset-password` -> set new password.
-
-### Activities
-- Full CRUD + duplicate, draft/publish, visibility.
-- Fields: title, category, status, start/end date, location, organizer,
-  division, tags, summary, description (multi-paragraph), cover, gallery,
-  documents, committee, milestones. Admin form fields match the public detail
-  page 1:1.
-- **Create redirects to the dashboard instantly**; cover/gallery/document
-  uploads run in a **background job** (`services/uploadJobService.js`, in-memory)
-  with a live progress panel on the dashboard that polls
+- **Auth:** JWT access + rotated refresh tokens (HttpOnly cookies), bcrypt,
+  RBAC (`super_admin`, `standard_admin`), forced first-login password change.
+- **Forgot password (OTP):** 6-digit code printed to the server console,
+  **stored in MongoDB** (`Otp` model) with a 10-min TTL, 5-attempt cap, 30s
+  resend cooldown, anti-enumeration responses.
+- **Activities:** full CRUD + duplicate, draft/publish, visibility. Create
+  redirects instantly; media uploads run as a **persisted background job**
+  (`UploadJob` model) with a live dashboard progress panel polling
   `GET /api/admin/upload-jobs`.
+- **Google Drive:** OAuth (personal Drive, recommended) or service-account
+  fallback. Images via `lh3.googleusercontent.com/d/{id}`, videos via the
+  Drive `/preview` iframe, ZIP download via `archiver`.
+- **System settings:** general, SEO/meta, content limits, notifications, SMTP
+  (+ test button), webhook, backup, and a site-wide **maintenance mode**
+  (dedicated page; only admins bypass).
+- **User management:** super admin full CRUD (create, edit, activate/deactivate,
+  reset password, delete); standard admin is read-only.
 
-### Google Drive
-- **OAuth to a personal account** is the recommended mode (real storage quota,
-  no "service accounts have no quota" errors); service account is a fallback.
-  Connect / disconnect at Admin > Storage.
-- Display images via `https://lh3.googleusercontent.com/d/{id}` — NOT
-  `uc?export=view` (that 302s to a scan page and fails inside `<img>`).
-- Videos play inline via the Drive `/preview` iframe.
-- **ZIP download**: `GET /api/activities/:slug/media.zip?ids=a,b,c` streams the
-  selected (or all) gallery files as one archive (`archiver`).
-- Uploaded files are set to "anyone with link" automatically.
+## State & persistence (important)
 
-### Storage capacity resolution (helpers/capacity.js)
-Real Drive quota limit -> `storageCapacityGB` (Settings/DB) ->
-`STORAGE_CAPACITY_GB` env -> 15 GB default. (Previously hardcoded to 1 TB.)
+Everything that used to be in-memory now lives in MongoDB, so state survives
+restarts and works across multiple instances:
 
-### Guest UI
-- Instant client-side filter + pagination (9/page), no reload.
-- Equal-height activity cards, 3-line clamped descriptions.
-- Activity detail: hero shows organizer/division/tags/summary. Media Archive
-  grid capped to ~4 rows with a `+N more` tile that opens the media modal.
-- **Media modal**: hero preview (image or playable video) + thumbnail grid with
-  per-file checkbox select, Select All, per-file download, and Download Selected
-  (ZIP). Custom **fullscreen overlay** (image + video) with a close button that
-  works on mobile (native fullscreen API is unreliable on iOS).
+| Concern            | Before        | Now                                  |
+| ------------------ | ------------- | ------------------------------------ |
+| Password-reset OTP | in-memory Map | `Otp` collection (TTL auto-expire)   |
+| Upload jobs        | in-memory Map | `UploadJob` collection (TTL 60s done)|
 
-### Neumorphic controls
-Native `<select>` option lists and the native date picker cannot be themed, so
-`public/js/neu-controls.js` enhances them into a custom neumorphic dropdown and
-a flatpickr date picker. Underlying elements stay in the DOM so form submit and
-`onchange` handlers keep working.
+## Deployment
 
-## Critical gotchas (learned the hard way)
+### Long-running host (recommended: Render / Railway / VPS)
 
-1. **CSP** (`middlewares/security.js`):
-   - Bootstrap Icons webfont loads from cdnjs -> must be in `font-src`.
-   - CDN sourcemaps need the CDNs in `connect-src`.
-   - `script-src-attr 'none'` **blocks inline `on*` attributes**. All image
-     load/error and click logic MUST live in a `<script>`, never inline.
-2. **Drive images**: use the lh3 host, add `referrerpolicy="no-referrer"`.
-3. **Video hero**: an exact 16:9 frame clips the Drive control bar; the playing
-   state uses aspect-ratio 16:10 (16:11 on mobile).
-4. **Uploads**: validate by **file extension**, not MIME (browsers send
-   `application/x-zip-compressed`, `application/octet-stream`, etc.). Validate
-   client-side on selection so unsupported files are rejected immediately.
-   Per-request file cap is 200 (`MAX_FILES_PER_REQUEST`).
-5. **CSS caching**: admin assets use `?v=N` cache-busting; bump `N` when you
-   change CSS/JS, and hard-refresh (Ctrl+Shift+R).
-6. **Global section centering**: `section { min-height:80vh; justify-content:
-   center }` re-centers content vertically, which makes the layout jump when a
-   filter changes the number of visible cards. Override with `flex-start` on
-   such sections (already done for `#archive`).
+Runs as-is. `npm start` connects to Mongo then listens.
+
+- **Render + UptimeRobot:** see [`DEPLOYMENT.md`](DEPLOYMENT.md). `render.yaml`
+  is a one-click blueprint; `GET /healthz` is a public probe for uptime pings.
+- Use a host with a static IP so you can whitelist a single IP in Atlas.
+
+### Serverless (Vercel) — supported, with caveats
+
+Set `SERVERLESS=true` (auto-detected on Vercel). Behavior changes:
+
+- **No `app.listen`** — `api/index.js` + `vercel.json` export the app.
+- **Cached Mongo connection** — warm invocations reuse one connection.
+- **Console-only logging** — file transports skipped (read-only FS).
+- **Inline uploads** — upload jobs run awaited (a detached task would be killed
+  when the function returns).
+
+Remaining serverless caveat: platform request-body limits (Vercel ~4.5MB) cap
+upload size, and large uploads can hit the function timeout. For heavy media,
+prefer a long-running host or move to direct browser→Drive uploads.
 
 ## Environment (.env)
 
-`NODE_ENV`, `PORT`, `APP_URL`, `MONGO_URI`, `JWT_ACCESS_SECRET`,
-`JWT_REFRESH_SECRET`, `JWT_ACCESS_TTL`, `JWT_REFRESH_TTL`, `BCRYPT_ROUNDS`,
-`COOKIE_SECURE`, `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`,
-`GOOGLE_OAUTH_REDIRECT_URI`, `GOOGLE_DRIVE_ROOT_FOLDER_ID`,
-`STORAGE_CAPACITY_GB`, `MAX_FILES_PER_REQUEST`, `MAX_UPLOAD_BYTES`,
-`RATE_LIMIT_*`, and `SEED_*` admin credentials. See `.env.example`.
+See `.env.example`. Key vars: `MONGO_URI`, `JWT_ACCESS_SECRET`,
+`JWT_REFRESH_SECRET`, `APP_URL`, `COOKIE_SECURE`, `GOOGLE_OAUTH_*`,
+`STORAGE_CAPACITY_GB`, `SERVERLESS`, and `SEED_*`.
 
 ```bash
 npm install
 cp .env.example .env      # fill MONGO_URI, JWT secrets, Google OAuth creds
-npm run seed              # seeds admins + branding/settings + 8 sample activities
+npm run seed              # admins + settings + sample activities
 npm start                 # http://localhost:3000
 ```
 
-Default seeded logins (force password change on first login):
-`superadmin@odoc.archive / ChangeMe!Super123`, `admin@odoc.archive / ChangeMe!Admin123`.
+Default seeded logins (force change on first login):
+`superadmin@odoc.archive / ChangeMe!Super123`,
+`admin@odoc.archive / ChangeMe!Admin123`.
 
-## Open items / not verified
+## Tooling
 
-- The app has not been executed in this environment. Needs `npm install`, a live
-  MongoDB, and Drive connected to verify end-to-end.
-- OTP store and upload jobs are **in-memory** (single-process; lost on restart).
-  Move to Redis/DB for multi-instance deployments.
-- OTP delivery is console-only; SMTP settings fields exist but email sending is
-  not wired.
-- Media pixel dimensions (WxH) are not captured on upload.
+- ESLint + Prettier + EditorConfig. Run `npm run lint` and `npm run format`.
+- Boxed section-header comments across backend modules.
+
+## Critical gotchas
+
+1. **CSP** (`middlewares/security.js`): icon webfont from cdnjs must stay in
+   `font-src`; CDNs in `connect-src` for sourcemaps. No inline `on*` handlers.
+2. **Drive images:** use the lh3 host + `referrerpolicy="no-referrer"`.
+3. **Uploads:** validate by **extension**, not MIME.
+4. **CSS caching:** admin assets use `?v=N`; bump `N` on CSS/JS changes.
+
+## Open items
+
+- OTP delivery is console-only; SMTP fields exist but email sending isn't wired.
+- Media pixel dimensions (WxH) not captured on upload.
+- For multi-instance heavy load, consider a real job queue instead of the
+  DB-backed job doc.

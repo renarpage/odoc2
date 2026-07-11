@@ -1,10 +1,15 @@
 //==============================================================//
 //  SERVICE — Background media uploads (MongoDB-backed)         //
 //  On activity create/edit with files, the record is saved     //
-//  immediately and the browser redirects; the actual Drive     //
-//  uploads run here detached, updating a persisted job doc the  //
-//  dashboard polls via listForUser.                            //
+//  immediately; the actual Drive uploads run here and update a  //
+//  persisted job doc the dashboard polls via listForUser.       //
+//                                                              //
+//  Execution mode:                                            //
+//    long-running host  -> detached (setImmediate), instant UX  //
+//    serverless         -> inline (awaited), since a detached    //
+//                          task would be killed after response  //
 //==============================================================//
+const env = require("../config/env");
 const logger = require("../config/logger");
 const uploadJobRepository = require("../repositories/uploadJobRepository");
 
@@ -81,8 +86,8 @@ async function runJob(job, tasks, slug, ctx) {
   logger.info("Background upload job finished", { slug, status: job.status, done: job.done, failed: job.failed });
 }
 
-// Register + start a background upload job. Fire-and-forget: never throws to
-// the caller, so it's safe to call without awaiting from a request handler.
+// Register + start an upload job. Returns the job id.
+// Detached on a long-running host; awaited inline on serverless.
 async function start({ user, title, slug, files, ctx }) {
   try {
     const tasks = buildTasks(files);
@@ -96,16 +101,28 @@ async function start({ user, title, slug, files, ctx }) {
       failed: 0,
       status: "uploading",
     });
-    // Detach: run without blocking the request/response cycle.
-    setImmediate(() => {
-      runJob(job, tasks, slug, ctx).catch(async (err) => {
+
+    if (env.SERVERLESS) {
+      // Must finish before the function returns, or it gets killed.
+      await runJob(job, tasks, slug, ctx).catch(async (err) => {
         job.status = "error";
         job.error = err.message;
         job.finishedAt = new Date();
         await persist(job);
-        logger.error("Background upload job crashed", { slug, error: err.message });
+        logger.error("Upload job crashed", { slug, error: err.message });
       });
-    });
+    } else {
+      // Detach so the request can respond immediately.
+      setImmediate(() => {
+        runJob(job, tasks, slug, ctx).catch(async (err) => {
+          job.status = "error";
+          job.error = err.message;
+          job.finishedAt = new Date();
+          await persist(job);
+          logger.error("Background upload job crashed", { slug, error: err.message });
+        });
+      });
+    }
     return String(job._id);
   } catch (err) {
     logger.error("Failed to start upload job", { slug, error: err.message });
