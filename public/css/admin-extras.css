@@ -1,10 +1,10 @@
 /* ============================================================
    ADMIN EXTRAS
    Styles lifted out of inline `style="..."` attributes across the
-   admin shell, partials, and views, grouped into semantic classes
-   so the markup stays clean and CSP-friendly.
-   Loaded once by views/layouts/admin.ejs (after admin.css so these
-   rules can safely extend the base component styles).
+   admin shell, partials, views, and admin.js generated markup,
+   grouped into semantic classes so the markup stays clean and
+   CSP-friendly. Loaded once by views/layouts/admin.ejs (after
+   admin.css so these rules can safely extend the base styles).
    ============================================================ */
 
 /* ---- Sidebar brand ---- */
@@ -96,9 +96,20 @@
   height: 32px;
 }
 
+.icon-btn--30 {
+  width: 30px;
+  height: 30px;
+}
+
 /* ---- Users: per-user avatar color (value supplied inline as --u-avatar) ---- */
 .user-avatar {
   background: var(--u-avatar, #3155e7);
+}
+
+/* ---- Committee/milestone flag avatar (brand tint) ---- */
+.member-avatar--flag {
+  background: #e9eefc;
+  color: var(--odoc-primary);
 }
 
 /* ---- Branding: color swatch input ---- */
@@ -158,6 +169,17 @@
 /* ---- Soft alert corners ---- */
 .alert-soft {
   border-radius: var(--radius-sm);
+}
+
+/* ---- Upload inline error banner (built by admin.js) ---- */
+.upload-error-box {
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+}
+
+/* ---- Notification dropdown empty-state icon ---- */
+.notif-empty-icon {
+  font-size: 1.4rem;
 }
 
 /* ---- Storage: data-driven progress bar width (value supplied inline as --bar) ---- */
