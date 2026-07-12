@@ -1,0 +1,36 @@
+/* ============================================================
+   ADMIN EXTRAS
+   Styles lifted out of inline `style="..."` attributes across the
+   admin shell, partials, and views, grouped into semantic classes
+   so the markup stays clean and CSP-friendly.
+   Loaded once by views/layouts/admin.ejs (after admin.css so these
+   rules can safely extend the base component styles).
+   ============================================================ */
+
+/* ---- Sidebar brand ---- */
+.sidebar-brand-icon {
+  font-size: 1.4rem;
+  color: var(--odoc-primary);
+}
+
+.sidebar-brand-title {
+  font-size: 1rem;
+}
+
+/* ---- Topbar user avatar ---- */
+.avatar-img {
+  background: var(--odoc-primary);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ---- Dashboard stat card icon (brand tint) ---- */
+.stat-icon--brand {
+  background: #e9eefc;
+  color: var(--odoc-secondary);
+}
+
+/* ---- 403 / forbidden page ---- */
+.forbidden-block {
+  padding: 60px 20px;
+}
