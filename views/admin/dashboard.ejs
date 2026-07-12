@@ -21,7 +21,7 @@
 <div class="row g-3 mb-4">
   <div class="col-6 col-lg-4">
     <a class="stat-card card" href="/admin/activities">
-      <div class="stat-icon text-primary" style="background:#E9EEFC;color:var(--odoc-secondary)"><i class="bi bi-journal-richtext"></i></div>
+      <div class="stat-icon stat-icon--brand text-primary"><i class="bi bi-journal-richtext"></i></div>
       <div class="stat-text d-flex flex-column ms-3">
         <div class="stat-value"><%= stats.totalActivities.toLocaleString() %></div>
         <div class="stat-label">Total Activities</div>
@@ -30,7 +30,7 @@
   </div>
   <div class="col-6 col-lg-4">
     <a class="stat-card card" href="/admin/storage">
-      <div class="stat-icon text-primary" style="background:#E9EEFC;color:var(--odoc-secondary)"><i class="bi bi-cloud"></i></div>
+      <div class="stat-icon stat-icon--brand text-primary"><i class="bi bi-cloud"></i></div>
       <div class="stat-text d-flex flex-column ms-3">
         <div class="stat-value"><%= stats.storageUsedGB %> GB</div>
         <div class="stat-label">Storage Used (GDrive)</div>
@@ -39,7 +39,7 @@
   </div>
   <div class="col-6 col-lg-4">
     <a class="stat-card card" href="/admin/users">
-      <div class="stat-icon text-primary" style="background:#E9EEFC;color:var(--odoc-secondary)"><i class="bi bi-people"></i></div>
+      <div class="stat-icon stat-icon--brand text-primary"><i class="bi bi-people"></i></div>
       <div class="stat-text d-flex flex-column ms-3">
         <div class="stat-value"><%= stats.totalUsers %></div>
         <div class="stat-label">Total Users</div>
