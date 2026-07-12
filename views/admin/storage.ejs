@@ -8,7 +8,7 @@
     <div class="d-flex gap-2">
       <a href="/admin/storage" class="btn-secondary rounded-pill px-4 py-2 w-auto h-auto"><i class="bi bi-arrow-repeat me-2"></i>Refresh</a>
       <% if (storage.driveConnected && storage.driveMode==='oauth' ) { %>
-        <form action="/admin/integrations/google/disconnect" method="POST" onsubmit="return confirm('Disconnect Google Drive?');">
+        <form action="/admin/integrations/google/disconnect" method="POST" data-confirm="Disconnect Google Drive?">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <button type="submit" class="btn-secondary rounded-pill px-4 py-2 w-auto h-auto text-danger"><i class="bi bi-plug me-2"></i>Disconnect</button>
         </form>
