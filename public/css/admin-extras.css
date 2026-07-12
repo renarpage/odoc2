@@ -56,6 +56,11 @@
   color: var(--odoc-success);
 }
 
+.stat-icon--neutral {
+  background: #f4f6fb;
+  color: var(--odoc-text);
+}
+
 /* ---- Activities list: filter controls ---- */
 .filter-status {
   max-width: 180px;
@@ -80,10 +85,15 @@
   font-size: 0.5rem;
 }
 
-/* ---- Small square icon button (row actions) ---- */
+/* ---- Square icon buttons (row actions) ---- */
 .icon-btn--sm {
   width: 34px;
   height: 34px;
+}
+
+.icon-btn--xs {
+  width: 32px;
+  height: 32px;
 }
 
 /* ---- Users: per-user avatar color (value supplied inline as --u-avatar) ---- */
@@ -128,4 +138,29 @@
 .preview-note {
   background: var(--odoc-bg);
   border-radius: var(--radius-md);
+}
+
+/* ---- Soft alert banners ---- */
+.alert-warning-soft {
+  background: #fdf3e7;
+  border: none;
+  border-radius: var(--radius-md);
+  color: #9a6a1f;
+}
+
+.alert-info-soft {
+  background: #e9eefc;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--odoc-primary);
+}
+
+/* ---- Storage: data-driven progress bar width (value supplied inline as --bar) ---- */
+.storage-bar {
+  width: var(--bar, 0%);
+}
+
+/* ---- Settings: keep dropdowns from clipping inside a card ---- */
+.panel-overflow-visible {
+  overflow: visible;
 }
