@@ -32,7 +32,7 @@
           <tr>
             <td>
               <div class="d-flex align-items-center gap-3">
-                <div class="user-avatar" style="background: <%= u.avatarColor || '#3155E7' %>;">
+                <div class="user-avatar" style="--u-avatar: <%= u.avatarColor || '#3155E7' %>;">
                   <%= u.name ? u.name.charAt(0).toUpperCase() : '?' %>
                 </div>
                 <span class="fw-semibold"><%= u.name %></span>
