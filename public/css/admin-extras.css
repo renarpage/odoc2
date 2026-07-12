@@ -155,6 +155,11 @@
   color: var(--odoc-primary);
 }
 
+/* ---- Soft alert corners ---- */
+.alert-soft {
+  border-radius: var(--radius-sm);
+}
+
 /* ---- Storage: data-driven progress bar width (value supplied inline as --bar) ---- */
 .storage-bar {
   width: var(--bar, 0%);
@@ -163,4 +168,13 @@
 /* ---- Settings: keep dropdowns from clipping inside a card ---- */
 .panel-overflow-visible {
   overflow: visible;
+}
+
+/* ---- Change password page ---- */
+.content-narrow {
+  max-width: 520px;
+}
+
+.card-surface {
+  background: var(--odoc-card);
 }
