@@ -1,0 +1,11 @@
+/* ============================================================
+   GUEST EXTRAS
+   Styles lifted out of inline `style="..."` attributes across the
+   guest-facing views (404, etc.) into semantic classes.
+   Loaded once by views/layouts/guest.ejs.
+   ============================================================ */
+
+/* ---- 404 not-found centering block ---- */
+.notfound-block {
+  height: 60vh !important;
+}
