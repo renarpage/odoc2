@@ -34,3 +34,98 @@
 .forbidden-block {
   padding: 60px 20px;
 }
+
+/* ---- Stat card icon tints (activities overview) ---- */
+.tint-indigo {
+  background: #e9eefc;
+  color: var(--odoc-primary);
+}
+
+.tint-blue {
+  background: #e7f0ff;
+  color: var(--odoc-primary);
+}
+
+.tint-purple {
+  background: #f0eafb;
+  color: #7c4fd8;
+}
+
+.tint-green {
+  background: #e4f5ec;
+  color: var(--odoc-success);
+}
+
+/* ---- Activities list: filter controls ---- */
+.filter-status {
+  max-width: 180px;
+}
+
+.filter-category {
+  max-width: 200px;
+}
+
+.filter-search {
+  max-width: 240px;
+}
+
+/* ---- Activities list: thumbnail placeholder ---- */
+.activity-thumb--placeholder {
+  background: #e9eefc;
+  color: var(--odoc-primary);
+}
+
+/* ---- Activities list: status dot ---- */
+.status-dot {
+  font-size: 0.5rem;
+}
+
+/* ---- Small square icon button (row actions) ---- */
+.icon-btn--sm {
+  width: 34px;
+  height: 34px;
+}
+
+/* ---- Users: per-user avatar color (value supplied inline as --u-avatar) ---- */
+.user-avatar {
+  background: var(--u-avatar, #3155e7);
+}
+
+/* ---- Branding: color swatch input ---- */
+.color-swatch-input {
+  height: 44px;
+}
+
+/* ---- Branding: live preview ---- */
+.preview-dot {
+  width: 10px;
+  height: 10px;
+}
+
+.preview-dot--amber {
+  background: #f0a93c;
+}
+
+.preview-dot--blue {
+  background: #3155e7;
+}
+
+.preview-dot--slate {
+  background: #4e5a98;
+}
+
+.brand-mark--sm {
+  width: 22px;
+  height: 22px;
+  font-size: 0.7rem;
+}
+
+.preview-hero-img {
+  height: 90px;
+  object-fit: cover;
+}
+
+.preview-note {
+  background: var(--odoc-bg);
+  border-radius: var(--radius-md);
+}
