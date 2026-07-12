@@ -16,11 +16,11 @@
 
 <div class="odoc-panel">
   <form class="d-flex flex-wrap gap-2 mb-4 align-items-center" method="GET" action="/admin/activities">
-    <select name="status" class="form-select form-select-odoc filter-status" onchange="this.form.submit()">
+    <select name="status" class="form-select form-select-odoc filter-status" data-autosubmit>
       <option value="">All Statuses</option>
       <% ['Ongoing','Completed','Upcoming'].forEach(function(s){ %><option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s %></option><% }); %>
     </select>
-    <select name="category" class="form-select form-select-odoc filter-category" onchange="this.form.submit()">
+    <select name="category" class="form-select form-select-odoc filter-category" data-autosubmit>
       <option value="">All Categories</option>
       <% ['Festival','Technology','Organization','Archival','Security Scan','Sports','Archive Gallery'].forEach(function(c){ %><option value="<%= c %>" <%= filters.category === c ? 'selected' : '' %>><%= c %></option><% }); %>
     </select>
@@ -44,7 +44,7 @@
           <tr>
             <td>
               <div class="d-flex align-items-center gap-3">
-                <% if (a.cover) { %><img src="<%= a.cover %>" class="activity-thumb" alt="" referrerpolicy="no-referrer" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex';"><span class="activity-thumb activity-thumb--placeholder d-none align-items-center justify-content-center"><i class="bi bi-image"></i></span><% } else { %><span class="activity-thumb activity-thumb--placeholder d-inline-flex align-items-center justify-content-center"><i class="bi bi-image"></i></span><% } %>
+                <% if (a.cover) { %><img src="<%= a.cover %>" class="activity-thumb" alt="" referrerpolicy="no-referrer" data-img-fallback="sibling"><span class="activity-thumb activity-thumb--placeholder d-none align-items-center justify-content-center"><i class="bi bi-image"></i></span><% } else { %><span class="activity-thumb activity-thumb--placeholder d-inline-flex align-items-center justify-content-center"><i class="bi bi-image"></i></span><% } %>
                 <div>
                   <div class="fw-semibold"><%= a.title %></div>
                   <div class="text-muted tiny">ID: <%= a.id.toUpperCase() %><% if (a.visibility === 'draft') { %> &middot; <span class="text-warning">DRAFT</span><% } %></div>
@@ -59,7 +59,7 @@
                 <a href="/activity/<%= a.id %>" target="_blank" rel="noopener" class="icon-btn btn-secondary icon-btn--sm" title="View public page"><i class="bi bi-eye"></i></a>
                 <a href="/admin/activities/<%= a.id %>/edit" class="icon-btn btn-secondary icon-btn--sm" title="Edit"><i class="bi bi-pencil"></i></a>
                 <form action="/admin/activities/<%= a.id %>/duplicate" method="POST" class="d-inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="icon-btn btn-secondary icon-btn--sm" title="Duplicate"><i class="bi bi-files"></i></button></form>
-                <form action="/admin/activities/<%= a.id %>/delete" method="POST" class="d-inline" onsubmit="return confirm('Delete this activity and its files?');"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="icon-btn btn-secondary text-danger icon-btn--sm" title="Delete"><i class="bi bi-trash"></i></button></form>
+                <form action="/admin/activities/<%= a.id %>/delete" method="POST" class="d-inline" data-confirm="Delete this activity and its files?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="icon-btn btn-secondary text-danger icon-btn--sm" title="Delete"><i class="bi bi-trash"></i></button></form>
               </div>
             </td>
           </tr>
