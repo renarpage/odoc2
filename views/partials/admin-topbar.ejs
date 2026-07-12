@@ -20,7 +20,7 @@
           <a href="/admin" class="tiny text-primary text-decoration-none">View dashboard</a>
         </div>
         <div class="notif-list" id="notifList">
-          <div class="notif-empty tiny">Loading\u2026</div>
+          <div class="notif-empty tiny">Loading…</div>
         </div>
       </div>
     </div>
@@ -32,7 +32,7 @@
         <div class="fw-semibold small"><%= (typeof currentUser !== 'undefined' && currentUser) ? currentUser.name : 'Admin' %></div>
         <div class="text-muted tiny"><%= (typeof currentUser !== 'undefined' && currentUser && currentUser.roleLabel) ? currentUser.roleLabel : 'Administrator' %></div>
       </div>
-      <span class="avatar-img d-inline-flex align-items-center justify-content-center" style="background:var(--odoc-primary);color:#fff;font-weight:700;"><%= ((typeof currentUser !== 'undefined' && currentUser && currentUser.name) ? currentUser.name : 'A').charAt(0).toUpperCase() %></span>
+      <span class="avatar-img d-inline-flex align-items-center justify-content-center"><%= ((typeof currentUser !== 'undefined' && currentUser && currentUser.name) ? currentUser.name : 'A').charAt(0).toUpperCase() %></span>
     </div>
   </div>
 </header>
