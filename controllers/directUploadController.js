@@ -1,8 +1,8 @@
 //==============================================================//
-//  CONTROLLER — Direct browser-to-Drive uploads               //
-//  init:     open a resumable session for one file             //
-//  complete: share + persist metadata once the browser has     //
-//            finished PUT-ing the bytes to Drive.               //
+//  CONTROLLER — Direct browser-to-Drive uploads                //
+//    init:     open a resumable session for one file            //
+//    complete: share + persist metadata once the browser has    //
+//              finished PUT-ing the bytes to Drive.             //
 //==============================================================//
 const asyncHandler = require("../core/asyncHandler");
 const activityRepository = require("../repositories/activityRepository");
@@ -33,6 +33,10 @@ const initUpload = asyncHandler(async (req, res) => {
     await activity.save();
   }
 
+  // Route the file into its typed subfolder (Photos/Videos/Audio/Documents)
+  // inside the activity folder, based on its MIME type.
+  const targetFolderId = await driveService.ensureCategoryFolder(activity.driveFolderId, mimeType);
+
   // The browser origin that will PUT the bytes must be declared so Google
   // returns a CORS-enabled session URL.
   const origin = req.get("origin") || env.APP_URL;
@@ -40,7 +44,7 @@ const initUpload = asyncHandler(async (req, res) => {
   const sessionUrl = await driveService.createResumableSession({
     name,
     mimeType,
-    folderId: activity.driveFolderId,
+    folderId: targetFolderId,
     origin,
   });
   ok(res, { sessionUrl });
