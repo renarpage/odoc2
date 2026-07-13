@@ -1,7 +1,7 @@
 //==============================================================//
-//  SERVICE — Gallery images (linked to an activity)           //
+//  SERVICE — Gallery images (linked to an activity)            //
 //  uploadForActivity: server uploads the bytes.                //
-//  attachUploaded:    file is already on Drive (direct upload);//
+//  attachUploaded:    file is already on Drive (direct upload); //
 //                     just share + save metadata.              //
 //==============================================================//
 const galleryRepository = require("../repositories/galleryRepository");
@@ -26,11 +26,12 @@ async function uploadForActivity(slug, files, ctx = {}) {
 
   const created = [];
   for (const file of files) {
+    const folderId = await driveService.ensureCategoryFolder(activity.driveFolderId, file.mimetype);
     const uploaded = await driveService.uploadBuffer({
       buffer: file.buffer,
       mimeType: file.mimetype,
       name: file.originalname,
-      folderId: activity.driveFolderId,
+      folderId,
     });
     const doc = await galleryRepository.create({
       activity: activity._id,
