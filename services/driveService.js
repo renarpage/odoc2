@@ -1,11 +1,15 @@
 //==============================================================//
 //  SERVICE — Google Drive storage                             //
 //  Two upload paths, same result shape + sharing:              //
-//    uploadBuffer()          server streams bytes to Drive     //
-//    createResumableSession() browser uploads straight to      //
-//                            Drive (bypasses serverless body    //
-//                            limits); finalizeFile() then shares//
-//                            + reads metadata.                  //
+//    uploadBuffer()           server streams bytes to Drive     //
+//    createResumableSession() browser uploads straight to       //
+//                             Drive (bypasses serverless body    //
+//                             limits); finalizeFile() then shares//
+//                             + reads metadata.                  //
+//                                                              //
+//  Files are organized inside each activity folder by type:     //
+//    ODOC - <title>/{Photos,Videos,Audio,Documents}             //
+//  via categoryForMime() + ensureCategoryFolder().              //
 //==============================================================//
 const { Readable } = require("stream");
 const { getDrive, getAuthClient } = require("../config/drive");
@@ -36,6 +40,15 @@ function buildViewUrl(fileId, mimeType, webViewLink) {
     : webViewLink || `https://drive.google.com/file/d/${fileId}/view`;
 }
 
+// Map a MIME type to the subfolder it belongs in inside an activity folder.
+// image/* -> Photos, video/* -> Videos, audio/* -> Audio, everything
+// else (pdf, office docs, zip, ...) -> Documents.
+const CATEGORY_BY_TOP_TYPE = { image: "Photos", video: "Videos", audio: "Audio" };
+function categoryForMime(mimeType) {
+  const top = String(mimeType || "").split("/")[0].toLowerCase();
+  return CATEGORY_BY_TOP_TYPE[top] || "Documents";
+}
+
 async function ensureFolder(name, parentId = env.GOOGLE_DRIVE_ROOT_FOLDER_ID) {
   const drive = await requireDrive();
   const safeName = String(name).replace(/'/g, "\\'");
@@ -57,6 +70,14 @@ async function ensureFolder(name, parentId = env.GOOGLE_DRIVE_ROOT_FOLDER_ID) {
     fields: "id",
   });
   return created.data.id;
+}
+
+// Resolve (creating on first use) the typed subfolder for a file inside the
+// given activity folder. ensureFolder de-dupes by name+parent, so repeated
+// uploads of the same type reuse the same subfolder.
+async function ensureCategoryFolder(activityFolderId, mimeType) {
+  const category = categoryForMime(mimeType);
+  return ensureFolder(category, activityFolderId);
 }
 
 // Share "anyone with link" + return the normalized file descriptor.
@@ -182,6 +203,8 @@ async function downloadStream(fileId) {
 
 module.exports = {
   ensureFolder,
+  categoryForMime,
+  ensureCategoryFolder,
   uploadBuffer,
   finalizeFile,
   createResumableSession,
