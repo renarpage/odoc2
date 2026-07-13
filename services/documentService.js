@@ -26,11 +26,12 @@ async function uploadForActivity(slug, files, ctx = {}) {
 
   const created = [];
   for (const file of files) {
+    const folderId = await driveService.ensureCategoryFolder(activity.driveFolderId, file.mimetype);
     const uploaded = await driveService.uploadBuffer({
       buffer: file.buffer,
       mimeType: file.mimetype,
       name: file.originalname,
-      folderId: activity.driveFolderId,
+      folderId,
     });
     const sizeLabel = formatBytes(uploaded.bytes);
     const type = extToType(file.originalname || file.mimetype);
